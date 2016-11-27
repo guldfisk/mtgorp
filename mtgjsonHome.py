@@ -1,0 +1,1 @@
+url = 'http://mtgjson.com/atom.xml'
