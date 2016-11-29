@@ -3,24 +3,36 @@ from mtgUtility import *
 from loadCards import *
 import terminalsize
 
-trans = {'n': 'name', 'o': 'text', 'c': 'colors', 'p': 'power', 'to': 'toughness', 't': 'type', 'm': 'manaCost', 'cmc': 'cmc', 'e': 'printings', 'f': 'flavors'}
-
 class CardMatch(Card):
+	trans = {
+		'n': 'name',
+		'o': 'text',
+		'c': 'colors',
+		'p': 'power',
+		'to': 'toughness',
+		't': 'type',
+		'm': 'manaCost',
+		'cmc': 'cmc',
+		'e': 'printings',
+		'f': 'flavors'
+	}
 	def __init__(self, *args, **kwargs):
-		super(CardMatch, self).__init__(*args, **kwargs)
-		s = kwargs.get('s', '')
+		super(CardMatch, self).__init__(**kwargs)
+		if len(args)>0: s = args[0]
+		else: s = ''
 		for ob in re.finditer(r'([^|]*?(\w+)(:|;) *)?([^|]+)', s):
 			ud = ob.groups()[3]
 			if ob.groups()[2]==':': ud = '.*'+ud+'.*'
-			if ob.groups()[1] in trans: self[trans[ob.groups()[1]]] = ud
+			if ob.groups()[1] in self.trans: self[self.trans[ob.groups()[1]]] = ud
 			else: self['name'] = '.*'+ud+'.*'
-				
+
 class CardList(list):
 	def __init__(self, *args):
 		super(CardList, self).__init__(*args)
 		self.head = 0
 	def matchList(self, mo):
-		return CardList([card for card in self if mo.match(card)])
+		lst = CardList([card for card in self if mo.match(card)])
+		return lst
 	def get(self, amnt=1):
 		self.head += amnt
 		if self.head>len(self): self.head = len(self)-1
@@ -51,7 +63,7 @@ class SearchSession(object):
 			if cmd=='exit':
 				self.running = False
 				break
-			cl = self.cards.matchList(CardMatch(s=cmd))
+			cl = self.cards.matchList(CardMatch(cmd))
 			while cl and cl.head<len(cl):
 				self.showCards(cl)
 				cmd = self.ic()
@@ -59,8 +71,8 @@ class SearchSession(object):
 				elif cmd=='exit': 
 					self.running = False
 					break
-				elif cmd: cl = cl.matchList(CardMatch(s=cmd))
-				
+				elif cmd: cl = cl.matchList(CardMatch(cmd))
+
 def main():
 	session = SearchSession(CardLoader.getCardsList())
 	session.run()

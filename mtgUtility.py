@@ -9,9 +9,18 @@ import random
 #Adds printings and flavors to allCards.json
 def makeCardsFixed():
 	cards = deepcopy(CardLoader.getBaseCards())
-	sets = CardLoader.getSets()
-	for name in cards: cards[name]['printings'], cards[name]['flavors'] = getPrintings(name, sets)
-	CardWriter.dump(cards, 'CardsFixed.json')
+	sets = CardLoader.getBaseSets()
+	for name in cards:
+		cards[name]['printings'], cards[name]['flavors'] = getPrintings(name, sets)
+		if 'names' in cards[name]: cards[name]['isFront'] = name==cards[name]['names'][0]
+	CardWriter.dump(cards, 'cardsFixed.json')
+	
+def makeSetsFixed():
+	sets = deepcopy(CardLoader.getBaseSets())
+	for key in sets:
+		for card in sets[key]['cards']:
+			if 'names' in card: card['isFront'] = card['name']==card['names'][0]
+	CardWriter.dump(sets, 'SetsFixed.json')
 	
 #Gets printings and flavors for a card
 def getPrintings(cardName, sets):
@@ -78,7 +87,15 @@ class Card(dict):
 	def view(self, style = 'nmtop'):
 		return Card.CardView.get(self, style)
 	def match(self, other):
-		return [key for key in list(self) if key in other and re.match(str(self[key]), str(other[key]), re.IGNORECASE+re.DOTALL)]
+		return not [key for key in list(self) if not key in other or not re.match(str(self[key]), str(other[key]), re.IGNORECASE+re.DOTALL)]
+
+class RealCard(Card):
+	def __init__(self, *args, **kwargs):
+		super(RealCard, self).__init__(*args, **kwargs)
+		if not 'type' in self: self['type'] = 'instant|sorcery|enchantment|creature|artifact|land'
+	def match(self, other):
+		if 'isFront' in self: return self['isFront'] and super(RealCard, self).match(other)
+		return super(RealCard, self).match(other)
 		
 class ReadDeckError(Exception): pass
 		
@@ -165,25 +182,25 @@ def selectFromOrderedDict(d):
 	raise IndexError
 		
 class BoosterKey(list):
-	common = Card({'rarity': 'Common'})
-	uncommon = Card({'rarity': 'Uncommon'})
-	rare = Card({'rarity': 'Rare'})
-	mythicrare = Card({'rarity': 'Mythic Rare'})
-	specialrare = Card({'rarity': 'Special'})
-	specialrarity = Card({'rarity': 'Special'})
-	doublefacedCommon = Card({'rarity': 'Common', 'layout': 'double-faced'})
-	doublefacedUncommon = Card({'rarity': 'Uncommon', 'layout': 'double-faced'})
-	doublefacedRare = Card({'rarity': 'Rare', 'layout': 'double-faced'})
-	doublefacedMythicrare = Card({'rarity': 'Mythic Rare', 'layout': 'double-faced'})
-	timeshiftedCommon = Card({'rarity': 'Common', 'timeshifted': 'True'})
-	timeshiftedUncommon = Card({'rarity': 'Uncommon', 'timeshifted': 'True'})
-	timeshiftedRare = Card({'rarity': 'Rare', 'timeshifted': 'True'})
-	timeshiftedMythicrare = Card({'rarity': 'Mythic Rare', 'timeshifted': 'True'})
-	draftmattersCommon = Card({'rarity': 'Common', 'draftmatters': 'True'})
-	draftmattersuUncommon = Card({'rarity': 'Uncommon', 'draftmatters': 'True'})
-	draftmattersRare = Card({'rarity': 'Rare', 'draftmatters': 'True'})
-	draftmattersMythicrare = Card({'rarity': 'Mythic Rare', 'timeshifted': 'True'})
-	urzaLand = Card({'type': 'land', 'name': 'urza'})
+	common = RealCard({'rarity': 'Common'})
+	uncommon = RealCard({'rarity': 'Uncommon'})
+	rare = RealCard({'rarity': 'Rare'})
+	mythicrare = RealCard({'rarity': 'Mythic Rare'})
+	specialrare = RealCard({'rarity': 'Special'})
+	specialrarity = RealCard({'rarity': 'Special'})
+	doublefacedCommon = RealCard({'rarity': 'Common', 'layout': 'double-faced'})
+	doublefacedUncommon = RealCard({'rarity': 'Uncommon', 'layout': 'double-faced'})
+	doublefacedRare = RealCard({'rarity': 'Rare', 'layout': 'double-faced'})
+	doublefacedMythicrare = RealCard({'rarity': 'Mythic Rare', 'layout': 'double-faced'})
+	timeshiftedCommon = RealCard({'rarity': 'Common', 'timeshifted': 'True'})
+	timeshiftedUncommon = RealCard({'rarity': 'Uncommon', 'timeshifted': 'True'})
+	timeshiftedRare = RealCard({'rarity': 'Rare', 'timeshifted': 'True'})
+	timeshiftedMythicrare = RealCard({'rarity': 'Mythic Rare', 'timeshifted': 'True'})
+	draftmattersCommon = RealCard({'rarity': 'Common', 'draftmatters': 'True'})
+	draftmattersuUncommon = RealCard({'rarity': 'Uncommon', 'draftmatters': 'True'})
+	draftmattersRare = RealCard({'rarity': 'Rare', 'draftmatters': 'True'})
+	draftmattersMythicrare = RealCard({'rarity': 'Mythic Rare', 'timeshifted': 'True'})
+	urzaLand = RealCard({'type': 'land', 'name': 'urza'})
 	randomCardStandardWithMythic = OrderedDict({1: mythicrare, 7: rare, 21: uncommon, 77: common})
 	randomCardStandardWithPower = OrderedDict({1: specialrare, 53: mythicrare, 371: rare, 1113: uncommon, 4081: common})
 	rareOrMythicStandard = OrderedDict({1: mythicrare, 7: rare})
@@ -232,7 +249,7 @@ class BoosterKey(list):
 	}
 	def __init__(self, *args, mset=None):
 		super(BoosterKey, self).__init__(*args)
-		if isinstance(mset, dict): self[:] = mset['booster']
+		if isinstance(mset, dict) and 'booster' in mset: self[:] = mset['booster']
 		for i in range(len(self)):
 			if isinstance(self[i], list): self[i] = self.setToPatternMap[toNestedFrozenSet(self[i])]
 			elif isinstance(self[i], str): self[i] = self.stringToPatternMap[self[i]]
@@ -250,8 +267,23 @@ class BoosterMap(list):
 			[card for card in mset['cards'] if slot.match(card)]
 			for slot in key if slot
 		]
-	def getBooster(self):
-		return Booster([deepcopy(random.choice(selectFromOrderedDict(slot) if isinstance(slot, OrderedDict) else slot)) for slot in self])
+	def getBooster(self, allowDuplicate = False):
+		if allowDuplicate: return Booster([
+			deepcopy(random.choice(
+				selectFromOrderedDict(slot)
+				if isinstance(slot, OrderedDict) else
+				slot
+			))
+			for slot in self
+		])
+		booster = Booster()
+		for slot in self:
+			sl = [card for card in
+				(selectFromOrderedDict(slot) if isinstance(slot, OrderedDict) else slot)
+				if not card['name'] in [c['name'] for c in booster]
+			]
+			if sl: booster.append(deepcopy(random.choice(sl)))
+		return booster
 		
 class Booster(list):
 	def view(self, seperator=', ', style='N'):
@@ -358,7 +390,7 @@ def test():
 	print('------------------')	
 	print(rs)
 	futcard = sets['FUT']['cards']
-	concard = sets['CNS']['cards']
+	
 	for rarity in ('Common', 'Uncommon', 'Rare'):
 		print(rarity)
 		print(len([card for card in futcard if card['rarity']==rarity]))
@@ -366,7 +398,8 @@ def test():
 	print(rs)
 	print(getKeys(sets))
 	print(getKeyValues(sets, 'rarity'))
-	print([card for card in concard if card['name']=='Agent of Acquisitions'][0])
+	concard = sets['EMN']['cards']
+	print([card for card in concard if card['name']=='Lone Rider'][0])
 		
 if __name__=='__main__':
 	test()

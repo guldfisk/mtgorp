@@ -18,6 +18,7 @@ def checkRSS(url):
 def updt():
 	jsonDownloader.reDownload()
 	mtgUtility.makeCardsFixed()
+	mtgUtility.makeSetsFixed()
 	
 def checkAndUpdate():
 	lastup = checkRSS(mtgjsonHome.url)

@@ -6,6 +6,7 @@ class CardLoader:
 	cardslist = None
 	cardsnamelist = None
 	sets = None
+	basesets = None
 	@staticmethod
 	def loadCards():
 		CardLoader.cards = json.load(open('cardsFixed.json', encoding='UTF-8'))	
@@ -20,7 +21,10 @@ class CardLoader:
 		CardLoader.cardsnamelist = list(CardLoader.getCards())
 	@staticmethod
 	def loadSets():
-		CardLoader.sets = json.load(open('allSets.json', encoding='UTF-8'))
+		CardLoader.sets = json.load(open('setsFixed.json', encoding='UTF-8'))
+	@staticmethod
+	def loadBaseSets():
+		CardLoader.basesets = json.load(open('allSets.json', encoding='UTF-8'))
 	@staticmethod
 	def getCards():
 		if CardLoader.cards==None: CardLoader.loadCards()
@@ -41,6 +45,11 @@ class CardLoader:
 	def getSets():
 		if CardLoader.sets==None: CardLoader.loadSets()
 		return CardLoader.sets
+	@staticmethod
+	def getBaseSets():
+		if CardLoader.basesets==None: CardLoader.loadBaseSets()
+		return CardLoader.basesets
+			
 		
 class CardWriter:
 	@staticmethod
