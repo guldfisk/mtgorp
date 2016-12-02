@@ -20,6 +20,7 @@ def makeSetsFixed():
 	for key in sets:
 		for card in sets[key]['cards']:
 			if 'names' in card: card['isFront'] = card['name']==card['names'][0]
+			card['set'] = key
 	CardWriter.dump(sets, 'SetsFixed.json')
 	
 #Gets printings and flavors for a card
@@ -88,13 +89,15 @@ class Card(dict):
 		return Card.CardView.get(self, style)
 	def match(self, other):
 		return not [key for key in list(self) if not key in other or not re.match(str(self[key]), str(other[key]), re.IGNORECASE+re.DOTALL)]
+	def fullName(self):
+		return self.get('set', '')+'/'+self.get('name', 'NONAME')
 
 class RealCard(Card):
 	def __init__(self, *args, **kwargs):
 		super(RealCard, self).__init__(*args, **kwargs)
 		if not 'type' in self: self['type'] = 'instant|sorcery|enchantment|creature|artifact|land'
 	def match(self, other):
-		if 'isFront' in self: return self['isFront'] and super(RealCard, self).match(other)
+		if 'isFront' in other: return other['isFront'] and super(RealCard, self).match(other)
 		return super(RealCard, self).match(other)
 		
 class ReadDeckError(Exception): pass

@@ -50,7 +50,6 @@ class CardLoader:
 		if CardLoader.basesets==None: CardLoader.loadBaseSets()
 		return CardLoader.basesets
 			
-		
 class CardWriter:
 	@staticmethod
 	def dump(content, name):
