@@ -91,6 +91,22 @@ class Card(dict):
 		return not [key for key in list(self) if not key in other or not re.match(str(self[key]), str(other[key]), re.IGNORECASE+re.DOTALL)]
 	def fullName(self):
 		return self.get('set', '')+'/'+self.get('name', 'NONAME')
+	colordict = {
+		'White': (220, 220, 100),
+		'Blue': (0, 0, 200),
+		'Black': (220, 220, 220),
+		'Red': (255, 0, 0),
+		'Green': (0, 200, 0)
+	}
+	def getImageColor(self):
+		if not 'colors' in self or not self['colors']: return (255, 200, 150)
+		elif len(self['colors'])>1: return (200, 200, 0)
+		return Card.colordict.get(self['colors'][0], (100, 100, 100))
+	def getThisFromSet(self, set):
+		sets = CardLoader.getSets()
+		if not set in sets: return
+		for card in sets[set]['cards']:
+			if card['name']==self['name']: return card
 
 class RealCard(Card):
 	def __init__(self, *args, **kwargs):

@@ -42,12 +42,12 @@ class ImageLoader(object):
 		path = self.getImagePath(card)
 		if path=='cardBack.jpg': name = 'cardBack'
 		else: name = Card.fullName(card)
-		self._loadImage(path, name)
+		self._loadImage(path, name, card)
 		return name
-	def _loadImage(self, path, name):
+	def _loadImage(self, path, name, card):
 		with open(path, 'rb') as f: self.images[name] = f.read()
 	def getDefault(self):
-		if not 'cardBack' in self.images: self._loadImage('cardBack.jpg', 'cardBack')
+		if not 'cardBack' in self.images: self._loadImage('cardBack.jpg', 'cardBack', Card())
 		return self.images['cardBack']
 	def getImage(self, card):
 		if not Card.fullName(card) in self.images:

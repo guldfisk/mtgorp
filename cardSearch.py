@@ -30,13 +30,18 @@ class CardList(list):
 		super(CardList, self).__init__(*args)
 		self.head = 0
 	def matchList(self, mo):
-		lst = CardList([card for card in self if mo.match(card)])
-		return lst
+		return CardList([card for card in self if mo.match(card)])
 	def get(self, amnt=1):
 		self.head += amnt
 		if self.head>len(self): self.head = len(self)-1
 		return self[self.head-amnt:self.head]
 	def peek(self):
 		if not self.head>=len(self)-1: return self[self.head+1]
+	def peekMultiple(self, amnt=1):
+		to = self.head + amnt
+		if to>len(self): to = len(self)
+		return self[self.head:to]
 	def moveHead(self, to):
-		self.head = to
+		self.head += to
+		if self.head<0: self.head = 0
+		elif self.head>len(self)-1: self.head = len(self)-1
