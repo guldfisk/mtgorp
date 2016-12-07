@@ -104,9 +104,13 @@ class Card(dict):
 		return Card.colordict.get(self['colors'][0], (100, 100, 100))
 	def getThisFromSet(self, set):
 		sets = CardLoader.getSets()
-		if not set in sets: return
 		for card in sets[set]['cards']:
 			if card['name']==self['name']: return card
+	def getPrintable(self):
+		sets = CardLoader.getSets()
+		for setkey in self['printings']:
+			for card in sets[setkey]['cards']:
+				if card['name']==self['name'] and 'multiverseid' in card: return card
 
 class RealCard(Card):
 	def __init__(self, *args, **kwargs):
@@ -271,7 +275,7 @@ class BoosterKey(list):
 		if isinstance(mset, dict) and 'booster' in mset: self[:] = mset['booster']
 		for i in range(len(self)):
 			if isinstance(self[i], list): self[i] = self.setToPatternMap[toNestedFrozenSet(self[i])]
-			elif isinstance(self[i], str): self[i] = self.stringToPatternMap[self[i]]
+			elif isinstance(self[i], str): self[i] = self.stringToPatternMap[self[i].lower()]
 			elif not isinstance(self[i], OrderedDict): raise TypeError
 	def getBoosterMap(self, mset):
 		return BoosterMap(mset=mset, key=self)
@@ -359,66 +363,8 @@ class MTGSet(dict):
 	def generateBooster(self):
 		self.setBoosterMap()
 		return self.boostermap.getBooster()
-
-def getKeys(sets):
-	s = set()
-	for key in sets:
-		for card in sets[key]['cards']: s = s.union(list(card))
-	return s
-	
-def getKeyValues(sets, k):
-	s = set()
-	for key in sets:
-		for card in sets[key]['cards']:
-			if k in card:
-				s.add(str(card[k]))
-	return s
-	
-def flatten(S):
-    if S == []:
-        return S
-    if isinstance(S[0], list):
-        return flatten(S[0]) + flatten(S[1:])
-    return S[:1] + flatten(S[1:])
 	
 def test():
+	pass
 	
-	#deck = Deck(open('deck.txt', 'r').read())
-	ss = toNestedFrozenSet({'common', frozenset({'double faced rare', 'double faced mythic rare'})})
-	sets = CardLoader.getSets()
-	rs = set()
-	for key in sets:
-		#if 'booster' in sets[key]: print(BoosterKey(sets[key]['booster']))
-		if ('booster' in sets[key] and ss in toNestedFrozenSet(sets[key]['booster'])):
-			print('------------------')
-			print(MTGSet.view(sets[key], 'CNBsO'))
-			mset = MTGSet(sets[key])
-			bk = BoosterKey(mset=sets[key])
-			print(type(bk))
-			bm = bk.getBoosterMap(sets[key])
-			print(type(bm))
-			#booster = bm.getBooster()
-			booster = mset.generateBooster()
-			print('>>BOOSTER<<', booster.view())
-		if 'booster' in sets[key] and 'timeshifted purple' in toNestedFrozenSet(sets[key]['booster']):
-			print('*'*20)
-			print(MTGSet.view(sets[key], 'CNBsO'))
-		if 'booster' in sets[key]:
-			rs = rs.union(set(flatten(sets[key]['booster'])))
-			if 'urza land' in flatten(sets[key]['booster']): print(MTGSet.view(sets[key], 'CNBsO'))
-	print('------------------')	
-	print(rs)
-	futcard = sets['FUT']['cards']
-	
-	for rarity in ('Common', 'Uncommon', 'Rare'):
-		print(rarity)
-		print(len([card for card in futcard if card['rarity']==rarity]))
-		print(len([card for card in futcard if card['rarity']==rarity and 'timeshifted' in card]))
-	print(rs)
-	print(getKeys(sets))
-	print(getKeyValues(sets, 'rarity'))
-	concard = sets['EMN']['cards']
-	print([card for card in concard if card['name']=='Lone Rider'][0])
-		
-if __name__=='__main__':
-	test()
+if __name__=='__main__': test()

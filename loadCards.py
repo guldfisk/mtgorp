@@ -1,4 +1,5 @@
 import json
+import os
 
 class CardLoader:
 	cards = None
@@ -7,12 +8,13 @@ class CardLoader:
 	cardsnamelist = None
 	sets = None
 	basesets = None
+	customSets = dict()
 	@staticmethod
-	def loadCards():
-		CardLoader.cards = json.load(open('cardsFixed.json', encoding='UTF-8'))	
+	def loadCards(path=''):
+		CardLoader.cards = json.load(open(os.path.join(path, 'cardsFixed.json'), encoding='UTF-8'))	
 	@staticmethod
-	def loadBaseCards():
-		CardLoader.basecards = json.load(open('allCards.json', 'r', encoding='UTF-8'))
+	def loadBaseCards(path=''):
+		CardLoader.basecards = json.load(open(os.path.join(path, 'allCards.json'), 'r', encoding='UTF-8'))
 	@staticmethod
 	def loadCardsList():
 		CardLoader.cardslist = [CardLoader.getCards()[key] for key in CardLoader.getCards()]
@@ -20,11 +22,14 @@ class CardLoader:
 	def loadCardsNameList():
 		CardLoader.cardsnamelist = list(CardLoader.getCards())
 	@staticmethod
-	def loadSets():
-		CardLoader.sets = json.load(open('setsFixed.json', encoding='UTF-8'))
+	def loadSets(path=''):
+		CardLoader.sets = json.load(open(os.path.join(path, 'setsFixed.json'), encoding='UTF-8'))
 	@staticmethod
-	def loadBaseSets():
-		CardLoader.basesets = json.load(open('allSets.json', encoding='UTF-8'))
+	def loadBaseSets(path=''):
+		CardLoader.basesets = json.load(open(os.path.join(path, 'allSets.json'), encoding='UTF-8'))
+	@staticmethod
+	def loadCustomSet(name, path=''):
+		CardLoader.customSets[name] = json.load(open(os.path.join(path, 'customSets', name+'.json'), encoding='UTF-8'))
 	@staticmethod
 	def getCards():
 		if CardLoader.cards==None: CardLoader.loadCards()
@@ -49,6 +54,9 @@ class CardLoader:
 	def getBaseSets():
 		if CardLoader.basesets==None: CardLoader.loadBaseSets()
 		return CardLoader.basesets
+	def getCustomSet(name):
+		if not name in CardLoader.customSets: CardLoader.loadCustomSet(name)
+		return CardLoader.customSets[name]
 			
 class CardWriter:
 	@staticmethod

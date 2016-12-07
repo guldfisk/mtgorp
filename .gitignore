@@ -1,4 +1,5 @@
 __pycache__/
 images/
+customSets/
 *.json
 *.txt
