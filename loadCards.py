@@ -29,7 +29,9 @@ class CardLoader:
 		CardLoader.basesets = json.load(open(os.path.join(path, 'allSets.json'), encoding='UTF-8'))
 	@staticmethod
 	def loadCustomSet(name, path=''):
+		if not os.path.exists(os.path.join(path, 'customSets', name+'.json')): return
 		CardLoader.customSets[name] = json.load(open(os.path.join(path, 'customSets', name+'.json'), encoding='UTF-8'))
+		return True
 	@staticmethod
 	def getCards():
 		if CardLoader.cards==None: CardLoader.loadCards()
@@ -55,7 +57,8 @@ class CardLoader:
 		if CardLoader.basesets==None: CardLoader.loadBaseSets()
 		return CardLoader.basesets
 	def getCustomSet(name):
-		if not name in CardLoader.customSets: CardLoader.loadCustomSet(name)
+		if not name in CardLoader.customSets:
+			if not CardLoader.loadCustomSet(name): return
 		return CardLoader.customSets[name]
 			
 class CardWriter:

@@ -14,6 +14,7 @@ import copy
 import embedableSurface
 from PyQt5 import QtWidgets, QtGui, QtCore
 import pickle
+import copy
 
 font.init()
 
@@ -77,23 +78,15 @@ class Stack:
 				break
 			i += 1
 		self.alignAll()
+	def pickup(self, card):
+		if card in self.cards:
+			self.take(card)
+			return True
+	def drop(self, card, pos):
+		if self.rekt.collidepoint(pos):
+			self.put(card)
+			return True
 			
-class StackAlign(Stack):
-	def __init__(self, session, pos=np.zeros((2))):
-		super(StackAlign, self).__init__(session, pos)
-		self.session.connectCondition(Replacement, trigger='PickupCard', source=self, resolve=self.resolvePickup, condition=self.conditionPickup)
-		self.session.connectCondition(Replacement, trigger='DropCard', source=self, resolve=self.resolveDrop, condition=self.conditionDrop)
-	def conditionPickup(self, **kwargs):
-		return kwargs['card'] in self.cards
-	def resolvePickup(self, event, **kwargs):
-		self.take(event.card)
-		event.spawnClone().resolve()
-	def conditionDrop(self, **kwargs):
-		return self.rekt.collidepoint(kwargs['pos'])
-	def resolveDrop(self, event, **kwargs):
-		self.put(event.card)
-		event.spawnClone().resolve()
-	
 class UIElement(object):
 	def __init__(self, session):
 		self.session = session
@@ -134,59 +127,82 @@ class SelectionBox(UIElement):
 		colrek = Rect(self.pos, self.dim)
 		self.session.updateSelected(*set(card for card in self.session.cards if card.rekt.colliderect(colrek)))
 		self.session.uielements.remove(self)
-		
-class PickupCards(Event):
-	name = 'PickupCards'
-	def check(self, **kwargs):
-		pass
-	def payload(self, **kwargs):
-		self.session.floatingStack = Stack(self.session, self.pos)
-		for card in self.cards: self.spawn(PickupCard, card=card).resolve()
-		
-class PickupCard(Event):
-	name = 'PickupCard'
-	def payload(self, **kwargs):
-		self.session.moveCardsToFront(self.card)
-		self.session.floatingStack.put(self.card)
-		
-class DropCards(Event):
-	name = 'DropCards'
-	def payload(self, **kwargs):
-		self.session.floatingStack = None
-		for card in self.cards: self.spawn(DropCard, card=card).resolve()
-		
-class DropCard(Event):
-	name = 'DropCard'
-	def payload(self, **kwargs):
-		pass
 			
 class MultiCardWidget(embedableSurface.EmbeddedSurface, EventSession):
 	def __init__(self, **kwargs):
 		super(MultiCardWidget, self).__init__(**kwargs)
+		self.imageLoader = kwargs.get('imageloader', DEImageLoader())
 		self.cards = []
 		self.stacks = []
-		self.floatingStack = None
+		self.floatingStack = Stack(self)
 		self.selectionbox = None
 		self.selected = set()
-		self.imageLoader = kwargs.get('imageloader', DEImageLoader())
 		self.uielements = []
 		self.selectionbox = None
-		self.grid = (10, 2)
-		self.makeStacks(*self.grid)
+		self.lastGridDimensions = (0, 0)
+		self.makeStacks()
 		self.setAcceptDrops(True)
 		self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
 		self.customContextMenuRequested.connect(self.contextMenu)
+	def pickupCards(self, pos, *cards):
+		self.floatingStack = Stack(self, pos=pos)
+		for card in cards: self.pickupCard(card)
+	def pickupCard(self, card):
+		self.moveCardsToFront(card)
+		self.floatingStack.put(card)
+		for r in self.stacks:
+			for c in r:
+				if c.pickup(card): return
+	def dropCards(self, pos, *cards):
+		for card in cards: self.dropCard(card, pos)
+	def dropCard(self, card, pos):
+		if card in self.floatingStack.cards: self.floatingStack.cards.remove(card)
+		for r in self.stacks:
+			for c in r:
+				if c.drop(card, pos): return
+		card.moveTo(*pos)
+	def repositionCard(self, card, pos):
+		self.pickupCard(card)
+		self.dropCard(card, pos)
+	def sortCards(self, f=Card.cmcSortValue, row=True):
+		sortedcards = sorted(copy.copy(self.cards), key = lambda o: f(o.d))
+		value = f(sortedcards[0].d)
+		stack = 0
+		for card in sortedcards:
+			if not f(card.d)==value:
+				stack += 1
+				if row and stack>len(self.stacks)-1: stack = len(self.stacks)-1
+				elif not row and stack>len(self.stacks[0])-1: stack = len(self.stacks[0])-1
+				value = f(card.d)
+			if row: self.repositionCard(card, (self.stacks[stack][0].rekt.x, card.rekt.y))
+			else: self.repositionCard(card, (card.rekt.x, self.stacks[0][stack].rekt.y))
+		self.redraw()
 	def contextMenu(self, pos):
 		menu = QtWidgets.QMenu()
-		subMenu = QtWidgets.QMenu(':)')
-		wauwAction = subMenu.addAction('wauw')
-		quitAction = menu.addAction("Quit")
-		menu.addMenu(subMenu)
+		rowsort = QtWidgets.QMenu('Sort rows')
+		columnsort = QtWidgets.QMenu('Sort columns')
+		rowcmc = rowsort.addAction('CMC')
+		rowcolor = rowsort.addAction('Color')
+		rowrarity = rowsort.addAction('Rarity')
+		rowispermanent = rowsort.addAction('Is permanent')
+		columncmc = columnsort.addAction('CMC')
+		columncolor = columnsort.addAction('Color')
+		columnrarity = columnsort.addAction('Rarity')
+		columnispermanent = columnsort.addAction('Is permanent')
+		menu.addMenu(rowsort)
+		menu.addMenu(columnsort)
 		action = menu.exec_(self.mapToGlobal(pos))
-		print(action)
+		if action==rowcmc: self.sortCards(Card.cmcSortValue)
+		elif action==rowcolor: self.sortCards(Card.colorSortValue)
+		elif action==rowrarity: self.sortCards(Card.raritySortValue)
+		elif action==rowispermanent: self.sortCards(Card.isPermanent)
+		elif action==columncmc: self.sortCards(Card.cmcSortValue, False)
+		elif action==columncolor: self.sortCards(Card.colorSortValue, False)
+		elif action==columnrarity: self.sortCards(Card.raritySortValue, False)
+		elif action==columnispermanent: self.sortCards(Card.isPermanent, False)
 	def removeFloatingCards(self):
 		self.removeCards(*self.floatingStack.cards)
-		self.floatingStack = None
+		self.floatingStack.cards[:] = []
 	def grabFloatingCards(self):
 		drag = QtGui.QDrag(self)
 		mime = QtCore.QMimeData()
@@ -200,9 +216,8 @@ class MultiCardWidget(embedableSurface.EmbeddedSurface, EventSession):
 		card = self.getTopCollision(pos)
 		if card:
 			if not card in self.selected: self.updateSelected(card)
-			self.resolveEvent(PickupCards, cards=self.selected, pos=pos)
-		else:
-			self.selectionbox = SelectionBox(self, pos)
+			self.pickupCards(pos, *self.selected)
+		else: self.selectionbox = SelectionBox(self, pos)
 		self.redraw()
 	def mouseMoveEvent(self, event):
 		pos = (event.pos().x(), event.pos().y())
@@ -219,8 +234,8 @@ class MultiCardWidget(embedableSurface.EmbeddedSurface, EventSession):
 		if self.selectionbox:
 			self.selectionbox.end()
 			self.selectionbox = None
-		if self.floatingStack:
-			self.resolveEvent(DropCards, cards=self.selected, pos=pos)
+		if self.floatingStack.cards:
+			self.dropCards(pos, *self.floatingStack.cards)
 		self.redraw()
 	def dragEnterEvent(self, event):
 		if event.mimeData().data('cards'): event.accept()
@@ -232,17 +247,19 @@ class MultiCardWidget(embedableSurface.EmbeddedSurface, EventSession):
 	def getSize(self):
 		return (self.size().width(), self.size().height())
 	def makeStacks(self, columns=5, rows=2):
-		if not self.stacks:
-			for i in range(rows*columns): self.stacks.append(StackAlign(self))
-		s = self.getSize()
+		x, y = self.getSize()
+		if (x, y)==self.lastGridDimensions: return
+		self.lastGridDimensions = (x, y)
+		self.stacks[:] = []
+		w, h = self.imageLoader.getDefault().get_rect().w, self.imageLoader.getDefault().get_rect().h
+		rows, columns = max(m.floor(x/w), 1), min(max(m.floor(y/h), 1), 2)
 		for r in range(rows):
+			self.stacks.append([])
 			for c in range(columns):
-				self.stacks[r*columns+c].resize(
-					s[0]*c/columns,
-					0 if r==0 else (self.stacks[(r-1)*columns].rekt.y+s[1]*2**(rows-r)/(2**(rows)-1)),
-					s[0]/columns,
-					s[1]*2**(rows-r-1)/(2**(rows)-1)
-				)
+				stack = Stack(self)
+				stack.resize(int(x/rows*r), int(y/columns*c), int(x/rows), int(y/columns))
+				self.stacks[r].append(stack)
+		for card in self.cards: self.dropCard(card, (card.rekt.centerx, card.rekt.centery))
 	def moveCardsToFront(self, *cards):
 		for card in cards:
 			if card in self.cards:
@@ -262,11 +279,15 @@ class MultiCardWidget(embedableSurface.EmbeddedSurface, EventSession):
 		surface.fill((128, 128, 128))
 		for card in self.cards: card.draw(surface)
 		for uie in self.uielements: uie.draw(surface)
+		if self.stacks:
+			for r in range(len(self.stacks)):
+				for c in range(len(self.stacks[r])):
+					draw.rect(surface, (0, 0, 0), self.stacks[r][c].rekt, 1)
 		return surface
 	def addCards(self, *cards, pos = (0, 0)):
 		cards = list(DECard(self, card) for card in cards)
 		self.cards.extend(cards)
-		self.resolveEvent(DropCards, cards=cards, pos=pos)
+		self.dropCards(pos, *cards)
 	def removeCards(self, *cards):
 		for card in cards:
 			if card in self.cards: self.cards.remove(card)

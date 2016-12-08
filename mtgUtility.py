@@ -111,7 +111,35 @@ class Card(dict):
 		for setkey in self['printings']:
 			for card in sets[setkey]['cards']:
 				if card['name']==self['name'] and 'multiverseid' in card: return card
+	colorSortValueDict = {
+		'White': 0,
+		'Blue': 1,
+		'Black': 2,
+		'Red': 3,
+		'Green': 4
+	}
+	def colorSortValue(self):
+		if not 'colors' in self or not self['colors']: return 6
+		elif len(self['colors'])>1: return 5
+		return Card.colorSortValueDict.get(self['colors'][0], 6)
+	raritySortValueDict = {
+		'Common': 0,
+		'Uncommon': 1,
+		'Rare': 2,
+		'Mythic': 3
+	}
+	def raritySortValue(self):
+		print(self)
+		print(Card.raritySortValueDict.get(self.get('rarity', 'norarity'), 4))
+		return Card.raritySortValueDict.get(self.get('rarity', 'norarity'), 0)
+	def isPermanent(self):
+		return NamedCards.nonpermanentCard.match(self)
+	def cmcSortValue(self):
+		return self.get('cmc', 0)
 
+class NamedCards(object):
+	nonpermanentCard = Card({'type': 'instant|sorcery'})
+		
 class RealCard(Card):
 	def __init__(self, *args, **kwargs):
 		super(RealCard, self).__init__(*args, **kwargs)
