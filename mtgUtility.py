@@ -129,8 +129,6 @@ class Card(dict):
 		'Mythic': 3
 	}
 	def raritySortValue(self):
-		print(self)
-		print(Card.raritySortValueDict.get(self.get('rarity', 'norarity'), 4))
 		return Card.raritySortValueDict.get(self.get('rarity', 'norarity'), 0)
 	def isPermanent(self):
 		return NamedCards.nonpermanentCard.match(self)
@@ -139,6 +137,7 @@ class Card(dict):
 
 class NamedCards(object):
 	nonpermanentCard = Card({'type': 'instant|sorcery'})
+	creatureCard = Card({'type': 'creature'})
 		
 class RealCard(Card):
 	def __init__(self, *args, **kwargs):

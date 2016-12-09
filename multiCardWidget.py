@@ -3,12 +3,10 @@ import sys
 import math as m
 import time
 from mtgUtility import *
-import cardSearch
 import time
 import threading
 from loadImgs import *
 from loadCards import *
-from fullEvent import *
 import numpy as np
 import copy
 import embedableSurface
@@ -48,13 +46,11 @@ class DECard(object):
 		self.session.upToDate = False
 		self.rekt.x, self.rekt.y = x, y
 		self.rekt.clamp_ip(Rect((0, 0), self.session.getSize()))
-		
+
 class Stack:
 	def __init__(self, session, pos = (0, 0), dim = (100, 100)):
 		self.session = session
 		self.cards = []
-		self.spread = 40
-		self.baserekt = self.session.imageLoader.getDefault().get_rect()
 		self.rekt = Rect(pos, dim)
 	def move(self, x, y):
 		self.rekt.move_ip(x, y)
@@ -71,12 +67,8 @@ class Stack:
 		self.cards.append(card)
 		self.alignAll()
 	def take(self, card):
-		i = 0
-		while i<len(self.cards):
-			if card==self.cards[i]:
-				del self.cards[i]
-				break
-			i += 1
+		try: self.cards.remove(card)
+		except ValueError: return
 		self.alignAll()
 	def pickup(self, card):
 		if card in self.cards:
@@ -86,16 +78,16 @@ class Stack:
 		if self.rekt.collidepoint(pos):
 			self.put(card)
 			return True
-			
+
 class UIElement(object):
 	def __init__(self, session):
 		self.session = session
 		self.session.uielements.append(self)
 	def draw(self, surface):
 		raise NotImplemented
-		
+
 class SelectionBox(UIElement):
-	def __init__(self, session, anchor = (0, 0), color = (0, 0, 200)):
+	def __init__(self, session, anchor = (0, 0)):
 		super(SelectionBox, self).__init__(session)
 		self.anchor = np.array(anchor)
 		self.corner = np.array(anchor)
@@ -103,7 +95,6 @@ class SelectionBox(UIElement):
 		self.dim = [0, 0]
 		self.s = None
 		self.newSurface()
-		self.color = color
 	def newSurface(self):
 		for i in range(2):
 			if self.anchor[i]<self.corner[i]:
@@ -114,7 +105,6 @@ class SelectionBox(UIElement):
 				self.dim[i] = self.anchor[i]-self.corner[i]
 		self.s = Surface(self.dim)
 		self.s.set_alpha(128)
-		self
 	def resizeTo(self, pos):
 		self.corner = np.array(pos)
 		self.newSurface()
@@ -125,12 +115,21 @@ class SelectionBox(UIElement):
 		surface.blit(self.s, self.pos)
 	def end(self):
 		colrek = Rect(self.pos, self.dim)
-		self.session.updateSelected(*set(card for card in self.session.cards if card.rekt.colliderect(colrek)))
+		self.session.updateSelected(*tuple(card for card in self.session.cards if card.rekt.colliderect(colrek)))
 		self.session.uielements.remove(self)
-			
-class MultiCardWidget(embedableSurface.EmbeddedSurface, EventSession):
-	def __init__(self, **kwargs):
-		super(MultiCardWidget, self).__init__(**kwargs)
+
+class FuncWithArg(object):
+	def __init__(self, f, *args, **kwargs):
+		self.f = f
+		self.args = args
+		self.kwargs = kwargs
+	def run(self):
+		self.f(*self.args, **self.kwargs)
+
+class MultiCardWidget(embedableSurface.EmbeddedSurface):
+	def __init__(self, parent, **kwargs):
+		super(MultiCardWidget, self).__init__()
+		self.parent = parent
 		self.imageLoader = kwargs.get('imageloader', DEImageLoader())
 		self.cards = []
 		self.stacks = []
@@ -144,6 +143,7 @@ class MultiCardWidget(embedableSurface.EmbeddedSurface, EventSession):
 		self.setAcceptDrops(True)
 		self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
 		self.customContextMenuRequested.connect(self.contextMenu)
+		self.setMouseTracking(True)
 	def pickupCards(self, pos, *cards):
 		self.floatingStack = Stack(self, pos=pos)
 		for card in cards: self.pickupCard(card)
@@ -181,25 +181,20 @@ class MultiCardWidget(embedableSurface.EmbeddedSurface, EventSession):
 		menu = QtWidgets.QMenu()
 		rowsort = QtWidgets.QMenu('Sort rows')
 		columnsort = QtWidgets.QMenu('Sort columns')
-		rowcmc = rowsort.addAction('CMC')
-		rowcolor = rowsort.addAction('Color')
-		rowrarity = rowsort.addAction('Rarity')
-		rowispermanent = rowsort.addAction('Is permanent')
-		columncmc = columnsort.addAction('CMC')
-		columncolor = columnsort.addAction('Color')
-		columnrarity = columnsort.addAction('Rarity')
-		columnispermanent = columnsort.addAction('Is permanent')
+		mapping = {
+			rowsort.addAction('CMC'): FuncWithArg(self.sortCards, Card.cmcSortValue),
+			rowsort.addAction('Color'): FuncWithArg(self.sortCards, Card.colorSortValue),
+			rowsort.addAction('Rarity'): FuncWithArg(self.sortCards, Card.raritySortValue),
+			rowsort.addAction('Is permanent'): FuncWithArg(self.sortCards, Card.isPermanent),
+			columnsort.addAction('CMC'): FuncWithArg(self.sortCards, Card.cmcSortValue, False),
+			columnsort.addAction('Color'): FuncWithArg(self.sortCards, Card.colorSortValue, False),
+			columnsort.addAction('Rarity'): FuncWithArg(self.sortCards, Card.raritySortValue, False),
+			columnsort.addAction('Is permanent'): FuncWithArg(self.sortCards, Card.isPermanent, False)
+		}
 		menu.addMenu(rowsort)
 		menu.addMenu(columnsort)
 		action = menu.exec_(self.mapToGlobal(pos))
-		if action==rowcmc: self.sortCards(Card.cmcSortValue)
-		elif action==rowcolor: self.sortCards(Card.colorSortValue)
-		elif action==rowrarity: self.sortCards(Card.raritySortValue)
-		elif action==rowispermanent: self.sortCards(Card.isPermanent)
-		elif action==columncmc: self.sortCards(Card.cmcSortValue, False)
-		elif action==columncolor: self.sortCards(Card.colorSortValue, False)
-		elif action==columnrarity: self.sortCards(Card.raritySortValue, False)
-		elif action==columnispermanent: self.sortCards(Card.isPermanent, False)
+		if action: mapping[action].run()
 	def removeFloatingCards(self):
 		self.removeCards(*self.floatingStack.cards)
 		self.floatingStack.cards[:] = []
@@ -221,6 +216,9 @@ class MultiCardWidget(embedableSurface.EmbeddedSurface, EventSession):
 		self.redraw()
 	def mouseMoveEvent(self, event):
 		pos = (event.pos().x(), event.pos().y())
+		card = self.getTopCollision(pos)
+		if card: self.parent.hover.setCard(card)
+		if not event.buttons()==QtCore.Qt.LeftButton: return
 		if self.selectionbox:
 			self.selectionbox.resizeTo(pos)
 		elif self.selected:
@@ -288,13 +286,13 @@ class MultiCardWidget(embedableSurface.EmbeddedSurface, EventSession):
 		cards = list(DECard(self, card) for card in cards)
 		self.cards.extend(cards)
 		self.dropCards(pos, *cards)
+		self.redraw()
 	def removeCards(self, *cards):
 		for card in cards:
 			if card in self.cards: self.cards.remove(card)
 			if card in self.selected: self.selected.remove(card)
-		
+
 def test():
-	
 	session = DeckEditorSession()
 	set = MTGSet(CardLoader.getSets()['KLD'])
 	booster = set.generateBooster()
