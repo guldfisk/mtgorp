@@ -17,7 +17,7 @@ import copy
 font.init()
 
 class DEImageLoader(ImageLoader):
-	imageNameFont = font.Font(None, 30)
+	imageNameFont = font.Font(None, 18)
 	def _loadImage(self, path, name, card):
 		with open(path, 'rb') as f:
 			full = image.load(path)

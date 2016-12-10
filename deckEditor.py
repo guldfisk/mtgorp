@@ -143,6 +143,7 @@ class HoverWidget(QtWidgets.QWidget):
 		self.setLayout(box)
 		
 	def setCard(self, card):
+		if not card: return
 		self.image.setCard(card)
 		self.label.setText(Card.view(card, 'nmtRXsop'))
 		
@@ -198,23 +199,33 @@ class MainWindow(QtWidgets.QMainWindow):
 		
 		self.setWindowTitle('Deckeditor')
 		
-		menuItems = (
-			('Exit', 'Ctrl+Q', QtWidgets.qApp.quit),
-			('Load Deck', 'Ctrl+O', self.loadDeck),
-			('Load Pool', 'Ctrl+P', self.loadPool),
-			('Save deck', 'Ctrl+S', self.save)
-		)
-		
 		menubar = self.menuBar()
-		fileMenu = menubar.addMenu('File')
 		
-		for item in menuItems:
-			action = QtWidgets.QAction(item[0], self)
-			action.setShortcut(item[1])
-			action.triggered.connect(item[2])
-			fileMenu.addAction(action)
+		allMenues = {
+			menubar.addMenu('File'): (
+				('Exit', 'Ctrl+Q', QtWidgets.qApp.quit),
+				('Load Deck', 'Ctrl+O', self.loadDeck),
+				('Load Pool', 'Ctrl+P', self.loadPool),
+				('Save deck', 'Ctrl+S', self.save)
+			),
+			menubar.addMenu('Generate'): (
+				('Sealed pool', 'Ctrl+G', self.getPool),
+			),
+			menubar.addMenu('Add'): (
+				('Add cards', 'Ctrl+f', self.addCard),
+			)
+		}
+	
+		for menu in allMenues:
+			for subMenu in allMenues[menu]:
+				action = QtWidgets.QAction(subMenu[0], self)
+				action.setShortcut(subMenu[1])
+				action.triggered.connect(subMenu[2])
+				menu.addAction(action)
 		
 		self.setGeometry(300, 300, 300, 200)
+	def addCard(self):
+		self.mainview.cardadder.lineedit.setFocus(QtCore.Qt.TabFocusReason)
 	def loadDeck(self):
 		self.load()
 	def loadPool(self):
@@ -254,7 +265,20 @@ class MainWindow(QtWidgets.QMainWindow):
 		elif extension=='json': content = deck.toJson()
 		else: content = deck.toString()
 		with open(fname, 'w') as f: f.write(content)
-		
+	def getPool(self):
+		text, ok = QtWidgets.QInputDialog.getText(self, 'Pool generator', 'Type key:')
+		if ok: s = str(text)
+		else: return
+		cards = []
+		for m in re.finditer('(\d*)([^\s]+)', s):
+			amnt, setcode = m.groups()
+			if not amnt: amnt = 1
+			if setcode in CardLoader.getSets(): mset = MTGSet(CardLoader.getSets()[setcode])
+			elif CardLoader.getCustomSet(setcode): mset = MTGSet(CardLoader.getCustomSet(setcode))
+			else: continue
+			for i in range(int(amnt)): cards.extend(mset.generateBooster())
+		for key in self.mainview.cardWidgets: self.mainview.cardWidgets[key].clear()
+		self.mainview.cardWidgets['pool'].addCards(*cards)
 		
 def test():
 	app=QtWidgets.QApplication(sys.argv)
