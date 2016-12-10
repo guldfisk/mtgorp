@@ -106,9 +106,9 @@ class CardAdder(QtWidgets.QWidget):
 		self.currentadding.setText(Card.view(card, 'N'))
 		self.amountedit.setFocus(QtCore.Qt.TabFocusReason)
 	
-class HoverWidget(embedableSurface.EmbeddedSurface):
+class HoverImage(embedableSurface.EmbeddedSurface):
 	def __init__(self, parent):
-		super(HoverWidget, self).__init__()
+		super(HoverImage, self).__init__(parent)
 		self.parent = parent
 		self.card = None
 		self.setMinimumSize(223, 310)
@@ -124,6 +124,28 @@ class HoverWidget(embedableSurface.EmbeddedSurface):
 		self.card = card
 		self.redraw()
 
+class HoverWidget(QtWidgets.QWidget):
+	def __init__(self, parent):
+		super(HoverWidget, self).__init__(parent)
+		
+		self.setMaximumWidth(250)
+		
+		self.image = HoverImage(parent)
+		self.label = QtWidgets.QTextEdit()
+		
+		self.label.setReadOnly(True)
+		
+		box = QtWidgets.QVBoxLayout(self)
+		
+		box.addWidget(self.image)
+		box.addWidget(self.label)
+		
+		self.setLayout(box)
+		
+	def setCard(self, card):
+		self.image.setCard(card)
+		self.label.setText(Card.view(card, 'nmtRXsop'))
+		
 class MainView(QtWidgets.QWidget):
 	def __init__(self, parent=None):
 		super(MainView, self).__init__(parent)
@@ -169,19 +191,70 @@ class MainWindow(QtWidgets.QMainWindow):
 	def __init__(self, parent=None):
 		super(MainWindow,self).__init__(parent)
 		self.imageloader = DEImageLoader()
-		self.setCentralWidget(MainView())
+		
+		self.mainview = MainView()
+		
+		self.setCentralWidget(self.mainview)
 		
 		self.setWindowTitle('Deckeditor')
-		exitAction = QtWidgets.QAction('&Exit', self)		
-		exitAction.setShortcut('Ctrl+Q')
-		exitAction.setStatusTip('Exit application')
-		exitAction.triggered.connect(QtWidgets.qApp.quit)
-
+		
+		menuItems = (
+			('Exit', 'Ctrl+Q', QtWidgets.qApp.quit),
+			('Load Deck', 'Ctrl+O', self.loadDeck),
+			('Load Pool', 'Ctrl+P', self.loadPool),
+			('Save deck', 'Ctrl+S', self.save)
+		)
+		
 		menubar = self.menuBar()
-		fileMenu = menubar.addMenu('&File')
-		fileMenu.addAction(exitAction)
+		fileMenu = menubar.addMenu('File')
+		
+		for item in menuItems:
+			action = QtWidgets.QAction(item[0], self)
+			action.setShortcut(item[1])
+			action.triggered.connect(item[2])
+			fileMenu.addAction(action)
 		
 		self.setGeometry(300, 300, 300, 200)
+	def loadDeck(self):
+		self.load()
+	def loadPool(self):
+		self.load(True)
+	def load(self, asPool=False):
+		saveDialog = QtWidgets.QFileDialog()
+		saveDialog.setFileMode(QtWidgets.QFileDialog.ExistingFile)
+		saveDialog.setAcceptMode(QtWidgets.QFileDialog.AcceptOpen)
+		fname = saveDialog.getOpenFileName(self, 'Load Deck', '')
+		if not fname or not fname[0]: return
+		content = ''
+		with open(fname[0], 'r') as f: content = f.read()
+		deck = Deck(content)
+		for key in self.mainview.cardWidgets: self.mainview.cardWidgets[key].clear()
+		if asPool:
+			self.mainview.cardWidgets['pool'].addCards(*deck._75())
+		else:
+			self.mainview.cardWidgets['main'].addCards(*deck.maindeck)
+			self.mainview.cardWidgets['side'].addCards(*deck.sideboard)
+	def save(self, asPool=False):
+		saveDialog = QtWidgets.QFileDialog()
+		saveDialog.setFileMode(QtWidgets.QFileDialog.AnyFile)
+		saveDialog.setAcceptMode(QtWidgets.QFileDialog.AcceptSave)
+		fname = saveDialog.getSaveFileName(self, 'Save Deck', '')
+		if not fname or not fname[0]: return
+		fname = fname[0]
+		extension = re.match('.*?\.([^\.]+)', fname, re.DOTALL)
+		if not extension:
+			extension = 'dec'
+			fname += '.dec'
+		else: extension = extension.groups()[0]
+		deck = Deck(
+			maindeck=[card.d for card in self.mainview.cardWidgets['main'].cards],
+			sideboard=[card.d for card in self.mainview.cardWidgets['side'].cards]
+		)
+		if extension in ('xml', 'cod'): content = ET.tostring(deck.toXML().getroot(), 'UTF-8').decode('UTF-8')
+		elif extension=='json': content = deck.toJson()
+		else: content = deck.toString()
+		with open(fname, 'w') as f: f.write(content)
+		
 		
 def test():
 	app=QtWidgets.QApplication(sys.argv)

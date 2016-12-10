@@ -1,8 +1,8 @@
 from PyQt5 import QtWidgets, QtGui
 
 class EmbeddedSurface(QtWidgets.QWidget):
-	def __init__(self):
-		super(EmbeddedSurface, self).__init__()
+	def __init__(self, parent=None):
+		super(EmbeddedSurface, self).__init__(parent)
 		self.setMinimumSize(1, 1)
 		self.data = None
 		self.image = None

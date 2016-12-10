@@ -1,6 +1,6 @@
 from loadCards import *
 import json
-from copy import deepcopy
+import copy
 import xml.etree.ElementTree as ET
 import re
 from collections import OrderedDict
@@ -8,7 +8,7 @@ import random
 
 #Adds printings and flavors to allCards.json
 def makeCardsFixed():
-	cards = deepcopy(CardLoader.getBaseCards())
+	cards = copy.deepcopy(CardLoader.getBaseCards())
 	sets = CardLoader.getBaseSets()
 	for name in cards:
 		cards[name]['printings'], cards[name]['flavors'] = getPrintings(name, sets)
@@ -16,7 +16,7 @@ def makeCardsFixed():
 	CardWriter.dump(cards, 'cardsFixed.json')
 	
 def makeSetsFixed():
-	sets = deepcopy(CardLoader.getBaseSets())
+	sets = copy.deepcopy(CardLoader.getBaseSets())
 	for key in sets:
 		for card in sets[key]['cards']:
 			if 'names' in card: card['isFront'] = card['name']==card['names'][0]
@@ -64,8 +64,12 @@ class Card(dict):
 			return str(card.get('loyalty', ''))
 		def printings(card):
 			return str(card.get('printings', ''))
+		def fromSet(card):
+			return str(card.get('set', ''))
 		def flavors(card):
 			return str(card.get('flavors', ''))
+		def rarity(card):
+			return str(card.get('rarity', ''))
 		def space(card):
 			return ' '
 		switch = {
@@ -75,7 +79,9 @@ class Card(dict):
 			'o': oracle,
 			'p': ptl,
 			'e': printings,
+			'x': fromSet,
 			'f': flavors,
+			'r': rarity,
 			's': space
 		}
 		@staticmethod
@@ -113,6 +119,15 @@ class Card(dict):
 		for setkey in self['printings']:
 			for card in sets[setkey]['cards']:
 				if card['name']==self['name'] and 'multiverseid' in card: return Card(card)
+	def getThisFromASet(self):
+		sets = CardLoader.getSets()
+		fallbackcard = None
+		for setkey in self['printings']:
+			for card in sets[setkey]['cards']:
+				if card['name']==self['name']:
+					if 'multiverseid' in card: return Card(card)
+					elif not fallbackcard: fallbackcard = Card(card)
+		return fallbackcard
 	colorSortValueDict = {
 		'White': 0,
 		'Blue': 1,
@@ -155,8 +170,8 @@ class ReadDeckError(Exception): pass
 		
 class Deck(object):
 	def __init__(self, s='', maindeck = [], sideboard = []):
-		self.maindeck = maindeck
-		self.sideboard = sideboard
+		self.maindeck = copy.copy(maindeck)
+		self.sideboard = copy.copy(sideboard)
 		if not s: return
 		try:
 			Deck.fromXML(s, self)
@@ -176,10 +191,14 @@ class Deck(object):
 		for zone in root.iter('zone'):
 			if 'name' in zone.attrib and zone.attrib['name']=='main':
 				for card in zone.iter('card'):
-					for i in range(int(card.attrib.get('number', 0))): deck.maindeck.append({'name': card.attrib['name']})
+					for i in range(int(card.attrib.get('number', 0))):
+						if card.attrib['name'] in CardLoader.getCards(): deck.maindeck.append(Card.getThisFromASet(CardLoader.getCards()[card.attrib['name']]))
+						else: deck.maindeck.append({'name': card.attrib['name']})
 			elif 'name' in zone.attrib and zone.attrib['name']=='side':
 				for card in zone.iter('card'):
-					for i in range(int(card.attrib.get('number', 0))): deck.sideboard.append({'name': card.attrib['name']})
+					for i in range(int(card.attrib.get('number', 0))):
+						if card.attrib['name'] in CardLoader.getCards(): deck.sideboard.append(Card.getThisFromASet(CardLoader.getCards()[card.attrib['name']]))
+						else: deck.sideboard.append({'name': card.attrib['name']})
 		return deck
 	def toXML(self):
 		tree = ET.parse('basedeck.xml')
@@ -197,13 +216,17 @@ class Deck(object):
 	def fromString(s, d=None):
 		if not d: deck = Deck()
 		else: deck = d
-		for m in re.finditer('(SB: )?\s*(\d+)?\s*(([\w\d\'-]+ ?)+)\s*', s, re.IGNORECASE):
+		for m in re.finditer('(SB: )?\s*(\d+)?x?\s*(([\w\d\'\-:,]+ ?)+)\s*', s, re.IGNORECASE):
 			if m.groups()[1]: amnt = int(m.groups()[1])
 			else: amnt = 1
 			if not m.groups()[0]:
-				for i in range(amnt): deck.maindeck.append({'name': m.groups()[2]})
+				for i in range(amnt):
+					if m.groups()[2] in CardLoader.getCards(): deck.maindeck.append(Card.getThisFromASet(CardLoader.getCards()[m.groups()[2]]))
+					else: deck.maindeck.append({'name': m.groups()[2]})
 			else:
-				for i in range(amnt): deck.sideboard.append({'name': m.groups()[2]})
+				for i in range(amnt):
+					if m.groups()[2] in CardLoader.getCards(): deck.sideboard.append(Card.getThisFromASet(CardLoader.getCards()[m.groups()[2]]))
+					else: deck.sideboard.append({'name': m.groups()[2]})
 		return deck
 	def toString(self):
 		maindecknames = [card['name'] for card in self.maindeck]
@@ -211,15 +234,19 @@ class Deck(object):
 		return ''.join([str(maindecknames.count(card))+' '+card+'\n' for card in set(maindecknames)]+['SB: '+str(sideboardnames.count(card))+' '+card+'\n' for card in set(sideboardnames)])
 	@staticmethod
 	def fromJson(s, d=None):
+		print('from json')
 		if not d: deck = Deck()
 		else: deck = d
 		try: jdeck = json.loads(s)
-		except json.decoder.JSONDecodeError: raise ReadDeckError
+		except json.decoder.JSONDecodeError:
+			print('no json')
+			raise ReadDeckError
+		print(type(jdeck))
 		deck.maindeck = jdeck['main']
 		deck.sideboard = jdeck['side']
 		return deck
 	def toJson(self):
-		return json.dumps({'main': self.maindeck, 'side': self.sideboard})
+		return json.dumps({'main': self.maindeck, 'side': self.sideboard}, ensure_ascii=False)
 	def _75(self):
 		return self.maindeck+self.sideboard
 	def check(self):
@@ -323,7 +350,7 @@ class BoosterMap(list):
 		]
 	def getBooster(self, allowDuplicate = False):
 		if allowDuplicate: return Booster([
-			deepcopy(random.choice(
+			copy.deepcopy(random.choice(
 				selectFromOrderedDict(slot)
 				if isinstance(slot, OrderedDict) else
 				slot
@@ -336,7 +363,7 @@ class BoosterMap(list):
 				(selectFromOrderedDict(slot) if isinstance(slot, OrderedDict) else slot)
 				if not card['name'] in [c['name'] for c in booster]
 			]
-			if sl: booster.append(deepcopy(random.choice(sl)))
+			if sl: booster.append(copy.deepcopy(random.choice(sl)))
 		return booster
 		
 class Booster(list):

@@ -167,7 +167,9 @@ class MultiCardWidget(embedableSurface.EmbeddedSurface):
 		self.dropCard(card, pos)
 	def sortCards(self, f=Card.cmcSortValue, row=True, reverse=False):
 		if not self.cards: return
-		sortedcards = sorted(copy.copy(self.cards), key = lambda o: f(o.d), reverse=reverse)
+		if self.selected: cards = self.selected
+		else: cards = self.cards
+		sortedcards = sorted(copy.copy(cards), key = lambda o: f(o.d), reverse=reverse)
 		value = f(sortedcards[0].d)
 		stack = 0
 		for card in sortedcards:
@@ -212,15 +214,15 @@ class MultiCardWidget(embedableSurface.EmbeddedSurface):
 		drag.exec_()
 	def keyPressEvent(self, event):
 		key = event.key()
-		if key==QtCore.Qt.Key_Delete:
-			self.removeCards(*self.selected)
+		if key==QtCore.Qt.Key_Delete: self.removeCards(*self.selected)
 	def mousePressEvent(self, event):
+		if not event.buttons()==QtCore.Qt.LeftButton: return
 		self.setFocus(QtCore.Qt.TabFocusReason)
 		pos = (event.pos().x(), event.pos().y())
 		card = self.getTopCollision(pos)
 		if card:
 			if not card in self.selected: self.updateSelected(card)
-			self.pickupCards(*self.selected, pos)
+			self.pickupCards(*self.selected, pos=pos)
 		else: self.selectionbox = SelectionBox(self, pos)
 		self.redraw()
 	def mouseMoveEvent(self, event):
@@ -286,10 +288,10 @@ class MultiCardWidget(embedableSurface.EmbeddedSurface):
 		surface.fill((128, 128, 128))
 		for card in self.cards: card.draw(surface)
 		for uie in self.uielements: uie.draw(surface)
-		# if self.stacks:
-			# for r in range(len(self.stacks)):
-				# for c in range(len(self.stacks[r])):
-					# draw.rect(surface, (0, 0, 0), self.stacks[r][c].rekt, 1)
+		if self.stacks:
+			for r in range(len(self.stacks)):
+				for c in range(len(self.stacks[r])):
+					draw.rect(surface, (0, 0, 0), self.stacks[r][c].rekt, 1)
 		amountCardTextSurface = self.font.render(str(len(self.cards))+' cards', 1, (255, 255, 255), (0, 0, 0))
 		rekt = amountCardTextSurface.get_rect()
 		rekt.move_ip(0, sz[1]-rekt.h)
@@ -303,15 +305,17 @@ class MultiCardWidget(embedableSurface.EmbeddedSurface):
 	def removeCards(self, *cards):
 		self.pickupCards(*cards)
 		for card in cards:
-			if card in self.cards: self.cards.remove(card)
-			if card in self.selected: self.selected.remove(card)
+			try: self.cards.remove(card)
+			except ValueError: pass
+			try: self.selected.remove(card)
+			except KeyError: pass
+		self.redraw()
+	def clear(self):
+		self.pickupCards(*self.cards)
+		self.removeFloatingCards()
+		self.selected = set()
 
 def test():
-	session = DeckEditorSession()
-	set = MTGSet(CardLoader.getSets()['KLD'])
-	booster = set.generateBooster()
-	for card in booster: print(Card.view(card, 'N'))
-	session.addCards(*booster)
-	session.run()
+	pass
 	
 if __name__=='__main__': test()
