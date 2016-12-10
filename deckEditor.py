@@ -188,6 +188,8 @@ class MainWindow(QtWidgets.QMainWindow):
 		super(MainWindow,self).__init__(parent)
 		self.imageloader = DEImageLoader()
 		
+		self.setWindowIcon(QtGui.QIcon('handelsforbud.png'))
+		
 		self.mainview = MainView()
 		
 		self.setCentralWidget(self.mainview)

@@ -153,10 +153,24 @@ class Card(dict):
 		return NamedCards.creatureCard.match(self)
 	def cmcSortValue(self):
 		return self.get('cmc', 0)
-
+	def typeSortValue(self):
+		if NamedCards.landCard.match(self): return 0
+		elif NamedCards.creatureCard.match(self): return 1
+		elif NamedCards.instantCard.match(self): return 2
+		elif NamedCards.sorceryCard.match(self): return 3
+		elif NamedCards.artifactCard.match(self): return 4
+		elif NamedCards.enchantmentCard.match(self): return 5
+		elif NamedCards.planeswalkerCard.match(self): return 6
+		
 class NamedCards(object):
 	nonpermanentCard = Card({'type': '.*(instant|sorcery).*'})
 	creatureCard = Card({'type': '.*creature.*'})
+	artifactCard = Card({'type': '.*artifact.*'})
+	enchantmentCard = Card({'type': '.*enchantment.*'})
+	landCard = Card({'type': '.*land.*'})
+	planeswalkerCard = Card({'type': '.*planeswalker.*'})
+	instantCard = Card({'type': '.*instant.*'})
+	sorceryCard = Card({'type': '.*sorcery.*'})
 		
 class RealCard(Card):
 	def __init__(self, *args, **kwargs):

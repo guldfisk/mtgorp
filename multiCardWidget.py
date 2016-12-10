@@ -108,14 +108,18 @@ class SelectionBox(UIElement):
 	def resizeTo(self, pos):
 		self.corner = np.array(pos)
 		self.newSurface()
+		self.updateCollisions()
 	def resize(self, rel):
 		self.corner += rel
 		self.newSurface()
+		self.updateCollisions()
 	def draw(self, surface):
 		surface.blit(self.s, self.pos)
-	def end(self):
+	def updateCollisions(self):
 		colrek = Rect(self.pos, self.dim)
 		self.session.updateSelected(*tuple(card for card in self.session.cards if card.rekt.colliderect(colrek)))
+	def end(self):
+		self.updateCollisions()
 		self.session.uielements.remove(self)
 
 class FuncWithArg(object):
@@ -189,13 +193,15 @@ class MultiCardWidget(embedableSurface.EmbeddedSurface):
 			rowsort.addAction('CMC'): FuncWithArg(self.sortCards, Card.cmcSortValue),
 			rowsort.addAction('Color'): FuncWithArg(self.sortCards, Card.colorSortValue),
 			rowsort.addAction('Rarity'): FuncWithArg(self.sortCards, Card.raritySortValue),
+			rowsort.addAction('Type'): FuncWithArg(self.sortCards, Card.typeSortValue),
 			rowsort.addAction('Is creature'): FuncWithArg(self.sortCards, Card.isCreature, True, True),
 			rowsort.addAction('Is permanent'): FuncWithArg(self.sortCards, Card.isPermanent),
+			columnsort.addAction('Is creature'): FuncWithArg(self.sortCards, Card.isCreature, False, True),
+			columnsort.addAction('Is permanent'): FuncWithArg(self.sortCards, Card.isPermanent, False),
 			columnsort.addAction('CMC'): FuncWithArg(self.sortCards, Card.cmcSortValue, False),
 			columnsort.addAction('Color'): FuncWithArg(self.sortCards, Card.colorSortValue, False),
 			columnsort.addAction('Rarity'): FuncWithArg(self.sortCards, Card.raritySortValue, False),
-			columnsort.addAction('Is creature'): FuncWithArg(self.sortCards, Card.isCreature, False, True),
-			columnsort.addAction('Is permanent'): FuncWithArg(self.sortCards, Card.isPermanent, False)
+			columnsort.addAction('Type'): FuncWithArg(self.sortCards, Card.typeSortValue, False)
 		}
 		menu.addMenu(rowsort)
 		menu.addMenu(columnsort)
@@ -289,10 +295,10 @@ class MultiCardWidget(embedableSurface.EmbeddedSurface):
 		surface.fill((128, 128, 128))
 		for card in self.cards: card.draw(surface)
 		for uie in self.uielements: uie.draw(surface)
-		if self.stacks:
-			for r in range(len(self.stacks)):
-				for c in range(len(self.stacks[r])):
-					draw.rect(surface, (0, 0, 0), self.stacks[r][c].rekt, 1)
+		# if self.stacks:
+			# for r in range(len(self.stacks)):
+				# for c in range(len(self.stacks[r])):
+					# draw.rect(surface, (0, 0, 0), self.stacks[r][c].rekt, 1)
 		amountCardTextSurface = self.font.render(str(len(self.cards))+'('+str(len(self.selected))+') cards', 1, (255, 255, 255), (0, 0, 0))
 		rekt = amountCardTextSurface.get_rect()
 		rekt.move_ip(0, sz[1]-rekt.h)
