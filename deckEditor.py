@@ -101,10 +101,10 @@ class CardAdder(QtWidgets.QWidget):
 		box.addWidget(self.targetzone)
 		box.addStretch(1)
 		self.setLayout(box)
-	def setStagingCard(self, card):
+	def setStagingCard(self, card, setFocus=True):
 		self.stagingCard = card
 		self.currentadding.setText(Card.view(card, 'N'))
-		self.amountedit.setFocus(QtCore.Qt.TabFocusReason)
+		if setFocus: self.amountedit.setFocus(QtCore.Qt.TabFocusReason)
 	
 class HoverImage(embedableSurface.EmbeddedSurface):
 	def __init__(self, parent):
@@ -162,11 +162,6 @@ class MainView(QtWidgets.QWidget):
 			'side': MultiCardWidget(self, imageloader=self.imageloader),
 			'pool': MultiCardWidget(self, imageloader=self.imageloader)
 		}
-			
-		booster = set.generateBooster()
-		self.cardWidgets['side'].addCards(*booster)
-		booster = set.generateBooster()
-		self.cardWidgets['pool'].addCards(*booster)
 		
 		box = QtWidgets.QHBoxLayout(self)
 

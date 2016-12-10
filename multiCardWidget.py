@@ -221,6 +221,7 @@ class MultiCardWidget(embedableSurface.EmbeddedSurface):
 		pos = (event.pos().x(), event.pos().y())
 		card = self.getTopCollision(pos)
 		if card:
+			self.parent.cardadder.setStagingCard(card.d, False)
 			if not card in self.selected: self.updateSelected(card)
 			self.pickupCards(*self.selected, pos=pos)
 		else: self.selectionbox = SelectionBox(self, pos)
@@ -292,7 +293,7 @@ class MultiCardWidget(embedableSurface.EmbeddedSurface):
 			for r in range(len(self.stacks)):
 				for c in range(len(self.stacks[r])):
 					draw.rect(surface, (0, 0, 0), self.stacks[r][c].rekt, 1)
-		amountCardTextSurface = self.font.render(str(len(self.cards))+' cards', 1, (255, 255, 255), (0, 0, 0))
+		amountCardTextSurface = self.font.render(str(len(self.cards))+'('+str(len(self.selected))+') cards', 1, (255, 255, 255), (0, 0, 0))
 		rekt = amountCardTextSurface.get_rect()
 		rekt.move_ip(0, sz[1]-rekt.h)
 		surface.blit(amountCardTextSurface, rekt)
