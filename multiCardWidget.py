@@ -127,6 +127,7 @@ class FuncWithArg(object):
 		self.f(*self.args, **self.kwargs)
 
 class MultiCardWidget(embedableSurface.EmbeddedSurface):
+	font = font.Font(None, 30)
 	def __init__(self, parent, **kwargs):
 		super(MultiCardWidget, self).__init__()
 		self.parent = parent
@@ -144,7 +145,7 @@ class MultiCardWidget(embedableSurface.EmbeddedSurface):
 		self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
 		self.customContextMenuRequested.connect(self.contextMenu)
 		self.setMouseTracking(True)
-	def pickupCards(self, pos, *cards):
+	def pickupCards(self, *cards, pos=(0, 0)):
 		self.floatingStack = Stack(self, pos=pos)
 		for card in cards: self.pickupCard(card)
 	def pickupCard(self, card):
@@ -164,8 +165,9 @@ class MultiCardWidget(embedableSurface.EmbeddedSurface):
 	def repositionCard(self, card, pos):
 		self.pickupCard(card)
 		self.dropCard(card, pos)
-	def sortCards(self, f=Card.cmcSortValue, row=True):
-		sortedcards = sorted(copy.copy(self.cards), key = lambda o: f(o.d))
+	def sortCards(self, f=Card.cmcSortValue, row=True, reverse=False):
+		if not self.cards: return
+		sortedcards = sorted(copy.copy(self.cards), key = lambda o: f(o.d), reverse=reverse)
 		value = f(sortedcards[0].d)
 		stack = 0
 		for card in sortedcards:
@@ -185,10 +187,12 @@ class MultiCardWidget(embedableSurface.EmbeddedSurface):
 			rowsort.addAction('CMC'): FuncWithArg(self.sortCards, Card.cmcSortValue),
 			rowsort.addAction('Color'): FuncWithArg(self.sortCards, Card.colorSortValue),
 			rowsort.addAction('Rarity'): FuncWithArg(self.sortCards, Card.raritySortValue),
+			rowsort.addAction('Is creature'): FuncWithArg(self.sortCards, Card.isCreature, True, True),
 			rowsort.addAction('Is permanent'): FuncWithArg(self.sortCards, Card.isPermanent),
 			columnsort.addAction('CMC'): FuncWithArg(self.sortCards, Card.cmcSortValue, False),
 			columnsort.addAction('Color'): FuncWithArg(self.sortCards, Card.colorSortValue, False),
 			columnsort.addAction('Rarity'): FuncWithArg(self.sortCards, Card.raritySortValue, False),
+			columnsort.addAction('Is creature'): FuncWithArg(self.sortCards, Card.isCreature, False, True),
 			columnsort.addAction('Is permanent'): FuncWithArg(self.sortCards, Card.isPermanent, False)
 		}
 		menu.addMenu(rowsort)
@@ -206,18 +210,23 @@ class MultiCardWidget(embedableSurface.EmbeddedSurface):
 		mime.setData('cards', stream)
 		drag.setMimeData(mime)
 		drag.exec_()
+	def keyPressEvent(self, event):
+		key = event.key()
+		if key==QtCore.Qt.Key_Delete:
+			self.removeCards(*self.selected)
 	def mousePressEvent(self, event):
+		self.setFocus(QtCore.Qt.TabFocusReason)
 		pos = (event.pos().x(), event.pos().y())
 		card = self.getTopCollision(pos)
 		if card:
 			if not card in self.selected: self.updateSelected(card)
-			self.pickupCards(pos, *self.selected)
+			self.pickupCards(*self.selected, pos)
 		else: self.selectionbox = SelectionBox(self, pos)
 		self.redraw()
 	def mouseMoveEvent(self, event):
 		pos = (event.pos().x(), event.pos().y())
 		card = self.getTopCollision(pos)
-		if card: self.parent.hover.setCard(card)
+		if card: self.parent.hover.setCard(card.d)
 		if not event.buttons()==QtCore.Qt.LeftButton: return
 		if self.selectionbox:
 			self.selectionbox.resizeTo(pos)
@@ -277,10 +286,14 @@ class MultiCardWidget(embedableSurface.EmbeddedSurface):
 		surface.fill((128, 128, 128))
 		for card in self.cards: card.draw(surface)
 		for uie in self.uielements: uie.draw(surface)
-		if self.stacks:
-			for r in range(len(self.stacks)):
-				for c in range(len(self.stacks[r])):
-					draw.rect(surface, (0, 0, 0), self.stacks[r][c].rekt, 1)
+		# if self.stacks:
+			# for r in range(len(self.stacks)):
+				# for c in range(len(self.stacks[r])):
+					# draw.rect(surface, (0, 0, 0), self.stacks[r][c].rekt, 1)
+		amountCardTextSurface = self.font.render(str(len(self.cards))+' cards', 1, (255, 255, 255), (0, 0, 0))
+		rekt = amountCardTextSurface.get_rect()
+		rekt.move_ip(0, sz[1]-rekt.h)
+		surface.blit(amountCardTextSurface, rekt)
 		return surface
 	def addCards(self, *cards, pos = (0, 0)):
 		cards = list(DECard(self, card) for card in cards)
@@ -288,6 +301,7 @@ class MultiCardWidget(embedableSurface.EmbeddedSurface):
 		self.dropCards(pos, *cards)
 		self.redraw()
 	def removeCards(self, *cards):
+		self.pickupCards(*cards)
 		for card in cards:
 			if card in self.cards: self.cards.remove(card)
 			if card in self.selected: self.selected.remove(card)

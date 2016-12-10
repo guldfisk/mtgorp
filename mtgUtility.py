@@ -92,25 +92,27 @@ class Card(dict):
 	def fullName(self):
 		return self.get('set', '')+'/'+self.get('name', 'NONAME')
 	colordict = {
-		'White': (220, 220, 100),
+		'White': (230, 230, 150),
 		'Blue': (0, 0, 200),
 		'Black': (220, 220, 220),
 		'Red': (255, 0, 0),
-		'Green': (0, 200, 0)
+		'Green': (0, 200, 0),
+		'Gold': (230, 230, 0),
+		'Colorless': (255, 200, 150)
 	}
 	def getImageColor(self):
-		if not 'colors' in self or not self['colors']: return (255, 200, 150)
-		elif len(self['colors'])>1: return (200, 200, 0)
+		if not 'colors' in self or not self['colors']: return Card.colordict['Colorless']
+		elif len(self['colors'])>1: return Card.colordict['Gold']
 		return Card.colordict.get(self['colors'][0], (100, 100, 100))
 	def getThisFromSet(self, set):
 		sets = CardLoader.getSets()
 		for card in sets[set]['cards']:
-			if card['name']==self['name']: return card
+			if card['name']==self['name']: return Card(card)
 	def getPrintable(self):
 		sets = CardLoader.getSets()
 		for setkey in self['printings']:
 			for card in sets[setkey]['cards']:
-				if card['name']==self['name'] and 'multiverseid' in card: return card
+				if card['name']==self['name'] and 'multiverseid' in card: return Card(card)
 	colorSortValueDict = {
 		'White': 0,
 		'Blue': 1,
@@ -126,18 +128,20 @@ class Card(dict):
 		'Common': 0,
 		'Uncommon': 1,
 		'Rare': 2,
-		'Mythic': 3
+		'Mythic Rare': 3
 	}
 	def raritySortValue(self):
 		return Card.raritySortValueDict.get(self.get('rarity', 'norarity'), 0)
 	def isPermanent(self):
 		return NamedCards.nonpermanentCard.match(self)
+	def isCreature(self):
+		return NamedCards.creatureCard.match(self)
 	def cmcSortValue(self):
 		return self.get('cmc', 0)
 
 class NamedCards(object):
-	nonpermanentCard = Card({'type': 'instant|sorcery'})
-	creatureCard = Card({'type': 'creature'})
+	nonpermanentCard = Card({'type': '.*(instant|sorcery).*'})
+	creatureCard = Card({'type': '.*creature.*'})
 		
 class RealCard(Card):
 	def __init__(self, *args, **kwargs):
