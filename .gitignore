@@ -1,6 +1,5 @@
 __pycache__/
 images/
-customSets/
 decks/
 *.json
 *.txt
