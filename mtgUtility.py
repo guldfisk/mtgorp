@@ -146,7 +146,7 @@ class Card(dict):
 		'Mythic Rare': 3
 	}
 	def raritySortValue(self):
-		return Card.raritySortValueDict.get(self.get('rarity', 'norarity'), 0)
+		return Card.raritySortValueDict.get(self.get('rarity', 'norarity'), 4)
 	def isPermanent(self):
 		return NamedCards.nonpermanentCard.match(self)
 	def isCreature(self):
@@ -347,7 +347,7 @@ class BoosterKey(list):
 		if isinstance(mset, dict) and 'booster' in mset: self[:] = mset['booster']
 		for i in range(len(self)):
 			if isinstance(self[i], list): self[i] = self.setToPatternMap[toNestedFrozenSet(self[i])]
-			elif isinstance(self[i], str): self[i] = self.stringToPatternMap[self[i].lower()]
+			elif isinstance(self[i], str): self[i] = self.stringToPatternMap.get(self[i].lower(), RealCard({'rarity': self[i]}))
 			elif not isinstance(self[i], OrderedDict): raise TypeError
 	def getBoosterMap(self, mset):
 		return BoosterMap(mset=mset, key=self)
