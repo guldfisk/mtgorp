@@ -173,7 +173,7 @@ class MultiCardWidget(embedableSurface.EmbeddedSurface):
 		if not self.cards: return
 		if self.selected: cards = self.selected
 		else: cards = self.cards
-		sortedcards = sorted(copy.copy(cards), key = lambda o: f(o.d), reverse=reverse)
+		sortedcards = sorted(sorted(copy.copy(cards), key= lambda o: o.d['name']), key = lambda o: f(o.d), reverse=reverse)
 		value = f(sortedcards[0].d)
 		stack = 0
 		for card in sortedcards:
