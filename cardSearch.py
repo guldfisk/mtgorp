@@ -1,5 +1,5 @@
 import re
-from mtgUtility import *
+from mtgObjects import *
 from loadCards import *
 
 class CardMatch(Card):

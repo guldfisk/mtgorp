@@ -1,9 +1,12 @@
-import mtgjsonHome
 import jsonDownloader
-import mtgUtility
+import mtgJsonFix
 import requests as r
 import xml.etree.ElementTree as ET
 import re
+import os
+
+class MTGJsonHome(object):
+	url = 'http://mtgjson.com/atom.xml'
 
 def checkRSS(url):
 	rg = r.get(url)
@@ -17,18 +20,18 @@ def checkRSS(url):
 
 def updt():
 	jsonDownloader.reDownload()
-	mtgUtility.makeCardsFixed()
-	mtgUtility.makeSetsFixed()
+	mtgJsonFix.makeCardsFixed()
+	mtgJsonFix.makeSetsFixed()
 	
 def checkAndUpdate():
-	lastup = checkRSS(mtgjsonHome.url)
+	lastup = checkRSS(MTGJsonHome.url)
 	if not lastup:
 		print('Could not retrieve last update')
-		return(None)
-	open('lastupdtd.txt', 'a').close()
-	file = open('lastupdtd.txt', 'r+')
+		return None
+	open(os.path.join('resources', 'lastupdtd.txt'), 'a').close()
+	file = open(os.path.join('resources', 'lastupdtd.txt'), 'r+')
 	currentVersion = file.read()
-	print('Current version', currentVersion, '\nLast updated', lastup)
+	print('Current version', currentVersion, '\nLast updat	ed', lastup)
 	if lastup!=currentVersion:
 		print('Redownloading')
 		updt()

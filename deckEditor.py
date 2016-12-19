@@ -1,5 +1,6 @@
 from multiCardWidget import *
 import cardSearch
+import os
 
 class LineEditWithDropDown(QtWidgets.QLineEdit):
 	def __init__(self, parent):
@@ -42,7 +43,7 @@ class LineEditWithDropDown(QtWidgets.QLineEdit):
 		pass
 	def getRows(self):
 		for i in range(5): self.dropdown.addItem(self.text()+str(i))
-		
+
 class CardAdderLineEditWithDropDown(LineEditWithDropDown):
 	def __init__(self, parent):
 		super(CardAdderLineEditWithDropDown, self).__init__(parent)
@@ -58,7 +59,7 @@ class CardAdderLineEditWithDropDown(LineEditWithDropDown):
 	def getRows(self):
 		self.hits = self.cards.matchList(cardSearch.CardMatch(self.text()))
 		for peek in self.hits.peekMultiple(10): self.dropdown.addItem(Card.view(peek, 'N'))
-		
+
 class AmountCardAdder(QtWidgets.QLineEdit):
 	def __init__(self, parent):
 		super(AmountCardAdder, self).__init__(parent)
@@ -73,7 +74,7 @@ class AmountCardAdder(QtWidgets.QLineEdit):
 			for i in range(amnt): self.parent.parent.cardWidgets[self.parent.targetzone.currentText()].addCards(self.parent.stagingCard)
 			self.parent.lineedit.setFocus(QtCore.Qt.TabFocusReason)
 		else: super(AmountCardAdder, self).keyPressEvent(event)
-		
+
 class CardAdder(QtWidgets.QWidget):
 	def __init__(self, parent):
 		super(CardAdder, self).__init__()
@@ -105,7 +106,7 @@ class CardAdder(QtWidgets.QWidget):
 		self.stagingCard = card
 		self.currentadding.setText(Card.view(card, 'N'))
 		if setFocus: self.amountedit.setFocus(QtCore.Qt.TabFocusReason)
-	
+
 class HoverImage(embedableSurface.EmbeddedSurface):
 	def __init__(self, parent):
 		super(HoverImage, self).__init__(parent)
@@ -146,7 +147,7 @@ class HoverWidget(QtWidgets.QWidget):
 		if not card: return
 		self.image.setCard(card)
 		self.label.setText(Card.view(card, 'nmtRXsop'))
-		
+
 class MainView(QtWidgets.QWidget):
 	def __init__(self, parent=None):
 		super(MainView, self).__init__(parent)
@@ -182,13 +183,13 @@ class MainView(QtWidgets.QWidget):
 		box.addLayout(vbox)
 		
 		self.setLayout(box)
-		
+
 class MainWindow(QtWidgets.QMainWindow):
 	def __init__(self, parent=None):
 		super(MainWindow,self).__init__(parent)
 		self.imageloader = DEImageLoader()
 		
-		self.setWindowIcon(QtGui.QIcon('handelsforbud.png'))
+		self.setWindowIcon(QtGui.QIcon(os.path.join('resources', 'handelsforbud.png')))
 		
 		self.mainview = MainView()
 		
@@ -201,12 +202,14 @@ class MainWindow(QtWidgets.QMainWindow):
 		allMenues = {
 			menubar.addMenu('File'): (
 				('Exit', 'Ctrl+Q', QtWidgets.qApp.quit),
-				('Load Deck', 'Ctrl+O', self.loadDeck),
+				('Load Deck', 'Ctrl+O', self.load),
 				('Load Pool', 'Ctrl+P', self.loadPool),
-				('Save deck', 'Ctrl+S', self.save)
+				('Save deck', 'Ctrl+S', self.save),
+				('Save pool', 'Ctrl+l', self.savePool)
 			),
 			menubar.addMenu('Generate'): (
-				('Sealed pool', 'Ctrl+G', self.getPool),
+				('Sealed pool', 'Ctrl+G', self.generatePool),
+				('Cube Pools', 'Ctrl+C', self.generateCubePools)
 			),
 			menubar.addMenu('Add'): (
 				('Add cards', 'Ctrl+f', self.addCard),
@@ -223,46 +226,77 @@ class MainWindow(QtWidgets.QMainWindow):
 		self.setGeometry(300, 300, 300, 200)
 	def addCard(self):
 		self.mainview.cardadder.lineedit.setFocus(QtCore.Qt.TabFocusReason)
-	def loadDeck(self):
-		self.load()
+	def savePool(self):
+		self.save(True)
 	def loadPool(self):
 		self.load(True)
-	def load(self, asPool=False):
+	def generateCubePools(self):
 		saveDialog = QtWidgets.QFileDialog()
-		saveDialog.setFileMode(QtWidgets.QFileDialog.ExistingFile)
-		saveDialog.setAcceptMode(QtWidgets.QFileDialog.AcceptOpen)
-		fname = saveDialog.getOpenFileName(self, 'Load Deck', '')
+		saveDialog.setFileMode(QtWidgets.QFileDialog.Directory)
+		saveDialog.setOptions(QtWidgets.QFileDialog.ShowDirsOnly)
+		saveDialog.exec_()
+		fname = saveDialog.selectedFiles()
+		if not fname or not fname[0]: return
+		text, ok = QtWidgets.QInputDialog.getText(self, 'Select set and pack amount', 'Type key:')
+		if ok: s = str(text)
+		else: return
+		cards = []
+		m = re.match('(\d*)([^\s\d]+)(\d*)', s)
+		if not m: return
+		size, setcode, amnt = m.groups()
+		if not size: size = 1
+		else: size = int(size)
+		if not amnt: amnt = 1
+		else: amnt = int(amnt)
+		if setcode in CardLoader.getSets(): mset = MTGSet(CardLoader.getSets()[setcode])
+		elif CardLoader.getCustomSet(setcode): mset = MTGSet(CardLoader.getCustomSet(setcode))
+		else: return
+
+		map = mset.generateCubeBoosterMap()
+
+		for i in range(int(amnt)):
+			boosters = [map.generateBooster() for n in range(size)]
+			pool = Pool(boosters = boosters)
+			with open(os.path.join(fname[0], setcode+'_pool_'+str(i)+'.pool'), 'w') as f: f.write(pool.toJson())
+	
+	def load(self, asPool=False):
+		fname = QtWidgets.QFileDialog.getOpenFileName(self, 'Load Deck', '')
 		if not fname or not fname[0]: return
 		content = ''
 		with open(fname[0], 'r') as f: content = f.read()
-		deck = Deck(content)
 		for key in self.mainview.cardWidgets: self.mainview.cardWidgets[key].clear()
 		if asPool:
-			self.mainview.cardWidgets['pool'].addCards(*deck._75())
+			pool = Pool(s=content)
+			self.mainview.cardWidgets['pool'].addCards(*pool)
 		else:
+			deck = Deck(content)
 			self.mainview.cardWidgets['main'].addCards(*deck.maindeck)
 			self.mainview.cardWidgets['side'].addCards(*deck.sideboard)
 	def save(self, asPool=False):
-		saveDialog = QtWidgets.QFileDialog()
-		saveDialog.setFileMode(QtWidgets.QFileDialog.AnyFile)
-		saveDialog.setAcceptMode(QtWidgets.QFileDialog.AcceptSave)
-		fname = saveDialog.getSaveFileName(self, 'Save Deck', '')
+		fname = QtWidgets.QFileDialog.getSaveFileName(self, 'Save Deck', '')
 		if not fname or not fname[0]: return
 		fname = fname[0]
 		extension = re.match('.*?\.([^\.]+)', fname, re.DOTALL)
 		if not extension:
-			extension = 'dec'
-			fname += '.dec'
+			if asPool:
+				extension = 'pool'
+				fname += '.pool'
+			else:
+				extension = 'dec'
+				fname += '.dec'
 		else: extension = extension.groups()[0]
-		deck = Deck(
-			maindeck=[card.d for card in self.mainview.cardWidgets['main'].cards],
-			sideboard=[card.d for card in self.mainview.cardWidgets['side'].cards]
-		)
-		if extension in ('xml', 'cod'): content = ET.tostring(deck.toXML().getroot(), 'UTF-8').decode('UTF-8')
-		elif extension=='json': content = deck.toJson()
-		else: content = deck.toString()
+		if asPool:
+			cards = Pool([card.d for key in self.mainview.cardWidgets for card in self.mainview.cardWidgets[key].cards])
+		else:
+			cards = Deck(
+				maindeck=[card.d for card in self.mainview.cardWidgets['main'].cards],
+				sideboard=[card.d for card in self.mainview.cardWidgets['side'].cards]
+			)
+		if extension in ('xml', 'cod'): content = ET.tostring(cards.toXML().getroot(), 'UTF-8').decode('UTF-8')
+		elif extension in ('json', 'pool'): content = cards.toJson()
+		else: content = cards.toString()
 		with open(fname, 'w') as f: f.write(content)
-	def getPool(self):
+	def generatePool(self):
 		text, ok = QtWidgets.QInputDialog.getText(self, 'Pool generator', 'Type key:')
 		if ok: s = str(text)
 		else: return

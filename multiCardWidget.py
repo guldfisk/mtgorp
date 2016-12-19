@@ -2,7 +2,7 @@ from pygame import *
 import sys
 import math as m
 import time
-from mtgUtility import *
+from mtgObjects import *
 import time
 import threading
 from loadImgs import *
@@ -29,14 +29,14 @@ class DEImageLoader(ImageLoader):
 			self.images[name+'_full'] = full
 			self.images[name] = half
 
-class DECard(object):
+class DECard(Card):
 	def __init__(self, session, d):
 		self.session = session
-		if not 'set' in d and 'printings' in d: d = Card.getThisFromSet(d, d['printings'][0])
-		self.d = Card(d)
-		self.rekt = self.session.imageLoader.getImage(self.d).get_rect()
+		if not 'set' in d and 'printings' in d: super(DECard, self).__init__(Card.getThisFromSet(d, d['printings'][0]))
+		else: super(DECard, self).__init__(d)
+		self.rekt = self.session.imageLoader.getImage(self).get_rect()
 	def draw(self, surface):
-		surface.blit(self.session.imageLoader.getImage(self.d), self.rekt)
+		surface.blit(self.session.imageLoader.getImage(self), self.rekt)
 		if self in self.session.selected: draw.rect(surface, (255, 0, 0), self.rekt, 3)
 	def move(self, x, y):
 		self.session.upToDate = False
@@ -173,15 +173,15 @@ class MultiCardWidget(embedableSurface.EmbeddedSurface):
 		if not self.cards: return
 		if self.selected: cards = self.selected
 		else: cards = self.cards
-		sortedcards = sorted(sorted(copy.copy(cards), key= lambda o: o.d['name']), key = lambda o: f(o.d), reverse=reverse)
-		value = f(sortedcards[0].d)
+		sortedcards = sorted(sorted(copy.copy(cards), key= lambda o: o['name']), key = lambda o: f(o), reverse=reverse)
+		value = f(sortedcards[0])
 		stack = 0
 		for card in sortedcards:
-			if not f(card.d)==value:
+			if not f(card)==value:
 				stack += 1
 				if row and stack>len(self.stacks)-1: stack = len(self.stacks)-1
 				elif not row and stack>len(self.stacks[0])-1: stack = len(self.stacks[0])-1
-				value = f(card.d)
+				value = f(card)
 			if row: self.repositionCard(card, (self.stacks[stack][0].rekt.x, card.rekt.y))
 			else: self.repositionCard(card, (card.rekt.x, self.stacks[0][stack].rekt.y))
 		self.redraw()
@@ -227,7 +227,7 @@ class MultiCardWidget(embedableSurface.EmbeddedSurface):
 		pos = (event.pos().x(), event.pos().y())
 		card = self.getTopCollision(pos)
 		if card:
-			self.parent.cardadder.setStagingCard(card.d, False)
+			self.parent.cardadder.setStagingCard(card, False)
 			if not card in self.selected: self.updateSelected(card)
 			self.pickupCards(*self.selected, pos=pos)
 		else: self.selectionbox = SelectionBox(self, pos)
@@ -235,7 +235,7 @@ class MultiCardWidget(embedableSurface.EmbeddedSurface):
 	def mouseMoveEvent(self, event):
 		pos = (event.pos().x(), event.pos().y())
 		card = self.getTopCollision(pos)
-		if card: self.parent.hover.setCard(card.d)
+		if card: self.parent.hover.setCard(card)
 		if not event.buttons()==QtCore.Qt.LeftButton: return
 		if self.selectionbox:
 			self.selectionbox.resizeTo(pos)
@@ -258,6 +258,7 @@ class MultiCardWidget(embedableSurface.EmbeddedSurface):
 	def dropEvent(self, event):
 		if event.source(): event.source().removeFloatingCards()
 		pos = (event.pos().x(), event.pos().y())
+		cards = pickle.loads(event.mimeData().data('cards'))
 		self.addCards(*pickle.loads(event.mimeData().data('cards')), pos=pos)
 		self.redraw()
 	def getSize(self):
@@ -295,10 +296,6 @@ class MultiCardWidget(embedableSurface.EmbeddedSurface):
 		surface.fill((128, 128, 128))
 		for card in self.cards: card.draw(surface)
 		for uie in self.uielements: uie.draw(surface)
-		# if self.stacks:
-			# for r in range(len(self.stacks)):
-				# for c in range(len(self.stacks[r])):
-					# draw.rect(surface, (0, 0, 0), self.stacks[r][c].rekt, 1)
 		amountCardTextSurface = self.font.render(str(len(self.cards))+'('+str(len(self.selected))+') cards', 1, (255, 255, 255), (0, 0, 0))
 		rekt = amountCardTextSurface.get_rect()
 		rekt.move_ip(0, sz[1]-rekt.h)

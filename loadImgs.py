@@ -2,7 +2,7 @@ import threading
 import requests as r
 import os
 from loadCards import *
-from mtgUtility import *
+from mtgObjects import *
 
 def gathererPath(s):
 	return('http://gatherer.wizards.com/Handlers/Image.ashx?multiverseid='+str(s)+'&type=card')
@@ -23,6 +23,7 @@ class CardFetcher(threading.Thread):
 		self.parent.fetching.remove(self.card['multiverseid'])
 
 class ImageLoader(object):
+	defaultImage = os.path.join('resources', 'cardBack.jpg')
 	images = {}
 	fetching = []
 	@staticmethod
@@ -40,14 +41,14 @@ class ImageLoader(object):
 		CardFetcher(card, self).start()
 	def loadImage(self, card):
 		path = self.getImagePath(card)
-		if path=='cardBack.jpg': name = 'cardBack'
+		if path==self.defaultImage: name = 'cardBack'
 		else: name = Card.fullName(card)
 		self._loadImage(path, name, card)
 		return name
 	def _loadImage(self, path, name, card):
 		with open(path, 'rb') as f: self.images[name] = f.read()
 	def getDefault(self):
-		if not 'cardBack' in self.images: self._loadImage('cardBack.jpg', 'cardBack', Card())
+		if not 'cardBack' in self.images: self._loadImage(self.defaultImage, 'cardBack', Card())
 		return self.images['cardBack']
 	def getImage(self, card):
 		if not Card.fullName(card) in self.images:
@@ -56,7 +57,7 @@ class ImageLoader(object):
 	def getImagePath(self, card):
 		if not os.path.exists(ImageLoader.getCardPath(card)):
 			self.downImage(card)
-			return 'cardBack.jpg'
+			return self.defaultImage
 		return ImageLoader.getCardPath(card)
 		
 def test():

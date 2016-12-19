@@ -5,41 +5,25 @@ import xml.etree.ElementTree as ET
 import re
 from collections import OrderedDict
 import random
-
-#Adds printings and flavors to allCards.json
-def makeCardsFixed():
-	cards = copy.deepcopy(CardLoader.getBaseCards())
-	sets = CardLoader.getBaseSets()
-	for name in cards:
-		cards[name]['printings'], cards[name]['flavors'] = getPrintings(name, sets)
-		if 'names' in cards[name]: cards[name]['isFront'] = name==cards[name]['names'][0]
-	CardWriter.dump(cards, 'cardsFixed.json')
-	
-def makeSetsFixed():
-	sets = copy.deepcopy(CardLoader.getBaseSets())
-	for key in sets:
-		for card in sets[key]['cards']:
-			if 'names' in card: card['isFront'] = card['name']==card['names'][0]
-			card['set'] = key
-	CardWriter.dump(sets, 'SetsFixed.json')
-	
-#Gets printings and flavors for a card
-def getPrintings(cardName, sets):
-	printings = []
-	flavors = {}
-	for key in sets:
-		for card in sets[key]['cards']:
-			if card['name']==cardName:
-				printings.append(key)
-				flavors[key] = card.get('flavor', '')
-	return(printings, flavors)
+import os
 
 #Returns names from list which are not magic names
 def checkList(cards, names=None):
 	if names==None: names = CardLoader.getCardsNameList()
-	return set([card for card in cards if not card in names])
+	return set(card for card in cards if not card in names)
 	
-class Card(dict):
+class Card(object):
+	def __init__(self, d=None, **kwargs):
+		if d: self.d = d
+		else: self.d = {}
+	def __iter__(self):
+		return (item for item in self.d)
+	def __getitem__(self, key):
+		return self.d[key]
+	def __setitem__(self, key, value):
+		self.d[key] = value
+	def get(self, key, default):
+		return self.d.get(key, default)
 	class CardView(object):
 		def invalid(card):
 			return 'INVALID STYLE'
@@ -175,7 +159,7 @@ class NamedCards(object):
 class RealCard(Card):
 	def __init__(self, *args, **kwargs):
 		super(RealCard, self).__init__(*args, **kwargs)
-		if not 'type' in self: self['type'] = 'instant|sorcery|enchantment|creature|artifact|land'
+		if not 'type' in self: self['type'] = '.*(instant|sorcery|enchantment|creature|artifact|land).*'
 	def match(self, other):
 		if 'isFront' in other: return other['isFront'] and super(RealCard, self).match(other)
 		return super(RealCard, self).match(other)
@@ -197,9 +181,8 @@ class Deck(object):
 		except ReadDeckError: pass
 		Deck.fromString(s, self)
 	@staticmethod
-	def fromXML(s, d=None):
-		if not d: deck = Deck()
-		else: deck = d
+	def fromXML(s, deck=None):
+		if not deck: deck = Deck()
 		try: root = ET.fromstring(s)
 		except ET.ParseError: raise ReadDeckError
 		for zone in root.iter('zone'):
@@ -215,21 +198,17 @@ class Deck(object):
 						else: deck.sideboard.append({'name': card.attrib['name']})
 		return deck
 	def toXML(self):
-		tree = ET.parse('basedeck.xml')
-		try:
-			m = tree.find('zone[@name="main"]')
-			s = tree.find('zone[@name="side"]')
-		except ET.ParseError:
-			raise ReadDeckError
+		tree = ET.parse(os.path.join('resources', 'basedeck.xml'))
+		m = tree.find('zone[@name="main"]')
+		s = tree.find('zone[@name="side"]')
 		for card in set([card['name'] for card in self.maindeck]):
 			m.append(ET.Element('card', {'number': str([card['name'] for card in self.maindeck].count(card)), 'name': card}))
 		for card in set([card['name'] for card in self.sideboard]):
 			s.append(ET.Element('card', {'number': str([card['name'] for card in self.sideboard].count(card)), 'name': card}))
 		return tree
 	@staticmethod
-	def fromString(s, d=None):
-		if not d: deck = Deck()
-		else: deck = d
+	def fromString(s, deck=None):
+		if not deck: deck = Deck()
 		for m in re.finditer('(SB: )?\s*(\d+)?x?\s*(([\w\d\'\-:,]+ ?)+)\s*', s, re.IGNORECASE):
 			if m.groups()[1]: amnt = int(m.groups()[1])
 			else: amnt = 1
@@ -245,17 +224,17 @@ class Deck(object):
 	def toString(self):
 		maindecknames = [card['name'] for card in self.maindeck]
 		sideboardnames = [card['name'] for card in self.sideboard]
-		return ''.join([str(maindecknames.count(card))+' '+card+'\n' for card in set(maindecknames)]+['SB: '+str(sideboardnames.count(card))+' '+card+'\n' for card in set(sideboardnames)])
+		return ''.join([
+			str(maindecknames.count(card))+' '+card+'\n'
+			for card in set(maindecknames)]
+			+['SB: '+str(sideboardnames.count(card))+' '+card+'\n'
+			for card in set(sideboardnames)
+		])
 	@staticmethod
-	def fromJson(s, d=None):
-		print('from json')
-		if not d: deck = Deck()
-		else: deck = d
+	def fromJson(s, deck=None):
+		if not deck: deck = Deck()
 		try: jdeck = json.loads(s)
-		except json.decoder.JSONDecodeError:
-			print('no json')
-			raise ReadDeckError
-		print(type(jdeck))
+		except json.decoder.JSONDecodeError: raise ReadDeckError
 		deck.maindeck = jdeck['main']
 		deck.sideboard = jdeck['side']
 		return deck
@@ -265,16 +244,85 @@ class Deck(object):
 		return self.maindeck+self.sideboard
 	def check(self):
 		return checkList([card['name'] for card in self._75()])
+
+class CardList(list):
+	def view(self, seperator=', ', style='N'):
+		return ''.join([Card.view(card, style)+seperator for card in self])
 		
-def toNestedFrozenSet(s):
-	return frozenset({toNestedFrozenSet(element) if isinstance(element, list) else element for element in s})
+class Pool(CardList):
+	def __init__(self, *args, s='', boosters = []):
+		super(Pool, self).__init__(*args)
+		if s:
+			try:
+				Pool.fromXML(s, self)
+				return
+			except ReadDeckError: pass
+			try:
+				Pool.fromJson(s, self)
+				return
+			except ReadDeckError: pass
+			Pool.fromString(s, self)
+			return
+		elif boosters:
+			for booster in boosters: self.extend(booster)
+	@staticmethod
+	def fromXML(s, pool=None):
+		if pool==None: pool = Pool()
+		try: root = ET.fromstring(s)
+		except ET.ParseError: raise ReadDeckError
+		for zone in root.iter('zone'):
+			if 'name' in zone.attrib and zone.attrib['name']=='pool':
+				for card in zone.iter('card'):
+					for i in range(int(card.attrib.get('number', 0))):
+						if card.attrib['name'] in CardLoader.getCards(): pool.append(Card.getThisFromASet(CardLoader.getCards()[card.attrib['name']]))
+						else: pool.append({'name': card.attrib['name']})
+		return pool
+	def toXML(self):
+		tree = ET.parse(os.path.join('resources', 'basepool.xml'))
+		p = tree.find('zone[@name="pool"]')
+		for card in set([card['name'] for card in self]):
+			p.append(ET.Element('card', {'number': str([card['name'] for card in self].count(card)), 'name': card}))
+		return tree
+	@staticmethod
+	def fromString(s, pool=None):
+		if pool==None: pool = Pool()
+		for m in re.finditer('(SB: )?\s*(\d+)?x?\s*(([\w\d\'\-:,]+ ?)+)\s*', s, re.IGNORECASE):
+			if m.groups()[1]: amnt = int(m.groups()[1])
+			else: amnt = 1
+			for i in range(amnt):
+				if m.groups()[2] in CardLoader.getCards(): pool.append(Card.getThisFromASet(CardLoader.getCards()[m.groups()[2]]))
+				else: pool.append({'name': m.groups()[2]})
+		return pool
+	def toString(self):
+		names = [card['name'] for card in self]
+		return ''.join([str(names.count(card))+' '+card+'\n' for card in set(names)])
+	@staticmethod
+	def fromJson(s, pool=None):
+		if pool==None: pool = Pool()
+		try: jpool = json.loads(s)
+		except json.decoder.JSONDecodeError: raise ReadpoolError
+		pool[:] = jpool
+		return pool
+	def toJson(self):
+		return json.dumps(self, ensure_ascii=False)
+	def check(self):
+		return checkList([card['name'] for card in self])
+	
+class Selector(tuple):		
+	def select(self):
+		roll = random.randint(1, sum(e[0] for e in self))
+		for pair in self:
+			roll -= pair[0]
+			if roll<=0: return pair[1]
+		raise IndexError
 		
-def selectFromOrderedDict(d):
-	roll = random.randint(1, sum(d))
-	for k in d:
-		roll -= k
-		if roll<=0: return d[k]
-	raise IndexError
+def toNestedTuple(lst):
+	return tuple(
+		toNestedTuple(element)
+		if isinstance(element, list) else
+		element
+		for element in lst
+	)
 		
 class BoosterKey(list):
 	common = RealCard({'rarity': 'Common'})
@@ -282,7 +330,6 @@ class BoosterKey(list):
 	rare = RealCard({'rarity': 'Rare'})
 	mythicrare = RealCard({'rarity': 'Mythic Rare'})
 	specialrare = RealCard({'rarity': 'Special'})
-	specialrarity = RealCard({'rarity': 'Special'})
 	doublefacedCommon = RealCard({'rarity': 'Common', 'layout': 'double-faced'})
 	doublefacedUncommon = RealCard({'rarity': 'Uncommon', 'layout': 'double-faced'})
 	doublefacedRare = RealCard({'rarity': 'Rare', 'layout': 'double-faced'})
@@ -296,14 +343,14 @@ class BoosterKey(list):
 	draftmattersRare = RealCard({'rarity': 'Rare', 'draftmatters': 'True'})
 	draftmattersMythicrare = RealCard({'rarity': 'Mythic Rare', 'timeshifted': 'True'})
 	urzaLand = RealCard({'type': 'land', 'name': 'urza'})
-	randomCardStandardWithMythic = OrderedDict({1: mythicrare, 7: rare, 21: uncommon, 77: common})
-	randomCardStandardWithPower = OrderedDict({1: specialrare, 53: mythicrare, 371: rare, 1113: uncommon, 4081: common})
-	rareOrMythicStandard = OrderedDict({1: mythicrare, 7: rare})
-	randomCardTimeShifted = OrderedDict({1: timeshiftedRare, 3: timeshiftedUncommon, 11: timeshiftedCommon})
-	rareOrTimeshiftedRare = OrderedDict({1: timeshiftedRare, 7: rare})
-	homelandsUncommonOrRare = OrderedDict({1: rare, 3: uncommon})
-	eldritchmoondoublefacedOrCommon = OrderedDict({1: doublefacedMythicrare, 7: doublefacedRare, 49: common})
-	doublefacedCommonOrUncommon = OrderedDict({3: doublefacedUncommon, 11: doublefacedCommon})
+	randomCardStandardWithMythic = Selector(((1, mythicrare), (7, rare), (21, uncommon), (77, common)))
+	randomCardStandardWithPower = Selector(((1, specialrare), (53, mythicrare), (371, rare), (1113, uncommon), (4081, common)))
+	rareOrMythicStandard = Selector(((1, mythicrare), (7, rare)))
+	randomCardTimeShifted = Selector(((1, timeshiftedRare), (3, timeshiftedUncommon), (11, timeshiftedCommon)))
+	rareOrTimeshiftedRare = Selector(((1, timeshiftedRare), (7, rare)))
+	homelandsUncommonOrRare = Selector(((1, rare), (3, uncommon)))
+	eldritchmoondoublefacedOrCommon = Selector(((1, doublefacedMythicrare), (7, doublefacedRare), (49, common)))
+	doublefacedCommonOrUncommon = Selector(((3, doublefacedUncommon), (11, doublefacedCommon)))
 	stringToPatternMap = {
 		'double faced mythic rare': doublefacedMythicrare,
 		'double faced uncommon': doublefacedUncommon,
@@ -329,60 +376,86 @@ class BoosterKey(list):
 		'timeshifted purple': randomCardTimeShifted
 	}
 	setToPatternMap = {
-		toNestedFrozenSet({'land', 'checklist'}): None,
-		toNestedFrozenSet({'rare', 'timeshifted rare'}): rareOrTimeshiftedRare,
-		toNestedFrozenSet({'rare', 'uncommon'}): homelandsUncommonOrRare,
-		toNestedFrozenSet({'foil mythic rare', 'foil rare', 'foil uncommon', 'foil common'}): randomCardStandardWithMythic,
-		toNestedFrozenSet({'power nine', 'foil'}):  randomCardStandardWithPower,
-		toNestedFrozenSet({'common', frozenset({'double faced rare', 'double faced mythic rare'})}): eldritchmoondoublefacedOrCommon,
-		toNestedFrozenSet({'uncommon', 'timeshifted uncommon'}): uncommon,
-		toNestedFrozenSet({'common', 'timeshifted common'}): common,
-		toNestedFrozenSet({'timeshifted rare', 'timeshifted uncommon'}): rare,
-		toNestedFrozenSet({'common', 'double faced rare', 'double faced mythic rare'}): eldritchmoondoublefacedOrCommon,
-		toNestedFrozenSet({'double faced common', 'double faced uncommon'}): doublefacedCommonOrUncommon,
-		toNestedFrozenSet({'rare', 'mythic rare'}): rareOrMythicStandard
+		('land', 'checklist'): None,
+		('rare', 'timeshifted rare'): rareOrTimeshiftedRare,
+		('rare', 'uncommon'): homelandsUncommonOrRare,
+		('foil mythic rare', 'foil rare', 'foil uncommon', 'foil common'): randomCardStandardWithMythic,
+		('power nine', 'foil'):  randomCardStandardWithPower,
+		('common', ('double faced rare', 'double faced mythic rare')): eldritchmoondoublefacedOrCommon,
+		('uncommon', 'timeshifted uncommon'): uncommon,
+		('common', 'timeshifted common'): common,
+		('timeshifted rare', 'timeshifted uncommon'): rare,
+		('common', 'double faced rare', 'double faced mythic rare'): eldritchmoondoublefacedOrCommon,
+		('double faced common', 'double faced uncommon'): doublefacedCommonOrUncommon,
+		('rare', 'mythic rare'): rareOrMythicStandard
 	}
-	def __init__(self, *args, mset=None):
-		super(BoosterKey, self).__init__(*args)
-		if isinstance(mset, dict) and 'booster' in mset: self[:] = mset['booster']
-		for i in range(len(self)):
-			if isinstance(self[i], list): self[i] = self.setToPatternMap[toNestedFrozenSet(self[i])]
-			elif isinstance(self[i], str): self[i] = self.stringToPatternMap.get(self[i].lower(), RealCard({'rarity': self[i]}))
-			elif not isinstance(self[i], OrderedDict): raise TypeError
+	def __init__(self, slots=None, mset=None):
+		if isinstance(mset, dict) and 'booster' in mset: self.makeFromList(mset['booster'])
+		elif slots: self.makeFromList(slots)
+	def makeFromList(self, slots):
+		self[:] = [
+			self.setToPatternMap[slot]
+			if isinstance(slot, tuple) else
+			self.stringToPatternMap.get(slot.lower(), RealCard({'rarity': slot}))
+			for slot in toNestedTuple(slots)
+		]
 	def getBoosterMap(self, mset):
 		return BoosterMap(mset=mset, key=self)
 		
 class BoosterMap(list):
-	def __init__(self, *args, mset = None, key = None):
-		super(BoosterMap, self).__init__(*args)
+	def __init__(self, mset = None, key = None):
+		self.fromSet = mset
 		if not mset or not key: return
-		self[:] = [
-			OrderedDict((k, [card for card in mset['cards'] if slot[k].match(card)]) for k in slot)
-			if isinstance(slot, OrderedDict) else
-			[card for card in mset['cards'] if slot.match(card)]
-			for slot in key if slot
-		]
-	def getBooster(self, allowDuplicate = False):
+		uniqueSlots = set(key)
+		for slot in uniqueSlots:
+			if isinstance(slot, Selector): item = Selector((pair[0], [card for card in mset['cards'] if pair[1].match(card)]) for pair in slot)
+			elif slot: item = [card for card in mset['cards'] if slot.match(card)]
+			else: continue
+			for i in range(key.count(slot)): self.append(item)
+	def generateBooster(self, allowDuplicate = False):
 		if allowDuplicate: return Booster([
-			copy.deepcopy(random.choice(
-				selectFromOrderedDict(slot)
-				if isinstance(slot, OrderedDict) else
-				slot
-			))
-			for slot in self
-		])
-		booster = Booster()
+			copy.deepcopy(random.choice(option))
+				for option in (
+					slot.select()
+					if isinstance(slot, Selector) else
+					slot
+					for slot in self
+				)
+			if option
+		], fromSet=self.fromSet)
+		lst = []
 		for slot in self:
 			sl = [card for card in
-				(selectFromOrderedDict(slot) if isinstance(slot, OrderedDict) else slot)
-				if not card['name'] in [c['name'] for c in booster]
+				(slot.select() if isinstance(slot, Selector) else slot)
+				if not card in lst
 			]
-			if sl: booster.append(copy.deepcopy(random.choice(sl)))
-		return booster
+			if sl: lst.append(random.choice(sl))
+		return Booster(copy.deepcopy(lst), fromSet=self.fromSet)
 		
-class Booster(list):
-	def view(self, seperator=', ', style='N'):
-		return ''.join([Card.view(card, style)+seperator for card in self])
+class CubeBoosterMap(BoosterMap):
+	def __init__(self, *args, mset = None, key = None):
+		super(CubeBoosterMap, self).__init__(*args, mset=mset, key=key)
+		self.shuffle()
+	def shuffle(self):
+		for slot in self:
+			if isinstance(slot, Selector):
+				for pair in slot: random.shuffle(pair[1])
+			else: random.shuffle(slot)
+	def generateBooster(self):
+		return Booster([
+			option.pop() for option in (
+				slot.select()
+				if isinstance(slot, Selector) else
+				slot
+				for slot in self
+			)
+			if option
+		])
+		
+class Booster(CardList):
+	def __init__(self, *args, fromSet = None):
+		super(Booster, self).__init__(*args)
+		self.fromSet = fromSet
 	
 class MTGSet(dict):
 	def __init__(self, *args, **kwargs):
@@ -426,17 +499,16 @@ class MTGSet(dict):
 	def view(self, style = 'CNB'):
 		return MTGSet.SetView.get(self, style)
 	def setBoosterKey(self, key=None):
-		if key==None: self.boosterkey = BoosterKey(mset=self)
-		else: self.boosterkey = BoosterKey(key)
-	def setBoosterMap(self, map=None):
+		if key!=None: key
+		elif not self.boosterkey: self.boosterkey = BoosterKey(mset=self)
+	def getBoosterKey(self):
 		if self.boosterkey==None: self.setBoosterKey()
-		if map==None: self.boostermap = self.boosterkey.getBoosterMap(self)
-		else: self.boostermap = map
+		return self.boosterkey
+	def setBoosterMap(self, map=None):
+		if map!=None: self.boostermap = map
+		elif not self.boostermap: self.boostermap = self.getBoosterKey().getBoosterMap(self)
 	def generateBooster(self):
 		self.setBoosterMap()
-		return self.boostermap.getBooster()
-	
-def test():
-	pass
-	
-if __name__=='__main__': test()
+		return self.boostermap.generateBooster()
+	def generateCubeBoosterMap(self):
+		return CubeBoosterMap(mset=self, key=self.getBoosterKey())
