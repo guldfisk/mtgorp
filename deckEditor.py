@@ -30,7 +30,6 @@ class LineEditWithDropDown(QtWidgets.QLineEdit):
 	def paintEvent(self, event):
 		super(LineEditWithDropDown, self).paintEvent(event)
 		if not self.text():
-			self.setCurrentRow(0)
 			self.dropdown.hide()
 			return
 		self.dropdown.move(self.mapToGlobal(QtCore.QPoint(0, self.height())))
