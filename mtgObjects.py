@@ -12,18 +12,11 @@ def checkList(cards, names=None):
 	if names==None: names = CardLoader.getCardsNameList()
 	return set(card for card in cards if not card in names)
 	
-class Card(object):
-	def __init__(self, d=None, **kwargs):
-		if d: self.d = d
-		else: self.d = {}
-	def __iter__(self):
-		return (item for item in self.d)
-	def __getitem__(self, key):
-		return self.d[key]
-	def __setitem__(self, key, value):
-		self.d[key] = value
-	def get(self, key, default):
-		return self.d.get(key, default)
+class Card(dict):
+	def __hash__(self):
+		return hash(id(self))
+	def __eq__(self, other):
+		return id(self)==id(other)
 	class CardView(object):
 		def invalid(card):
 			return 'INVALID STYLE'
@@ -163,7 +156,7 @@ class RealCard(Card):
 	def match(self, other):
 		if 'isFront' in other: return other['isFront'] and super(RealCard, self).match(other)
 		return super(RealCard, self).match(other)
-		
+	
 class ReadDeckError(Exception): pass
 		
 class Deck(object):
@@ -431,26 +424,6 @@ class BoosterMap(list):
 			]
 			if sl: lst.append(random.choice(sl))
 		return Booster(copy.deepcopy(lst), fromSet=self.fromSet)
-		
-class CubeBoosterMap(BoosterMap):
-	def __init__(self, *args, mset = None, key = None):
-		super(CubeBoosterMap, self).__init__(*args, mset=mset, key=key)
-		self.shuffle()
-	def shuffle(self):
-		for slot in self:
-			if isinstance(slot, Selector):
-				for pair in slot: random.shuffle(pair[1])
-			else: random.shuffle(slot)
-	def generateBooster(self):
-		return Booster([
-			option.pop() for option in (
-				slot.select()
-				if isinstance(slot, Selector) else
-				slot
-				for slot in self
-			)
-			if option
-		])
 		
 class Booster(CardList):
 	def __init__(self, *args, fromSet = None):

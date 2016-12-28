@@ -1,4 +1,5 @@
 from multiCardWidget import *
+from cubeObjects import *
 import cardSearch
 import os
 
@@ -285,11 +286,11 @@ class MainWindow(QtWidgets.QMainWindow):
 				fname += '.dec'
 		else: extension = extension.groups()[0]
 		if asPool:
-			cards = Pool([card.d for key in self.mainview.cardWidgets for card in self.mainview.cardWidgets[key].cards])
+			cards = Pool([card for key in self.mainview.cardWidgets for card in self.mainview.cardWidgets[key].cards])
 		else:
 			cards = Deck(
-				maindeck=[card.d for card in self.mainview.cardWidgets['main'].cards],
-				sideboard=[card.d for card in self.mainview.cardWidgets['side'].cards]
+				maindeck=[card for card in self.mainview.cardWidgets['main'].cards],
+				sideboard=[card for card in self.mainview.cardWidgets['side'].cards]
 			)
 		if extension in ('xml', 'cod'): content = ET.tostring(cards.toXML().getroot(), 'UTF-8').decode('UTF-8')
 		elif extension in ('json', 'pool'): content = cards.toJson()

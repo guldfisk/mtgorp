@@ -46,8 +46,18 @@ class DECard(Card):
 		self.session.upToDate = False
 		self.rekt.x, self.rekt.y = x, y
 		self.rekt.clamp_ip(Rect((0, 0), self.session.getSize()))
+	def changeToSet(self):
+		key, ok = QtWidgets.QInputDialog.getItem(self.session, 'Select set', 'Select set', CardLoader.getCards()[self['name']].get('printings', []))
+		if not ok or not key: return
+		self.session.selected.add(self)
+		for card in self.session.selected:
+			if card['name']==self['name']: card['set'] = key
+		self.session.redraw()
+	def rightClicked(self, menu, mapping):
+		if hasattr(super(DECard, self), 'rightClicked'): super(DECard, self).rightClicked(menu, mapping)
+		mapping[menu.addAction('Change to set')] = FuncWithArg(self.changeToSet)
 
-class Stack:
+class Stack(object):
 	def __init__(self, session, pos = (0, 0), dim = (100, 100)):
 		self.session = session
 		self.cards = []
@@ -142,7 +152,6 @@ class MultiCardWidget(embedableSurface.EmbeddedSurface):
 		self.selectionbox = None
 		self.selected = set()
 		self.uielements = []
-		self.selectionbox = None
 		self.lastGridDimensions = (0, 0)
 		self.makeStacks()
 		self.setAcceptDrops(True)
@@ -203,6 +212,8 @@ class MultiCardWidget(embedableSurface.EmbeddedSurface):
 			columnsort.addAction('Rarity'): FuncWithArg(self.sortCards, Card.raritySortValue, False),
 			columnsort.addAction('Type'): FuncWithArg(self.sortCards, Card.typeSortValue, False)
 		}
+		card = self.getTopCollision((pos.x(), pos.y()))
+		if card: card.rightClicked(menu, mapping)
 		menu.addMenu(rowsort)
 		menu.addMenu(columnsort)
 		action = menu.exec_(self.mapToGlobal(pos))
