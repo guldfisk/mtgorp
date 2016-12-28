@@ -225,7 +225,7 @@ class MultiCardWidget(embedableSurface.EmbeddedSurface):
 		drag = QtGui.QDrag(self)
 		mime = QtCore.QMimeData()
 		stream = QtCore.QByteArray()
-		stream.append(pickle.dumps(tuple(card.d for card in self.floatingStack.cards)))
+		stream.append(pickle.dumps(tuple(dict(card) for card in self.floatingStack.cards)))
 		mime.setData('cards', stream)
 		drag.setMimeData(mime)
 		drag.exec_()
