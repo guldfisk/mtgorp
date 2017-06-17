@@ -1,5 +1,5 @@
 __pycache__/
-images/
-decks/
-*.json
-*.txt
+.idea/
+resources/
+.gitignore
+models/models_test.py

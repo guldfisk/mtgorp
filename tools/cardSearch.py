@@ -1,8 +1,9 @@
 import re
-from mtgObjects import *
-from loadCards import *
 
-class CardMatch(Card):
+from models import mtgObjects
+
+
+class CardMatch(mtgObjects.Card):
 	trans = {
 		'n': 'name',
 		'o': 'text',

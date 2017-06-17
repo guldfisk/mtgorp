@@ -1,17 +1,19 @@
-from loadCards import *
-import json
 import copy
-import xml.etree.ElementTree as ET
-import re
-from collections import OrderedDict
-import random
+import json
 import os
+import random
+import re
+import xml.etree.ElementTree as ET
+
+from resourceload import locate
+from resourceload.cardload import CardLoader
 
 #Returns names from list which are not magic names
 def checkList(cards, names=None):
-	if names==None: names = CardLoader.getCardsNameList()
+	if names is None:
+		names = CardLoader.get_cards_name_list()
 	return set(card for card in cards if not card in names)
-	
+
 class Card(dict):
 	def __hash__(self):
 		return hash(id(self))
@@ -21,15 +23,15 @@ class Card(dict):
 		def invalid(card):
 			return 'INVALID STYLE'
 		def name(card):
-			nameAdd = ''
+			name_add = ''
 			if card.get('layout', False) == 'split' and 'names' in card and len(card['names'])>1:
-				nameAdd = ' // '+[obj for obj in card['names'] if obj!=card['name']][0]
+				name_add = ' // '+[obj for obj in card['names'] if obj!=card['name']][0]
 			elif card.get('layout', False) == 'flip' and 'names' in card and len(card['names'])>1:
-				nameAdd = '  '+[obj for obj in card['names'] if obj!=card['name']][0]
+				name_add = '  '+[obj for obj in card['names'] if obj!=card['name']][0]
 			elif card.get('layout', False) == 'double-faced' and 'names' in card and len(card['names'])>1:
-				nameAdd = ' >> '+[obj for obj in card['names'] if obj!=card['name']][0]
-			return str(card.get('name', 'NO NAME'))+nameAdd
-		def manaCost(card):
+				name_add = ' >> '+[obj for obj in card['names'] if obj!=card['name']][0]
+			return str(card.get('name', 'NO NAME'))+name_add
+		def mana_cost(card):
 			return str(card.get('manaCost', card.get('colors', '')))
 		def types(card):
 			return str(card.get('type', ''))
@@ -41,7 +43,7 @@ class Card(dict):
 			return str(card.get('loyalty', ''))
 		def printings(card):
 			return str(card.get('printings', ''))
-		def fromSet(card):
+		def frm_set(card):
 			return str(card.get('set', ''))
 		def flavors(card):
 			return str(card.get('flavors', ''))
@@ -51,53 +53,58 @@ class Card(dict):
 			return ' '
 		switch = {
 			'n': name,
-			'm': manaCost,
+			'm': mana_cost,
 			't': types,
 			'o': oracle,
 			'p': ptl,
 			'e': printings,
-			'x': fromSet,
+			'x': frm_set,
 			'f': flavors,
 			'r': rarity,
 			's': space
 		}
 		@staticmethod
-		def get(card, s = 'nmtop'):
-			def getItem(f, card, seperator='\n'):
+		def get(card, s = 'Nmtop'):
+			def _get_item(f, card, separator='\n'):
 				v = f(card)
-				if v: return v+seperator
+				if v:
+					return v + separator
 				return ''
-			return ''.join([getItem(Card.CardView.switch.get(k.lower(), Card.CardView.invalid), card, ' ' if k.isupper() else '\n') for k in s])
-	def view(self, style = 'nmtop'):
+			return ''.join(
+				[
+					_get_item(
+						Card.CardView.switch.get(k.lower(),
+					 	Card.CardView.invalid),
+						card,
+						' ' if k.isupper() else '\n'
+					)
+					for k in s
+				]
+			)
+	def view(self, style = 'Nmtop'):
 		return Card.CardView.get(self, style)
 	def match(self, other):
-		return not [key for key in list(self) if not key in other or not re.match(str(self[key]), str(other[key]), re.IGNORECASE+re.DOTALL)]
-	def fullName(self):
+		return not [
+			key
+			for key in
+			list(self)
+			if not key in other
+			or not re.match(str(self[key]), str(other[key]), re.IGNORECASE+re.DOTALL)
+		]
+	def full_name(self):
 		return self.get('set', '')+'/'+self.get('name', 'NONAME')
-	colordict = {
-		'White': (230, 230, 150),
-		'Blue': (0, 0, 200),
-		'Black': (220, 220, 220),
-		'Red': (255, 0, 0),
-		'Green': (0, 200, 0),
-		'Gold': (230, 230, 0),
-		'Colorless': (255, 200, 150)
-	}
-	def getImageColor(self):
-		if not 'colors' in self or not self['colors']: return Card.colordict['Colorless']
-		elif len(self['colors'])>1: return Card.colordict['Gold']
-		return Card.colordict.get(self['colors'][0], (100, 100, 100))
-	def getThisFromSet(self, set):
-		sets = CardLoader.getSets()
-		for card in sets[set]['cards']:
-			if card['name']==self['name']: return Card(card)
+	def printing(self, mset):
+		sets = CardLoader.get_sets()
+		for card in sets[mset]['cards']:
+			if card['name']==self['name']:
+				return Card(card)
 	def getPrintable(self):
-		sets = CardLoader.getSets()
+		sets = CardLoader.get_sets()
 		for setkey in self['printings']:
 			for card in sets[setkey]['cards']:
 				if card['name']==self['name'] and 'multiverseid' in card: return Card(card)
 	def getThisFromASet(self):
-		sets = CardLoader.getSets()
+		sets = CardLoader.get_sets()
 		fallbackcard = None
 		for setkey in self['printings']:
 			for card in sets[setkey]['cards']:
@@ -105,39 +112,7 @@ class Card(dict):
 					if 'multiverseid' in card: return Card(card)
 					elif not fallbackcard: fallbackcard = Card(card)
 		return fallbackcard
-	colorSortValueDict = {
-		'White': 0,
-		'Blue': 1,
-		'Black': 2,
-		'Red': 3,
-		'Green': 4
-	}
-	def colorSortValue(self):
-		if not 'colors' in self or not self['colors']: return 6
-		elif len(self['colors'])>1: return 5
-		return Card.colorSortValueDict.get(self['colors'][0], 6)
-	raritySortValueDict = {
-		'Common': 0,
-		'Uncommon': 1,
-		'Rare': 2,
-		'Mythic Rare': 3
-	}
-	def raritySortValue(self):
-		return Card.raritySortValueDict.get(self.get('rarity', 'norarity'), 4)
-	def isPermanent(self):
-		return NamedCards.nonpermanentCard.match(self)
-	def isCreature(self):
-		return NamedCards.creatureCard.match(self)
-	def cmcSortValue(self):
-		return self.get('cmc', 0)
-	def typeSortValue(self):
-		if NamedCards.landCard.match(self): return 0
-		elif NamedCards.creatureCard.match(self): return 1
-		elif NamedCards.instantCard.match(self): return 2
-		elif NamedCards.sorceryCard.match(self): return 3
-		elif NamedCards.artifactCard.match(self): return 4
-		elif NamedCards.enchantmentCard.match(self): return 5
-		elif NamedCards.planeswalkerCard.match(self): return 6
+
 		
 class NamedCards(object):
 	nonpermanentCard = Card({'type': '.*(instant|sorcery).*'})
@@ -152,13 +127,19 @@ class NamedCards(object):
 class RealCard(Card):
 	def __init__(self, *args, **kwargs):
 		super(RealCard, self).__init__(*args, **kwargs)
-		if not 'type' in self: self['type'] = '.*(instant|sorcery|enchantment|creature|artifact|land).*'
+		if not 'type' in self:
+			self['type'] = '.*(instant|sorcery|enchantment|creature|artifact|land|planeswalker).*'
 	def match(self, other):
-		if 'isFront' in other: return other['isFront'] and super(RealCard, self).match(other)
+		if 'isFront' in other:
+			return other['isFront'] and super(RealCard, self).match(other)
 		return super(RealCard, self).match(other)
 	
-class ReadDeckError(Exception): pass
-		
+class ReadDeckError(Exception):
+	pass
+
+class ReadPoolError(Exception):
+	pass
+
 class Deck(object):
 	def __init__(self, s='', maindeck = [], sideboard = []):
 		self.maindeck = copy.copy(maindeck)
@@ -176,28 +157,44 @@ class Deck(object):
 	@staticmethod
 	def fromXML(s, deck=None):
 		if not deck: deck = Deck()
-		try: root = ET.fromstring(s)
-		except ET.ParseError: raise ReadDeckError
+		try:
+			root = ET.fromstring(s)
+		except ET.ParseError:
+			raise ReadDeckError
 		for zone in root.iter('zone'):
 			if 'name' in zone.attrib and zone.attrib['name']=='main':
 				for card in zone.iter('card'):
 					for i in range(int(card.attrib.get('number', 0))):
-						if card.attrib['name'] in CardLoader.getCards(): deck.maindeck.append(Card.getThisFromASet(CardLoader.getCards()[card.attrib['name']]))
-						else: deck.maindeck.append({'name': card.attrib['name']})
+						if card.attrib['name'] in CardLoader.get_cards():
+							deck.maindeck.append(Card.getThisFromASet(CardLoader.get_cards()[card.attrib['name']]))
+						else:
+							deck.maindeck.append({'name': card.attrib['name']})
 			elif 'name' in zone.attrib and zone.attrib['name']=='side':
 				for card in zone.iter('card'):
 					for i in range(int(card.attrib.get('number', 0))):
-						if card.attrib['name'] in CardLoader.getCards(): deck.sideboard.append(Card.getThisFromASet(CardLoader.getCards()[card.attrib['name']]))
-						else: deck.sideboard.append({'name': card.attrib['name']})
+						if card.attrib['name'] in CardLoader.get_cards():
+							deck.sideboard.append(Card.getThisFromASet(CardLoader.get_cards()[card.attrib['name']]))
+						else:
+							deck.sideboard.append({'name': card.attrib['name']})
 		return deck
 	def toXML(self):
-		tree = ET.parse(os.path.join('resources', 'basedeck.xml'))
+		tree = ET.parse(os.path.join(locate.path, 'basedeck.xml'))
 		m = tree.find('zone[@name="main"]')
 		s = tree.find('zone[@name="side"]')
 		for card in set([card['name'] for card in self.maindeck]):
-			m.append(ET.Element('card', {'number': str([card['name'] for card in self.maindeck].count(card)), 'name': card}))
+			m.append(
+				ET.Element(
+					'card',
+					{'number': str([card['name'] for card in self.maindeck].count(card)), 'name': card}
+				)
+			)
 		for card in set([card['name'] for card in self.sideboard]):
-			s.append(ET.Element('card', {'number': str([card['name'] for card in self.sideboard].count(card)), 'name': card}))
+			s.append(
+				ET.Element(
+					'card',
+					{'number': str([card['name'] for card in self.sideboard].count(card)), 'name': card}
+				)
+			)
 		return tree
 	@staticmethod
 	def fromString(s, deck=None):
@@ -207,12 +204,16 @@ class Deck(object):
 			else: amnt = 1
 			if not m.groups()[0]:
 				for i in range(amnt):
-					if m.groups()[2] in CardLoader.getCards(): deck.maindeck.append(Card.getThisFromASet(CardLoader.getCards()[m.groups()[2]]))
-					else: deck.maindeck.append({'name': m.groups()[2]})
+					if m.groups()[2] in CardLoader.get_cards():
+						deck.maindeck.append(Card.getThisFromASet(CardLoader.get_cards()[m.groups()[2]]))
+					else:
+						deck.maindeck.append({'name': m.groups()[2]})
 			else:
 				for i in range(amnt):
-					if m.groups()[2] in CardLoader.getCards(): deck.sideboard.append(Card.getThisFromASet(CardLoader.getCards()[m.groups()[2]]))
-					else: deck.sideboard.append({'name': m.groups()[2]})
+					if m.groups()[2] in CardLoader.get_cards():
+						deck.sideboard.append(Card.getThisFromASet(CardLoader.get_cards()[m.groups()[2]]))
+					else:
+						deck.sideboard.append({'name': m.groups()[2]})
 		return deck
 	def toString(self):
 		maindecknames = [card['name'] for card in self.maindeck]
@@ -227,7 +228,8 @@ class Deck(object):
 	def fromJson(s, deck=None):
 		if not deck: deck = Deck()
 		try: jdeck = json.loads(s)
-		except json.decoder.JSONDecodeError: raise ReadDeckError
+		except json.decoder.JSONDecodeError: 
+			raise ReadDeckError
 		deck.maindeck = jdeck['main']
 		deck.sideboard = jdeck['side']
 		return deck
@@ -267,11 +269,13 @@ class Pool(CardList):
 			if 'name' in zone.attrib and zone.attrib['name']=='pool':
 				for card in zone.iter('card'):
 					for i in range(int(card.attrib.get('number', 0))):
-						if card.attrib['name'] in CardLoader.getCards(): pool.append(Card.getThisFromASet(CardLoader.getCards()[card.attrib['name']]))
-						else: pool.append({'name': card.attrib['name']})
+						if card.attrib['name'] in CardLoader.get_cards():
+							pool.append(Card.getThisFromASet(CardLoader.get_cards()[card.attrib['name']]))
+						else:
+							pool.append({'name': card.attrib['name']})
 		return pool
 	def toXML(self):
-		tree = ET.parse(os.path.join('resources', 'basepool.xml'))
+		tree = ET.parse(os.path.join(locate.path, 'basepool.xml'))
 		p = tree.find('zone[@name="pool"]')
 		for card in set([card['name'] for card in self]):
 			p.append(ET.Element('card', {'number': str([card['name'] for card in self].count(card)), 'name': card}))
@@ -283,7 +287,7 @@ class Pool(CardList):
 			if m.groups()[1]: amnt = int(m.groups()[1])
 			else: amnt = 1
 			for i in range(amnt):
-				if m.groups()[2] in CardLoader.getCards(): pool.append(Card.getThisFromASet(CardLoader.getCards()[m.groups()[2]]))
+				if m.groups()[2] in CardLoader.get_cards(): pool.append(Card.getThisFromASet(CardLoader.get_cards()[m.groups()[2]]))
 				else: pool.append({'name': m.groups()[2]})
 		return pool
 	def toString(self):
@@ -293,7 +297,7 @@ class Pool(CardList):
 	def fromJson(s, pool=None):
 		if pool==None: pool = Pool()
 		try: jpool = json.loads(s)
-		except json.decoder.JSONDecodeError: raise ReadpoolError
+		except json.decoder.JSONDecodeError: raise ReadPoolError
 		pool[:] = jpool
 		return pool
 	def toJson(self):
@@ -398,43 +402,51 @@ class BoosterKey(list):
 class BoosterMap(list):
 	def __init__(self, mset = None, key = None):
 		self.fromSet = mset
-		if not mset or not key: return
-		uniqueSlots = set(key)
-		for slot in uniqueSlots:
-			if isinstance(slot, Selector): item = Selector((pair[0], [card for card in mset['cards'] if pair[1].match(card)]) for pair in slot)
-			elif slot: item = [card for card in mset['cards'] if slot.match(card)]
-			else: continue
-			for i in range(key.count(slot)): self.append(item)
-	def generateBooster(self, allowDuplicate = False):
-		if allowDuplicate: return Booster([
-			copy.deepcopy(random.choice(option))
-				for option in (
-					slot.select()
-					if isinstance(slot, Selector) else
-					slot
-					for slot in self
-				)
-			if option
-		], fromSet=self.fromSet)
+		if not mset or not key:
+			return
+		for slot in set(key):
+			if isinstance(slot, Selector):
+				item = Selector((pair[0], [card for card in mset['cards'] if pair[1].match(card)]) for pair in slot)
+			elif slot:
+				item = [card for card in mset['cards'] if slot.match(card)]
+			else:
+				continue
+			for i in range(key.count(slot)):
+				self.append(item)
+	def generate_booster(self, allow_duplicate = False):
+		if allow_duplicate:
+			return Booster(
+				[
+					copy.deepcopy(random.choice(option))
+						for option in (
+							slot.select()
+							if isinstance(slot, Selector) else
+							slot
+							for slot in self
+						)
+					if option
+				], frm_set=self.fromSet
+			)
 		lst = []
 		for slot in self:
 			sl = [card for card in
 				(slot.select() if isinstance(slot, Selector) else slot)
 				if not card in lst
 			]
-			if sl: lst.append(random.choice(sl))
-		return Booster(copy.deepcopy(lst), fromSet=self.fromSet)
+			if sl:
+				lst.append(random.choice(sl))
+		return Booster(copy.deepcopy(lst), frm_set=self.fromSet)
 		
 class Booster(CardList):
-	def __init__(self, *args, fromSet = None):
+	def __init__(self, *args, frm_set = None):
 		super(Booster, self).__init__(*args)
-		self.fromSet = fromSet
+		self.fromSet = frm_set
 	
 class MTGSet(dict):
 	def __init__(self, *args, **kwargs):
 		super(MTGSet, self).__init__(*args, **kwargs)
-		self.boosterkey = None
-		self.boostermap = None
+		self.booster_key = None
+		self.booster_map = None
 	class SetView(object):
 		def invalid(mset):
 			return 'INVALID STYLE'
@@ -464,24 +476,29 @@ class MTGSet(dict):
 		}
 		@staticmethod
 		def get(card, s = 'CNB'):
-			def getItem(f, card, seperator='\n'):
+			def get_item(f, card, seperator='\n'):
 				v = f(card)
 				if v: return v+seperator
 				return ''
-			return ''.join([getItem(MTGSet.SetView.switch.get(k.lower(), MTGSet.SetView.invalid), card, ' ' if k.isupper() else '\n') for k in s])
+			return ''.join([get_item(MTGSet.SetView.switch.get(k.lower(), MTGSet.SetView.invalid), card, ' ' if k.isupper() else '\n') for k in s])
 	def view(self, style = 'CNB'):
 		return MTGSet.SetView.get(self, style)
-	def setBoosterKey(self, key=None):
-		if key!=None: key
-		elif not self.boosterkey: self.boosterkey = BoosterKey(mset=self)
-	def getBoosterKey(self):
-		if self.boosterkey==None: self.setBoosterKey()
-		return self.boosterkey
-	def setBoosterMap(self, map=None):
-		if map!=None: self.boostermap = map
-		elif not self.boostermap: self.boostermap = self.getBoosterKey().getBoosterMap(self)
-	def generateBooster(self):
-		self.setBoosterMap()
-		return self.boostermap.generateBooster()
-	def generateCubeBoosterMap(self):
-		return CubeBoosterMap(mset=self, key=self.getBoosterKey())
+	def set_booster_key(self, key=None):
+		if key is not None:
+			self.booster_key = key
+		elif not self.booster_key:
+			self.booster_key = BoosterKey(mset=self)
+	def get_booster_key(self):
+		if self.booster_key is None:
+			self.set_booster_key()
+		return self.booster_key
+	def set_booster_map(self, map=None):
+		if map is not None:
+			self.booster_map = map
+		elif not self.booster_map:
+			self.booster_map = self.get_booster_key().getBoosterMap(self)
+	def generate_booster(self):
+		self.set_booster_map()
+		return self.booster_map.generate_booster()
+	# def generateCubeBoosterMap(self):
+	# 	return CubeBoosterMap(mset=self, key=self.getBoosterKey())
