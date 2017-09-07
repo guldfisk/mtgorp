@@ -1,0 +1,3 @@
+
+class AttributeParseException(Exception):
+	pass
