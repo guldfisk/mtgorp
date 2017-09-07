@@ -34,6 +34,7 @@ class Card(Model):
 		self._loyalty = loyalty
 		self._color_identity = color_identity
 		self._sides = ManyToMany(self, '_cards')
+
 	@property
 	def name(self) -> str:
 		return self._name
