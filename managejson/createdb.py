@@ -1,110 +1,158 @@
 import json
 
-from managejson.attributeparse import cardtype, color, manacost, powertoughness
-
 from managejson import download
+from managejson.attributeparse import cardtype, color, manacost, powertoughness
 from managejson.attributeparse.exceptions import AttributeParseException
-from models.persistent.attributes import layout
+from models.persistent.attributes.layout import Layout
 from models.persistent.card import Card
+from models.persistent.cardboard import Cardboard
 from orp.database import Table
 
 
 class _CardParser(object):
-	layout_switch = {
-		'normal': layout.Standard,
-		'leveler': layout.Standard,
-		'double-faced': layout.Transform,
-		'flip': layout.Flip,
-		'meld': layout.Meld,
-		'split': layout.Split,
-		'aftermath': layout.Split,
-	}
 	@classmethod
 	def _parse_colors(cls, cols):
 		return {color.Parser.parse(s) for s in cols}
 	@classmethod
-	def parse(cls, card, tbl: Table):
+	def parse(cls, raw_card):
 		try:
-			name = card['name']
-			layout_type = cls.layout_switch[card['layout']]
+			name = raw_card['name']
 		except KeyError:
 			raise AttributeParseException()
 
-		if layout_type == layout.Meld:
-			layout_type = layout.MeldBack if name == card['names'][-1] else layout.MeldFront
-
-		power, toughness = card.get('power', None), card.get('toughness', None)
+		power, toughness = raw_card.get('power', None), raw_card.get('toughness', None)
 		pt = powertoughness.PowerToughness(
 			powertoughness.Parser.parse_ptvalue(power),
 			powertoughness.Parser.parse_ptvalue(toughness),
 		) if power is not None and toughness is not None else None
 
 		try:
-			mana_cost = manacost.Parser.parse(card['manaCost'])
+			mana_cost = manacost.Parser.parse(raw_card['manaCost'])
 		except KeyError:
 			mana_cost = None
 
-		c = Card(
+		card = Card(
 			name = name,
-			layout_type = layout_type,
-			card_type = cardtype.Parser.parse(card.get('type', '')),
+			card_type = cardtype.Parser.parse(raw_card.get('type', '')),
 			mana_cost = mana_cost,
-			color = cls._parse_colors(card.get('colors', ())),
-			oracle_text = card.get('text', ''),
+			color = cls._parse_colors(raw_card.get('colors', ())),
+			oracle_text = raw_card.get('text', ''),
 			power_toughness = pt,
-			loyalty = card.get('loyalty', None),
-			color_identity = cls._parse_colors(card.get('colorIdentity', ())),
+			loyalty = raw_card.get('loyalty', None),
+			color_identity = cls._parse_colors(raw_card.get('colorIdentity', ())),
 		)
-		if issubclass(layout_type, layout.TwoSided):
-			if name == card['names'][0]:
-				c.layout._is_front = True
-			for other_card in card['names']:
-				if other_card != name and other_card in tbl:
-					c.layout.other_side = tbl[other_card]
-		elif issubclass(layout_type, layout.Split):
-			for other_card in card['names']:
-				if other_card != name and other_card in tbl:
-					c.layout.other_cards.join(tbl[other_card])
-		elif issubclass(layout_type, layout.MeldFront):
-			other_card = card['names'][-1]
-			if other_card in tbl:
-				c.layout.back_side = tbl[other_card]
-		elif issubclass(layout_type, layout.MeldBack):
-			for other_card in card['names']:
-				if other_card != name and other_card in tbl:
-					c.layout.front_sides.add(tbl[other_card])
-		return c
+		return card
+
+LAYOUT_SWITCH = {
+	'normal': Layout.STANDARD,
+	'leveler': Layout.STANDARD,
+	'double-faced': Layout.TRANSFORM,
+	'flip': Layout.FLIP,
+	'meld': Layout.MELD,
+	'split': Layout.SPLIT,
+	'aftermath': Layout.SPLIT,
+}
+
+class _CardboardParser(object):
+	@classmethod
+	def parse(cls, raw_card, cards: Table):
+		try:
+			name = raw_card['name']
+			layout = LAYOUT_SWITCH[raw_card['layout']]
+
+			if layout == Layout.STANDARD:
+				return Cardboard(
+					(cards[name],)
+				)
+			elif layout == Layout.SPLIT or layout == Layout.FLIP:
+				if name == raw_card['names'][0]:
+					return Cardboard(
+						(cards[n] for n in raw_card['names']),
+						None,
+						layout,
+					)
+			elif layout == Layout.TRANSFORM:
+				if name == raw_card['names'][0]:
+					return Cardboard(
+						(cards[name],),
+						(cards[raw_card['names'][1]],),
+						layout,
+					)
+			elif layout == Layout.MELD:
+				if name in raw_card['names'][0:1]:
+					return Cardboard(
+						(cards[name],),
+						(cards[raw_card['names'][-1]],),
+						layout,
+					)
+			raise AttributeParseException()
+		except KeyError:
+			raise AttributeParseException()
+
+class _ExpansionParser(object):
+	@classmethod
+	def _parse_printing(self, raw_printing, artists: Table):
+		try:
+			name = raw_printing['name']
+			layout = LAYOUT_SWITCH[raw_printing['layout']]
+
+			if layout == Layout.STANDARD:
+				pass
+		except KeyError:
+			raise AttributeParseException()
+
+	@classmethod
+	def parse(cls, raw_expansion, cardboards: Table, printings: Table, artists: Table):
+		pass
 
 class CardDatabase(object):
 	def __init__(
 		self,
-		cards: Table
+		cards: Table,
+		cardboards: Table = None,
 	):
 		self._cards = cards
+		self._cardboards = cardboards
 	@property
 	def cards(self):
 		return self._cards
+	@property
+	def cardboards(self):
+		return self._cardboards
 
 class CardDatabaseCreator(object):
 	@classmethod
-	def create_card_table(cls, cards):
-		table = Table()
-		for name in cards:
+	def create_card_table(cls, raw_cards):
+		cards = Table()
+		for name in raw_cards:
 			try:
-				table.insert(
-					_CardParser.parse(cards[name], table)
+				cards.insert(
+					_CardParser.parse(raw_cards[name])
 				)
 			except AttributeParseException:
 				pass
-		return table
+		return cards
+	@classmethod
+	def create_cardboard_table(cls, raw_cards, cards):
+		cardboards = Table()
+		for name in raw_cards:
+			try:
+				cardboards.insert(
+					_CardboardParser.parse(raw_cards[name], cards)
+				)
+			except AttributeParseException:
+				pass
+		return cardboards
 	@classmethod
 	def create_card_database(cls):
 		with open(download.ALL_CARDS_PATH, 'r', encoding='UTF-8') as f:
-			all_cards = json.load(f)
+			raw_cards = json.load(f)
+		cards = cls.create_card_table(raw_cards)
+		cardboards = cls.create_cardboard_table(raw_cards, cards)
+		# cardboards = None
 		return CardDatabase(
-			cards = cls.create_card_table(
-				all_cards
-			)
+			cards = cards,
+			cardboards = cardboards,
 		)
 
 def test():
@@ -112,22 +160,29 @@ def test():
 	print(
 		len(db.cards)
 	)
-	c = db.cards['Island']
-	vs = (
-		c.name,
-		c.layout,
-		c.card_type,
-		# c.layout.other_cards,
-		c.mana_cost,
-		c.oracle_text,
-		c.loyalty,
+	c = db.cards["Delver of Secrets"]
+
+	inspections = (
+		"name",
+		"card_type",
+		"mana_cost",
+		"oracle_text",
+		"loyalty",
 	)
 
-	for item in vs:
-		print(item, type(item))
+	def ppcard(c):
+		for item in inspections:
+			print(
+				item,
+				getattr(c, item),
+			)
 
-	for item in c.card_type:
-		print(item, type(item))
+	# cb = db.cardboards["Bruna, the Fading Light // Brisela, Voice of Nightmares"]
+	cb = tuple(c.cardboards)[0]
+
+	print(cb, cb.layout)
+	for card in cb.front_cards:
+		ppcard(card)
 
 if __name__ == '__main__':
 	test()
