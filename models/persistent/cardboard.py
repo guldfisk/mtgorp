@@ -28,7 +28,7 @@ class Side(object):
 		return self._cards
 
 class Cardboard(Model):
-	primary_key = PrimaryKey('name')
+	primary_key = PrimaryKey('_name')
 	_SPLIT_SEPARATOR = ' // '
 	def __init__(
 		self,
@@ -44,20 +44,18 @@ class Cardboard(Model):
 			for c in back_cards:
 				self._back_cards.cards.add(c)
 		self._layout = layout
-		self.printings = Many(self, '_expansion')
-	@LazyProperty
-	def name(self):
-		return self.__class__._SPLIT_SEPARATOR.join(
+		self.printings = Many(self, '_cardboard')
+		self._name = self.__class__.calc_name(
 			c.name
 			for c in
 			self.cards
 		)
+	@classmethod
+	def calc_name(cls, names):
+		return cls._SPLIT_SEPARATOR.join(names)
 	@property
-	def main(self):
-		try:
-			return self._front_cards.cards._many[0]
-		except IndexError:
-			return None
+	def name(self):
+		return self._name
 	@property
 	def front_cards(self):
 		return self._front_cards.cards
@@ -70,3 +68,15 @@ class Cardboard(Model):
 	@property
 	def layout(self):
 		return self._layout
+	@property
+	def front_card(self):
+		try:
+			return self._front_cards.cards._many[0]
+		except IndexError:
+			return None
+	@property
+	def back_card(self):
+		try:
+			return self._back_cards.cards._many[0]
+		except IndexError:
+			return None

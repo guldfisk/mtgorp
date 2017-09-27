@@ -8,7 +8,7 @@ from models.persistent.attributes.powertoughness import PTValue, PowerToughness
 class PowerToughnessParseException(AttributeParseException):
 	pass
 
-class Parser(object):
+class Parser(parser.Parser):
 	matcher = re.compile('([^/]+)/([^/]+)')
 	value_matcher = re.compile('-?\\d+')
 	@staticmethod

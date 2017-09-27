@@ -5,7 +5,7 @@ from orp.database import Model, PrimaryKey
 from orp.relationships import Many
 
 class Card(Model):
-	primary_key = PrimaryKey('name')
+	primary_key = PrimaryKey('_name')
 	def __init__(
 		self,
 		name: str,
@@ -58,6 +58,11 @@ class Card(Model):
 	@property
 	def cardboards(self):
 		return {side.owner for side in self._sides}
+	@property
+	def cardboard(self):
+		if not self.cardboards:
+			return None
+		return self.cardboards.__iter__().__next__()
 
 def test():
 	pass

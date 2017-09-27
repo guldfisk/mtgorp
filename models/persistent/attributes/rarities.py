@@ -6,3 +6,4 @@ class Rarity(Enum):
 	RARE = 2
 	MYTHIC = 3
 	SPECIAL = 4
+	LAND = 5

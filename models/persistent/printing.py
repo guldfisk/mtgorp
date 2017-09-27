@@ -30,7 +30,7 @@ class Face(object):
 		return self._img_id
 
 class Printing(Model):
-	primary_key = PrimaryKey('id')
+	primary_key = PrimaryKey('_id')
 	def __init__(
 		self,
 		cardboard: Cardboard,
@@ -43,7 +43,7 @@ class Printing(Model):
 		back_img_id: int = None,
 		rarity: Rarity = None,
 	):
-		self.id = self._incrementer()
+		self._id = self._incrementer()
 		self._cardboard = One(self, 'printings', cardboard)
 		self._expansion = One(self, 'printings', expansion)
 		self._front_face = Face(
@@ -62,6 +62,9 @@ class Printing(Model):
 	cardboard = OneDescriptor('_cardboard')
 	expansion = OneDescriptor('_expansion')
 	@property
+	def id(self):
+		return self._id
+	@property
 	def front_face(self):
 		return self._front_face
 	@property
@@ -74,3 +77,11 @@ class Printing(Model):
 			self.expansion.primary_key,
 			self.id,
 		)
+
+def test():
+	a_printing = Printing.__new__(Printing)
+	print(dir(a_printing), type(a_printing))
+	print(hash(a_printing))
+
+if __name__ == '__main__':
+	test()
