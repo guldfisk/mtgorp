@@ -20,19 +20,26 @@ class BaseCardType(metaclass=ABCMeta):
 	def __lt__(self, other):
 		return self._name < other.name
 
-class SuperCardType(BaseCardType):
+class PreDash(BaseCardType):
+	def __lt__(self, other):
+		return ALL_TYPES_POSITION.get(self, -1) < ALL_TYPES_POSITION.get(other, -1)
+
+class PostDash(BaseCardType):
 	pass
 
-class CardType(BaseCardType):
+class CardSuperType(PreDash):
 	pass
 
-class CardSubType(CardType):
+class CardType(PreDash):
 	pass
 
-SNOW = SuperCardType('Snow')
-LEGENDARY = SuperCardType('Legendary')
-WORLD = SuperCardType('World')
-BASIC = SuperCardType('Basic')
+class CardSubType(PostDash):
+	pass
+
+SNOW = CardSuperType('Snow')
+LEGENDARY = CardSuperType('Legendary')
+WORLD = CardSuperType('World')
+BASIC = CardSuperType('Basic')
 
 SUPER_TYPES = (
 	LEGENDARY,
@@ -68,33 +75,50 @@ ALL_TYPES_POSITION = {
 }
 
 class CardTypes(object):
-	separator = ' — '
-	def __init__(self, types: t.Iterable[t.Union[SuperCardType, CardType]], sub_types: t.Iterable[CardSubType] = None):
-		self.types = types if isinstance(types, frozenset) else frozenset(types)
-		self.sub_types = (
+	SEPARATOR = ' — '
+	def __init__(self, types: t.Iterable[t.Union[CardSuperType, CardType]], sub_types: t.Iterable[CardSubType] = None):
+		self._pre_dashes = types if isinstance(types, frozenset) else frozenset(types)
+		self._post_dashes = (
 			types if isinstance(sub_types, frozenset) else frozenset(sub_types)
 		) if sub_types is not None else frozenset()
 	def __eq__(self, other):
-		return isinstance(other, CardTypes) and self.types == other.types and self.sub_types == other.sub_types
+		return isinstance(other, CardTypes) and self._pre_dashes == other.types and self._post_dashes == other.sub_types
 	def __hash__(self):
-		return hash((self.types, self.sub_types))
+		return hash((self._pre_dashes, self._post_dashes))
 	def __repr__(self):
-		s = ' '.join(str(card_type) for card_type in sorted(self.types, key=lambda t: ALL_TYPES_POSITION.get(t, float('nan'))))
-		if self.sub_types:
-			s += CardTypes.separator + ' '.join(str(sub_type) for sub_type in sorted(self.sub_types))
+		s = ' '.join(
+			str(card_type)
+			for card_type in
+			sorted(self._pre_dashes)
+		)
+		if self._post_dashes:
+			s += CardTypes.SEPARATOR + ' '.join(
+				str(sub_type)
+				for sub_type in
+				sorted(self._post_dashes)
+			)
 		return s
 	def __iter__(self):
-		return itertools.chain(self.types.__iter__(), self.sub_types.__iter__())
-
+		return itertools.chain(self._pre_dashes.__iter__(), self._post_dashes.__iter__())
+	def __contains__(self, item):
+		return item in self.__iter__()
+	@property
+	def super_types(self):
+		return frozenset(t for t in self._pre_dashes if isinstance(t, CardSuperType))
+	@property
+	def card_types(self):
+		return frozenset(t for t in self._pre_dashes if isinstance(t, CardType))
+	@property
+	def sub_types(self):
+		return self._post_dashes
 
 def test():
-	card_types = CardTypes(
-		(BASIC, LAND),
-		(CardSubType('Goat'), CardSubType('Human'))
+	ct = CardTypes(
+		(BASIC, LAND, LEGENDARY),
+		(CardSubType('Goat'), CardSubType('Human'), CardSubType('Angel'))
 	)
 
-	print(card_types)
-
+	print(ct)
 
 if __name__ == '__main__':
 	test()

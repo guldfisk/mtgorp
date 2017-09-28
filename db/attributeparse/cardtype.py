@@ -1,9 +1,9 @@
 import re
 
-import managejson.attributeparse.parser as parser
+import db.attributeparse.parser as parser
 
 from models.persistent.attributes.cardtypes import CardType, CardTypes, CardSubType, ALL_TYPES
-from managejson.attributeparse.exceptions import AttributeParseException
+from db.attributeparse.exceptions import AttributeParseException
 
 class CardTypeParseException(AttributeParseException):
 	pass

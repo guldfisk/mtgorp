@@ -1,12 +1,11 @@
 import json
 import datetime
 import os
+import sys
 
-from pathlib import Path
-
-from managejson import download
-from managejson.attributeparse import cardtype, color, manacost, powertoughness, rairty, border
-from managejson.attributeparse.exceptions import AttributeParseException
+from managejson import paths, update
+from db.attributeparse import cardtype, color, manacost, powertoughness, rairty, border
+from db.attributeparse.exceptions import AttributeParseException
 from models.persistent.attributes.layout import Layout
 from models.persistent.card import Card
 from models.persistent.cardboard import Cardboard
@@ -145,6 +144,7 @@ class _PrintingParser(object):
 			return Printing(
 				cardboard = cardboard,
 				expansion = expansion,
+				collector_number = raw_printing['number'],
 				front_artist = _ArtistParser.parse(raw_printing.get('artist', None), artists),
 				front_flavor = raw_printing.get('flavor', None),
 				front_img_id = raw_printing.get('multiverseid', 0),
@@ -239,8 +239,6 @@ class CardDatabase(object):
 	def expansions(self):
 		return self._expansions
 
-APPPATH = os.path.join(str(Path.home()), 'mtgorp')
-
 class DatabaseCreator(object):
 	@classmethod
 	def create_card_table(cls, raw_cards):
@@ -291,8 +289,8 @@ class DatabaseCreator(object):
 	@classmethod
 	def create_database(
 		cls,
-		all_cards_path = download.ALL_CARDS_PATH,
-		all_sets_path = download.ALL_SETS_PATH,
+		all_cards_path = paths.ALL_CARDS_PATH,
+		all_sets_path = paths.ALL_SETS_PATH,
 	):
 		with open(all_cards_path, 'r', encoding='UTF-8') as f:
 			raw_cards = json.load(f)
@@ -320,15 +318,16 @@ class DatabaseCreator(object):
 		)
 
 def update_database(
-	all_cards_path = download.ALL_CARDS_PATH,
-	all_sets_path = download.ALL_SETS_PATH,
-	db_path = APPPATH,
+	all_cards_path = paths.ALL_CARDS_PATH,
+	all_sets_path = paths.ALL_SETS_PATH,
+	db_path = paths.APP_DATA_PATH,
 ):
 	if not os.path.exists(db_path):
 		os.makedirs(db_path)
-	import sys
+	if not os.path.exists(paths.ALL_CARDS_PATH) or not os.path.exists(paths.ALL_SETS_PATH):
+		update.check_and_update()
 	sys.setrecursionlimit(50000)
-	PicklePersistor(os.path.join(APPPATH, 'db')).save(
+	PicklePersistor(os.path.join(paths.APP_DATA_PATH, 'db')).save(
 		DatabaseCreator.create_database(
 			all_cards_path,
 			all_sets_path,

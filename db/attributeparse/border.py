@@ -1,7 +1,7 @@
-import managejson.attributeparse.parser as parser
+import db.attributeparse.parser as parser
 
 from models.persistent.attributes.borders import Border
-from managejson.attributeparse.exceptions import AttributeParseException
+from db.attributeparse.exceptions import AttributeParseException
 
 class BorderParseException(AttributeParseException):
 	pass

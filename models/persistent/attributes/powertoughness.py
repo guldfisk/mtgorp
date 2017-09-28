@@ -1,8 +1,4 @@
-import re
 import typing as t
-
-from managejson.attributeparse.exceptions import AttributeParseException
-
 
 class PTValue(object):
 	def __init__(self, value: int=0, variable: bool=False):

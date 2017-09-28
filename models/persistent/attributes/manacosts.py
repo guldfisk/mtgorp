@@ -1,11 +1,9 @@
-import re
 import typing as t
 from abc import ABCMeta
 
 from multiset import FrozenMultiset
 
 import models.persistent.attributes.colors as cols
-from managejson.attributeparse.exceptions import AttributeParseException
 from models.persistent.attributes.colors import Color as c
 
 

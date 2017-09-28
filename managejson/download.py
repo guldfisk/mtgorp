@@ -1,14 +1,7 @@
 import os
 import requests as r
 
-from resourceload.locate import Locator
-
-PATH = os.path.join(Locator.path, 'jsons')
-ALL_CARDS_PATH = os.path.join(PATH, 'allCards' + '.json')
-ALL_SETS_PATH = os.path.join(PATH, 'allSets' + '.json')
-
-if not os.path.exists(Locator.path):
-	os.makedirs(PATH)
+import managejson.paths as paths
 
 def download_file_bytes(url, location, chunk_size = 1024):
 	ro = r.get(url, stream=True)
@@ -17,11 +10,10 @@ def download_file_bytes(url, location, chunk_size = 1024):
 			f.write(chunk)
 
 TO_RETRIEVE = {
-	ALL_CARDS_PATH: 'http://mtgjson.com/json/AllCards.json',
-	ALL_SETS_PATH: 'http://mtgjson.com/json/AllSets.json'
+	paths.ALL_CARDS_PATH: 'http://mtgjson.com/json/AllCards.json',
+	paths.ALL_SETS_PATH: 'http://mtgjson.com/json/AllSets.json'
 }
 
-#Downloads toRetrieve and writes to file
 def make_new(to_retrieve):
 	for path in to_retrieve:
 		download_file_bytes(
@@ -30,6 +22,8 @@ def make_new(to_retrieve):
 		)
 
 def re_download():
+	if not os.path.exists(paths.JSON_PATH):
+		os.makedirs(paths.JSON_PATH)
 	make_new(TO_RETRIEVE)
 
 if __name__=='__main__':

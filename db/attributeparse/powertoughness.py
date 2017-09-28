@@ -1,8 +1,8 @@
 import re
 
-import managejson.attributeparse.parser as parser
+import db.attributeparse.parser as parser
 
-from managejson.attributeparse.exceptions import AttributeParseException
+from db.attributeparse.exceptions import AttributeParseException
 from models.persistent.attributes.powertoughness import PTValue, PowerToughness
 
 class PowerToughnessParseException(AttributeParseException):

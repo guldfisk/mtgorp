@@ -1,7 +1,7 @@
-import managejson.attributeparse.parser as parser
+import db.attributeparse.parser as parser
 
 from models.persistent.attributes.colors import Color
-from managejson.attributeparse.exceptions import AttributeParseException
+from db.attributeparse.exceptions import AttributeParseException
 
 class ColorParseException(AttributeParseException):
 	pass

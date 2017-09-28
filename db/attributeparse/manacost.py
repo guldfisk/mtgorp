@@ -2,9 +2,9 @@ import re
 
 import typing as t
 
-import managejson.attributeparse.parser as parser
+import db.attributeparse.parser as parser
 
-from managejson.attributeparse.exceptions import AttributeParseException
+from db.attributeparse.exceptions import AttributeParseException
 from models.persistent.attributes.manacosts import ManaCostAtom, HybridCostAtom, ManaCost, ONE_GENERIC, SINGULAR_ATOM_MAP
 
 class ManaCostParseException(AttributeParseException):

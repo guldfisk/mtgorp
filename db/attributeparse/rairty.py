@@ -1,7 +1,7 @@
-import managejson.attributeparse.parser as parser
+import db.attributeparse.parser as parser
 
 from models.persistent.attributes.rarities import Rarity
-from managejson.attributeparse.exceptions import AttributeParseException
+from db.attributeparse.exceptions import AttributeParseException
 
 class RarityParseException(AttributeParseException):
 	pass

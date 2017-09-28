@@ -4,10 +4,10 @@ import re
 import requests as r
 
 from xml.etree import ElementTree
-from managejson import download, fix
+from managejson import download, paths
+from db import create
 
-class MTGJsonHome(object):
-	url = 'http://mtgjson.com/atom.xml'
+MTGJSON_RSS_URL = 'http://mtgjson.com/atom.xml'
 
 def check_rss(url):
 	rg = r.get(url)
@@ -21,24 +21,22 @@ def check_rss(url):
 
 def update():
 	download.re_download()
-	fix.make_cards_fixed()
-	fix.make_sets_fixed()
+	create.update_database()
 
 def delete_content(f):
 	f.seek(0)
 	f.truncate()
 
 def check_and_update():
-	last_updates = check_rss(MTGJsonHome.url)
-	print(last_updates)
+	last_updates = check_rss(MTGJSON_RSS_URL)
 	if not last_updates:
 		return False
-	open(os.path.join(download.PATH, 'lastupdtd.txt'), 'a').close()
-	with open(os.path.join(download.PATH, 'lastupdtd.txt'), 'r+') as f:
+	if not os.path.exists(paths.JSON_PATH):
+		os.makedirs(paths.JSON_PATH)
+	open(os.path.join(paths.JSON_PATH, 'lastupdtd.txt'), 'a').close()
+	with open(os.path.join(paths.JSON_PATH, 'lastupdtd.txt'), 'r+') as f:
 		value = f.read()
-		print(value)
 		if last_updates!=value:
-			print('updating')
 			update()
 			delete_content(f)
 			f.write(last_updates)

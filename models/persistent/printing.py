@@ -3,7 +3,7 @@ from models.persistent.attributes.rarities import Rarity
 from models.persistent.cardboard import Cardboard
 from models.persistent.expansion import Expansion
 from orp.database import Model, PrimaryKey
-from orp.relationships import One, OneDescriptor
+from orp.relationships import One, OneDescriptor, DummyOne
 
 
 class Face(object):
@@ -30,11 +30,12 @@ class Face(object):
 		return self._img_id
 
 class Printing(Model):
-	primary_key = PrimaryKey('_id')
+	primary_key = PrimaryKey(('_expansion', '_collector_number'))
 	def __init__(
 		self,
 		cardboard: Cardboard,
 		expansion: Expansion,
+		collector_number: int,
 		front_artist: Artist = None,
 		front_flavor: str = None,
 		front_img_id: int = None,
@@ -43,7 +44,8 @@ class Printing(Model):
 		back_img_id: int = None,
 		rarity: Rarity = None,
 	):
-		self._id = self._incrementer()
+		self._expansion = DummyOne(expansion)
+		self._collector_number = collector_number
 		self._cardboard = One(self, 'printings', cardboard)
 		self._expansion = One(self, 'printings', expansion)
 		self._front_face = Face(
@@ -62,20 +64,22 @@ class Printing(Model):
 	cardboard = OneDescriptor('_cardboard')
 	expansion = OneDescriptor('_expansion')
 	@property
-	def id(self):
-		return self._id
+	def collector_number(self):
+		return self._collector_number
 	@property
 	def front_face(self):
 		return self._front_face
 	@property
 	def back_face(self):
 		return self._back_face
+	@property
+	def faces(self):
+		return self.front_face, self.back_face
 	def __repr__(self):
-		return '{}({}, {}, {})'.format(
+		return '{}({}, {})'.format(
 			self.__class__.__name__,
-			self.cardboard.primary_key,
 			self.expansion.primary_key,
-			self.id,
+			self._collector_number,
 		)
 
 def test():
