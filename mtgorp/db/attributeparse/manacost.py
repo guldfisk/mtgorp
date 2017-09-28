@@ -2,10 +2,10 @@ import re
 
 import typing as t
 
-import db.attributeparse.parser as parser
+import mtgorp.db.attributeparse.parser as parser
 
-from db.attributeparse.exceptions import AttributeParseException
-from models.persistent.attributes.manacosts import ManaCostAtom, HybridCostAtom, ManaCost, ONE_GENERIC, SINGULAR_ATOM_MAP
+from mtgorp.db.attributeparse.exceptions import AttributeParseException
+from mtgorp.models.persistent.attributes.manacosts import ManaCostAtom, HybridCostAtom, ManaCost, ONE_GENERIC, SINGULAR_ATOM_MAP
 
 class ManaCostParseException(AttributeParseException):
 	pass

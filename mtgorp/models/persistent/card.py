@@ -1,6 +1,6 @@
 import typing as t
 
-from models.persistent.attributes import cardtypes, colors, manacosts, powertoughness
+from mtgorp.models.persistent.attributes import cardtypes, colors, manacosts, powertoughness
 from orp.database import Model, PrimaryKey
 from orp.relationships import Many
 

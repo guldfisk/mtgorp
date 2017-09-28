@@ -4,8 +4,8 @@ import re
 import requests as r
 
 from xml.etree import ElementTree
-from managejson import download, paths
-from db import create
+from mtgorp.managejson import download, paths
+from mtgorp.db import create
 
 MTGJSON_RSS_URL = 'http://mtgjson.com/atom.xml'
 

@@ -1,7 +1,7 @@
-from models.persistent.artist import Artist
-from models.persistent.attributes.rarities import Rarity
-from models.persistent.cardboard import Cardboard
-from models.persistent.expansion import Expansion
+from mtgorp.models.persistent.artist import Artist
+from mtgorp.models.persistent.attributes.rarities import Rarity
+from mtgorp.models.persistent.cardboard import Cardboard
+from mtgorp.models.persistent.expansion import Expansion
 from orp.database import Model, PrimaryKey
 from orp.relationships import One, OneDescriptor, DummyOne
 

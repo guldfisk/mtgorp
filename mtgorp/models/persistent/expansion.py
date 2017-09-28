@@ -1,8 +1,8 @@
 import datetime
 import typing as t
 
-from models.persistent.attributes.borders import Border
-from models.persistent.block import Block
+from mtgorp.models.persistent.attributes.borders import Border
+from mtgorp.models.persistent.block import Block
 from orp.relationships import Many, One, OneDescriptor
 from orp.database import Model, PrimaryKey
 

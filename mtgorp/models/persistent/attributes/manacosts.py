@@ -3,8 +3,8 @@ from abc import ABCMeta
 
 from multiset import FrozenMultiset
 
-import models.persistent.attributes.colors as cols
-from models.persistent.attributes.colors import Color as c
+import mtgorp.models.persistent.attributes.colors as cols
+from mtgorp.models.persistent.attributes.colors import Color as c
 
 
 class _FrozenMultiset(FrozenMultiset):

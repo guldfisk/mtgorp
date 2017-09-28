@@ -2,8 +2,8 @@ import typing as t
 
 from lazy_property import LazyProperty
 
-from models.persistent.attributes.layout import Layout
-from models.persistent.card import Card
+from mtgorp.models.persistent.attributes.layout import Layout
+from mtgorp.models.persistent.card import Card
 from orp.database import Model, PrimaryKey
 from orp.relationships import Many
 

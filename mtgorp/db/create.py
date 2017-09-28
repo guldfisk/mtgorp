@@ -3,16 +3,16 @@ import datetime
 import os
 import sys
 
-from managejson import paths, update
-from db.attributeparse import cardtype, color, manacost, powertoughness, rairty, border
-from db.attributeparse.exceptions import AttributeParseException
-from models.persistent.attributes.layout import Layout
-from models.persistent.card import Card
-from models.persistent.cardboard import Cardboard
-from models.persistent.printing import Printing
-from models.persistent.artist import Artist
-from models.persistent.block import Block
-from models.persistent.expansion import Expansion
+from mtgorp.managejson import paths, update
+from mtgorp.db.attributeparse import cardtype, color, manacost, powertoughness, rairty, border
+from mtgorp.db.attributeparse.exceptions import AttributeParseException
+from mtgorp.models.persistent.attributes.layout import Layout
+from mtgorp.models.persistent.card import Card
+from mtgorp.models.persistent.cardboard import Cardboard
+from mtgorp.models.persistent.printing import Printing
+from mtgorp.models.persistent.artist import Artist
+from mtgorp.models.persistent.block import Block
+from mtgorp.models.persistent.expansion import Expansion
 from orp.database import Table
 from orp.persist import PicklePersistor
 

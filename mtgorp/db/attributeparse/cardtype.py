@@ -1,9 +1,9 @@
 import re
 
-import db.attributeparse.parser as parser
+import mtgorp.db.attributeparse.parser as parser
 
-from models.persistent.attributes.cardtypes import CardType, CardTypes, CardSubType, ALL_TYPES
-from db.attributeparse.exceptions import AttributeParseException
+from mtgorp.models.persistent.attributes.cardtypes import CardType, CardTypes, CardSubType, ALL_TYPES
+from mtgorp.db.attributeparse.exceptions import AttributeParseException
 
 class CardTypeParseException(AttributeParseException):
 	pass

@@ -1,7 +1,7 @@
-import db.attributeparse.parser as parser
+import mtgorp.db.attributeparse.parser as parser
 
-from models.persistent.attributes.borders import Border
-from db.attributeparse.exceptions import AttributeParseException
+from mtgorp.models.persistent.attributes.borders import Border
+from mtgorp.db.attributeparse.exceptions import AttributeParseException
 
 class BorderParseException(AttributeParseException):
 	pass

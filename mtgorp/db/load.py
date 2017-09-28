@@ -2,7 +2,7 @@ import os
 
 from orp.persist import PicklePersistor
 
-from managejson import paths
+from mtgorp.managejson import paths
 
 DB_PATH = os.path.join(paths.APP_DATA_PATH, 'db')
 

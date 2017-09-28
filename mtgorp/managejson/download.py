@@ -1,7 +1,7 @@
 import os
 import requests as r
 
-import managejson.paths as paths
+import mtgorp.managejson.paths as paths
 
 def download_file_bytes(url, location, chunk_size = 1024):
 	ro = r.get(url, stream=True)

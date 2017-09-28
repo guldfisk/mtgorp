@@ -1,7 +1,7 @@
-import db.attributeparse.parser as parser
+import mtgorp.db.attributeparse.parser as parser
 
-from models.persistent.attributes.rarities import Rarity
-from db.attributeparse.exceptions import AttributeParseException
+from mtgorp.models.persistent.attributes.rarities import Rarity
+from mtgorp.db.attributeparse.exceptions import AttributeParseException
 
 class RarityParseException(AttributeParseException):
 	pass

@@ -1,9 +1,9 @@
 import re
 
-import db.attributeparse.parser as parser
+import mtgorp.db.attributeparse.parser as parser
 
-from db.attributeparse.exceptions import AttributeParseException
-from models.persistent.attributes.powertoughness import PTValue, PowerToughness
+from mtgorp.db.attributeparse.exceptions import AttributeParseException
+from mtgorp.models.persistent.attributes.powertoughness import PTValue, PowerToughness
 
 class PowerToughnessParseException(AttributeParseException):
 	pass
