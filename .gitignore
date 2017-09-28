@@ -1,8 +1,6 @@
 __pycache__/
 .idea/
-resources/
 mtgorp/models/models_test.py
-/mtgorp/resourceload/
 mtgorp/db/test.py
 /mtgorp/models/cubeObjects.py
 /mtgorp/models/mtgObjects.py
