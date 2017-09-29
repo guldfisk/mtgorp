@@ -20,6 +20,6 @@ setup(
 		'git+ssh://git@github.com/guldfisk/orp.git@1.0#egg=package-1.0',
 	],
 	install_requires=[
-		'orp',
+		'orp==1.0',
 	]
 )
