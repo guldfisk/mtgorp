@@ -19,6 +19,6 @@ setup(
 		'https://github.com/guldfisk/orp/tarball/master#egg=package-1.0',
 	],
 	install_requires=[
-		'https://github.com/guldfisk/orp/tarball/master#egg=package-1.0',
+		'git+https://github.com/guldfisk/orp.git#egg=package-1.0',
 	]
 )
