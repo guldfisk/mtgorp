@@ -18,4 +18,7 @@ setup(
 	dependency_links=[
 		'https://github.com/guldfisk/orp/tarball/master#egg=package-1.0',
 	],
+	install_requires=[
+		'orp'
+	]
 )
