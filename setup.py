@@ -14,5 +14,6 @@ setup(
 	name='mtgorp',
 	version='1.0',
 	packages=['mtgorp'],
-	package_data={'': extra_files}
+	package_data={'': extra_files},
+	dependency_links=['https://github.com/guldfisk/orp'],
 )
