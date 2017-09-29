@@ -16,6 +16,6 @@ setup(
 	packages=['mtgorp'],
 	package_data={'': extra_files},
 	dependency_links=[
-		'git+https://github.com/guldfisk/orp.git',
+		'git+https://github.com/guldfisk/orp/tarball/master',
 	],
 )
