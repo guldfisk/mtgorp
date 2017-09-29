@@ -16,8 +16,8 @@ setup(
 	packages=['mtgorp'],
 	package_data={'': extra_files},
 	dependency_links=[
-		'https://github.com/guldfisk/orp/tarball/master#egg=package-1.0',
-		# 'git+ssh://git@github.com/guldfisk/orp.git@1.0#egg=package-1.0',
+		'git+https://github.com/guldfisk/orp.git#egg=orp-1.0',
+		# 'git+ssh://git@github.com/guldfisk/orp.git@1.0#egg=orp-1.0',
 	],
 	install_requires=[
 		'orp==1.0',
