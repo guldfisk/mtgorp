@@ -17,9 +17,9 @@ setup(
 	package_data={'': extra_files},
 	dependency_links=[
 		'https://github.com/guldfisk/orp/tarball/master#egg=orp-1.0',
-		# 'git+ssh://git@github.com/guldfisk/orp.git@1.0#egg=orp-1.0',
 	],
 	install_requires=[
 		'orp',
+		'lazy-property'
 	]
 )
