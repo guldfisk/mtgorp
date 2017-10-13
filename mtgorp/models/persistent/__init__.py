@@ -1,0 +1,1 @@
+# from mtgorp.models.persistent import artist, block, card, cardboard, expansion, printing, attributes

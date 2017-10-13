@@ -1,0 +1,1 @@
+# from mtgorp.models.persistent.attributes import borders, cardtypes, colors, layout, manacosts, powertoughness, rarities

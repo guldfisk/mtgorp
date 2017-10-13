@@ -1,11 +1,13 @@
 import typing as t
 
+from lazy_property import LazyProperty
+
 from mtgorp.models.persistent.attributes import cardtypes, colors, manacosts, powertoughness
 from orp.database import Model, PrimaryKey
 from orp.relationships import Many
 
 class Card(Model):
-	primary_key = PrimaryKey('_name')
+	primary_key = PrimaryKey('name')
 	def __init__(
 		self,
 		name: str,
@@ -17,7 +19,6 @@ class Card(Model):
 		loyalty: int = None,
 		color_identity: t.Set[colors.Color] = None
 	):
-		self._name = name
 		self._card_type = card_type
 		self._mana_cost = mana_cost
 		self._color = (
@@ -52,17 +53,18 @@ class Card(Model):
 	@property
 	def color_identity(self):
 		return self._color_identity
-	@property
+	@LazyProperty
 	def cmc(self):
 		return self._mana_cost.cmc if self._mana_cost else 0
-	@property
+	@LazyProperty
 	def cardboards(self):
-		return {side.owner for side in self._sides}
+		return frozenset(side.owner for side in self._sides)
 	@property
 	def cardboard(self):
-		if not self.cardboards:
+		try:
+			return self.cardboards.__iter__().__next__()
+		except StopIteration:
 			return None
-		return self.cardboards.__iter__().__next__()
 
 def test():
 	pass

@@ -97,13 +97,16 @@ class _CardboardParser(object):
 		try:
 			layout = LAYOUT_SWITCH[raw_card['layout']]
 			front_names, back_names = cls.get_cardboard_card_names(raw_card)
-			return Cardboard(
-				(cards[name] for name in front_names),
-				(cards[name] for name in back_names),
-				layout,
+			cardboard = Cardboard(
+				front_cards = tuple(cards[name] for name in front_names),
+				back_cards = tuple(cards[name] for name in back_names),
+				layout = layout,
 			)
+			return cardboard
 		except KeyError:
 			raise AttributeParseException()
+
+
 
 class _ArtistParser(object):
 	@classmethod
@@ -142,9 +145,9 @@ class _PrintingParser(object):
 				back_flavor = None
 				back_img_id = 0
 			return Printing(
-				cardboard = cardboard,
 				expansion = expansion,
 				collector_number = raw_printing['number'],
+				cardboard = cardboard,
 				front_artist = _ArtistParser.parse(raw_printing.get('artist', None), artists),
 				front_flavor = raw_printing.get('flavor', None),
 				front_img_id = raw_printing.get('multiverseid', 0),
@@ -159,7 +162,9 @@ class _PrintingParser(object):
 class _BlockParser(object):
 	@classmethod
 	def parse(cls, name: str, blocks: Table):
-		block = Block(name)
+		block = Block(
+			name = name
+		)
 		if not block.name in blocks:
 			blocks.insert(block)
 			return block
@@ -180,7 +185,7 @@ class _ExpansionParser(object):
 				code = code,
 				block = _BlockParser.parse(raw_expansion['block'], blocks) if 'block' in raw_expansion else None,
 				release_date = release_date,
-				booster = raw_expansion.get('booster', ()),
+				booster = tuple(raw_expansion.get('booster', ())),
 				border = border.Parser.parse(raw_expansion['border']) if 'border' in raw_expansion else None,
 				magic_card_info_code = raw_expansion.get('magicCardsInfoCode', None),
 				mkm_name = raw_expansion.get('mkm_name', None),

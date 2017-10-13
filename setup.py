@@ -21,6 +21,6 @@ setup(
 	install_requires=[
 		'orp',
 		'lazy-property',
-		'multiset'
+		'multiset',
 	]
 )

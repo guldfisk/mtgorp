@@ -2,9 +2,8 @@ from orp.relationships import Many
 from orp.database import Model, PrimaryKey
 
 class Artist(Model):
-	primary_key = PrimaryKey('_name')
+	primary_key = PrimaryKey('name')
 	def __init__(self, name: str):
-		self._name = name
 		self._faces = Many(self, '_artist')
 	@property
 	def name(self):

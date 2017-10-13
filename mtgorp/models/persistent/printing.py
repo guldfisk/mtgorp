@@ -1,9 +1,11 @@
+import typing as t
+
 from mtgorp.models.persistent.artist import Artist
 from mtgorp.models.persistent.attributes.rarities import Rarity
 from mtgorp.models.persistent.cardboard import Cardboard
 from mtgorp.models.persistent.expansion import Expansion
-from orp.database import Model, PrimaryKey
-from orp.relationships import One, OneDescriptor, DummyOne
+from orp.database import Model, PrimaryKey, ForeignOne
+from orp.relationships import One, OneDescriptor
 
 
 class Face(object):
@@ -30,12 +32,17 @@ class Face(object):
 		return self._img_id
 
 class Printing(Model):
-	primary_key = PrimaryKey(('_expansion', '_collector_number'))
+	primary_key = PrimaryKey(
+		(
+			ForeignOne('expansion', 'printings'),
+			'collector_number',
+		)
+	)
 	def __init__(
 		self,
-		cardboard: Cardboard,
 		expansion: Expansion,
-		collector_number: int,
+		collector_number: str,
+		cardboard: Cardboard,
 		front_artist: Artist = None,
 		front_flavor: str = None,
 		front_img_id: int = None,
@@ -44,10 +51,7 @@ class Printing(Model):
 		back_img_id: int = None,
 		rarity: Rarity = None,
 	):
-		self._expansion = DummyOne(expansion)
-		self._collector_number = collector_number
 		self._cardboard = One(self, 'printings', cardboard)
-		self._expansion = One(self, 'printings', expansion)
 		self._front_face = Face(
 			self,
 			front_artist,
@@ -64,16 +68,16 @@ class Printing(Model):
 	cardboard = OneDescriptor('_cardboard')
 	expansion = OneDescriptor('_expansion')
 	@property
-	def collector_number(self):
+	def collector_number(self) -> str:
 		return self._collector_number
 	@property
-	def front_face(self):
+	def front_face(self) -> Face:
 		return self._front_face
 	@property
-	def back_face(self):
+	def back_face(self) -> Face:
 		return self._back_face
 	@property
-	def faces(self):
+	def faces(self) -> t.Tuple[Face, Face]:
 		return self.front_face, self.back_face
 	def __repr__(self):
 		return '{}({}, {})'.format(
@@ -83,9 +87,25 @@ class Printing(Model):
 		)
 
 def test():
-	a_printing = Printing.__new__(Printing)
-	print(dir(a_printing), type(a_printing))
-	print(hash(a_printing))
+	from mtgorp.models.persistent.card import Card
+	a_card = Card('lol')
+	another_card = Card('xd')
+
+	a_cardboard = Cardboard(
+		front_cards = (a_card,),
+		back_cards = (another_card,),
+	)
+
+	an_expansion = Expansion('LOL')
+	a_printing = Printing(
+		expansion = an_expansion,
+		collector_number = '1',
+		cardboard = a_cardboard
+	)
+
+	print(
+		a_printing
+	)
 
 if __name__ == '__main__':
 	test()
