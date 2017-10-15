@@ -144,7 +144,7 @@ class _PrintingParser(object):
 				back_img_id = 0
 			return Printing(
 				expansion = expansion,
-				collector_number = re.sub('[^\d]', '', raw_printing['number'], flags=re.IGNORECASE),
+				collector_number = re.sub('[^\d]', '', raw_printing['mciNumber'], flags=re.IGNORECASE),
 				cardboard = cardboard,
 				front_artist = _ArtistParser.parse(raw_printing.get('artist', None), artists),
 				front_flavor = raw_printing.get('flavor', None),
@@ -189,7 +189,6 @@ class _ExpansionParser(object):
 				mkm_name = raw_expansion.get('mkm_name', None),
 				mkm_id = raw_expansion.get('mkm_id', None),
 			)
-
 			for raw_printing in raw_expansion['cards']:
 				try:
 					printings.insert(
@@ -201,7 +200,7 @@ class _ExpansionParser(object):
 							cardboards = cardboards,
 						)
 					)
-				except AttributeParseException:
+				except AttributeParseException as e:
 					pass
 			return expansion
 		except KeyError:
