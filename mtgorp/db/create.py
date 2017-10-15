@@ -2,6 +2,7 @@ import json
 import datetime
 import os
 import sys
+import re
 
 from mtgorp.managejson import paths, update
 from mtgorp.db.attributeparse import cardtype, color, manacost, powertoughness, rairty, border
@@ -43,7 +44,7 @@ class _CardParser(object):
 			card_type = cardtype.Parser.parse(raw_card.get('type', '')),
 			mana_cost = mana_cost,
 			color = cls._parse_colors(raw_card.get('colors', ())),
-			oracle_text = raw_card.get('text', ''),
+			oracle_text = re.sub('\(.*?\)', '', raw_card.get('text', ''), flags=re.IGNORECASE),
 			power_toughness = pt,
 			loyalty = raw_card.get('loyalty', None),
 			color_identity = cls._parse_colors(raw_card.get('colorIdentity', ())),
@@ -97,16 +98,13 @@ class _CardboardParser(object):
 		try:
 			layout = LAYOUT_SWITCH[raw_card['layout']]
 			front_names, back_names = cls.get_cardboard_card_names(raw_card)
-			cardboard = Cardboard(
+			return Cardboard(
 				front_cards = tuple(cards[name] for name in front_names),
 				back_cards = tuple(cards[name] for name in back_names),
 				layout = layout,
 			)
-			return cardboard
 		except KeyError:
 			raise AttributeParseException()
-
-
 
 class _ArtistParser(object):
 	@classmethod
@@ -146,7 +144,7 @@ class _PrintingParser(object):
 				back_img_id = 0
 			return Printing(
 				expansion = expansion,
-				collector_number = raw_printing['number'],
+				collector_number = re.sub('[^\d]', '', raw_printing['number'], flags=re.IGNORECASE),
 				cardboard = cardboard,
 				front_artist = _ArtistParser.parse(raw_printing.get('artist', None), artists),
 				front_flavor = raw_printing.get('flavor', None),

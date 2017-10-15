@@ -47,8 +47,8 @@ class Cardboard(Model):
 	_SPLIT_SEPARATOR = ' // '
 	def __init__(
 		self,
-		front_cards: t.Tuple[Card],
-		back_cards: t.Tuple[Card] = None,
+		front_cards: t.Tuple[Card, ...],
+		back_cards: t.Tuple[Card, ...] = None,
 		layout: Layout = Layout.STANDARD,
 	):
 		self._front_cards = Side(self)
