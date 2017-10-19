@@ -119,7 +119,7 @@ class _PrintingParser(object):
 	@classmethod
 	def _find_printing_from_name(cls, name: str, raw_printings):
 		for printing in raw_printings:
-			if 'name' in printing and printing['name'] == name:
+			if printing.get('name', '') == name:
 				return printing
 		raise AttributeParseException()
 	@classmethod
@@ -134,24 +134,25 @@ class _PrintingParser(object):
 			if name != cardboard.front_card.name:
 				raise AttributeParseException()
 			if cardboard.back_card is not None:
-				raw_back_printing = cls._find_printing_from_name(cardboard.back_card, raw_printings)
+				raw_back_printing = cls._find_printing_from_name(cardboard.back_card.name, raw_printings)
 				back_artist = _ArtistParser.parse(raw_back_printing.get('artist', None), artists)
 				back_flavor = raw_back_printing.get('flavor', None)
-				back_img_id = raw_back_printing.get('multiverseid', 0)
 			else:
 				back_artist = None
 				back_flavor = None
-				back_img_id = 0
 			return Printing(
+				id = raw_printing['multiverseid'],
 				expansion = expansion,
-				collector_number = re.sub('[^\d]', '', raw_printing['mciNumber'], flags=re.IGNORECASE),
+				collector_number = (
+					re.sub('[^\d]', '', raw_printing['mciNumber'], flags=re.IGNORECASE)
+					if 'mciNumber' in raw_printing else
+					None
+				),
 				cardboard = cardboard,
 				front_artist = _ArtistParser.parse(raw_printing.get('artist', None), artists),
 				front_flavor = raw_printing.get('flavor', None),
-				front_img_id = raw_printing.get('multiverseid', 0),
 				back_artist = back_artist,
 				back_flavor = back_flavor,
-				back_img_id = back_img_id,
 				rarity = rairty.Parser.parse(raw_printing['rarity']) if 'rarity' in raw_printing else None
 			)
 		except KeyError:
@@ -200,7 +201,7 @@ class _ExpansionParser(object):
 							cardboards = cardboards,
 						)
 					)
-				except AttributeParseException as e:
+				except AttributeParseException:
 					pass
 			return expansion
 		except KeyError:
