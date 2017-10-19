@@ -30,7 +30,7 @@ class Printing(Model):
 	primary_key = PrimaryKey('id')
 	def __init__(
 		self,
-		id: str,
+		id: int,
 		expansion: Expansion,
 		cardboard: Cardboard,
 		collector_number: str = None,
@@ -57,7 +57,7 @@ class Printing(Model):
 	cardboard = OneDescriptor('_cardboard')
 	expansion = OneDescriptor('_expansion')
 	@property
-	def id(self):
+	def id(self) -> int:
 		return self._id
 	@property
 	def collector_number(self) -> str:
