@@ -3,7 +3,7 @@ import typing as t
 from mtgorp.models.persistent.artist import Artist
 from mtgorp.models.persistent.attributes.rarities import Rarity
 from mtgorp.models.persistent.attributes.flags import Flag
-from mtgorp.models.persistent import cardboard
+from mtgorp.models.persistent import cardboard as _cardboard
 from mtgorp.models.persistent import expansion as _expansion
 from orp.database import Model, PrimaryKey
 from orp.relationships import One, OneDescriptor
@@ -18,12 +18,12 @@ class Face(object):
 		self._owner = owner
 		self._artist = One(self, '_faces', artist)
 		self._flavor = flavor
-	artist = OneDescriptor('_artist')
+	artist = OneDescriptor('_artist') #type: Artist
 	@property
-	def owner(self):
+	def owner(self) -> 'Printing':
 		return self._owner
 	@property
-	def flavor(self):
+	def flavor(self) -> str:
 		return self._flavor
 
 class Printing(Model):
@@ -32,7 +32,7 @@ class Printing(Model):
 		self,
 		id: int,
 		expansion: '_expansion.Expansion',
-		cardboard: 'cardboard.Cardboard',
+		cardboard: '_cardboard.Cardboard',
 		collector_number: int = None,
 		front_artist: Artist = None,
 		front_flavor: str = None,
@@ -58,8 +58,8 @@ class Printing(Model):
 		self._rarity = rarity
 		self._in_booster = in_booster
 		self._flags = flags
-	cardboard = OneDescriptor('_cardboard')
-	expansion = OneDescriptor('_expansion')
+	cardboard = OneDescriptor('_cardboard') #type: _cardboard.Cardboard
+	expansion = OneDescriptor('_expansion') #type: _expansion.Expansion
 	@property
 	def id(self) -> int:
 		return self._id
@@ -76,13 +76,13 @@ class Printing(Model):
 	def faces(self) -> t.Tuple[Face, Face]:
 		return self.front_face, self.back_face
 	@property
-	def rarity(self):
+	def rarity(self) -> 'Rarity':
 		return self._rarity
 	@property
-	def in_booster(self):
+	def in_booster(self) -> bool:
 		return self._in_booster
 	@property
-	def flags(self) -> t.Tuple[Flag, ...]:
+	def flags(self) -> 't.Tuple[Flag, ...]':
 		return self._flags
 	def __repr__(self):
 		return '{}({}, {}, {})'.format(

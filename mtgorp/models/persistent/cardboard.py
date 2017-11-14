@@ -61,7 +61,7 @@ class Cardboard(Model):
 			for c in back_cards:
 				self._back_cards.cards.add(c)
 		self._layout = layout
-		self.printings = Many(self, '_cardboard')
+		self.printings = Many(self, '_cardboard') #type: t.Set[_printing.Printing]
 	@classmethod
 	def calc_name(cls, names) -> str:
 		return cls._SPLIT_SEPARATOR.join(names)
@@ -69,13 +69,13 @@ class Cardboard(Model):
 	def name(self) -> str:
 		return self._name
 	@property
-	def front_cards(self):
+	def front_cards(self) -> 't.Tuple[Card]':
 		return self._front_cards.cards
 	@property
-	def back_cards(self):
+	def back_cards(self) -> 't.Tuple[Card]':
 		return self._back_cards.cards
 	@LazyProperty
-	def cards(self) -> t.Tuple[Card, ...]:
+	def cards(self) -> 't.Tuple[Card, ...]':
 		return tuple(self.front_cards)+tuple(self.back_cards)
 	@property
 	def layout(self) -> Layout:
@@ -84,7 +84,7 @@ class Cardboard(Model):
 	def front_card(self) -> Card:
 		return self._front_cards.cards.__iter__().__next__()
 	@property
-	def back_card(self) -> t.Union[Card, None]:
+	def back_card(self) -> 't.Optional[Card]':
 		try:
 			return self._back_cards.cards._many[0]
 		except IndexError:

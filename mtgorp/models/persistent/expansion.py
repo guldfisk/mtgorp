@@ -38,15 +38,15 @@ class Expansion(Model):
 		self.printings = Many(self, '_expansion')
 		self._fragment_dividers = fragment_dividers
 		self._booster_map = None
-	block = OneDescriptor('_block')
-	def fragmentize(self, frm: t.Union[int, None] = 0, to: t.Union[int, None] = None):
+	block = OneDescriptor('_block') #type: Block
+	def fragmentize(self, frm: t.Union[int, None] = 0, to: t.Union[int, None] = None) -> 'ExpansionFragment':
 		return ExpansionFragment(self, frm, to)
 	def generate_booster(self) -> Booster:
 		if self._booster_map is None:
 			self._booster_map = self._booster_key.get_booster_map(self._booster_expansion_collection)
 		return self._booster_map.generate_booster()
 	@LazyProperty
-	def fragments(self):
+	def fragments(self) -> 't.Tuple[ExpansionFragment]':
 		if self._fragment_dividers:
 			fragments = []
 			indexes = (0,)+self._fragment_dividers+(None,)
@@ -71,7 +71,7 @@ class Expansion(Model):
 	def booster_expansion_collection(self) -> 't.Optional[boostergen.ExpansionCollection]':
 		return self._booster_expansion_collection
 	@property
-	def border(self) -> t.Optional[Border]:
+	def border(self) -> 't.Optional[Border]':
 		return self._border
 	@property
 	def magic_card_info_code(self) -> t.Optional[str]:
@@ -91,13 +91,13 @@ class ExpansionFragment(Expansion):
 				print(printing, printing.cardboard.name)
 		self.printings = sorted(of.printings, key=lambda printing: printing.collector_number)[frm:to]
 	@property
-	def of(self):
+	def of(self) -> 'Expansion':
 		return self._of
 	@property
-	def frm(self):
+	def frm(self) -> int:
 		return self._frm
 	@property
-	def to(self):
+	def to(self) -> int:
 		return self._to
 	def __getattr__(self, item):
 		return object.__getattribute__(self, '_of').__getattribute__(item)

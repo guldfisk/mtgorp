@@ -229,16 +229,9 @@ class _ExpansionParser(object):
 			raise AttributeParseException()
 	@classmethod
 	def post_parse(cls, expansions: t.Dict[str, Expansion]):
-		print('i post parse')
 		information = BoosterInformation.information()
-		i = 0
 		for expansion in expansions.values():
-			i += 1
-			print(expansion.code, i, len(expansions))
 			if expansion.code in information and 'booster_expansion_collection' in information[expansion.code]:
-				print('in information')
-				print(information[expansion.code]['booster_expansion_collection'])
-
 				values = information[expansion.code]['booster_expansion_collection']
 				expansion._booster_expansion_collection = ExpansionCollection(
 					main = expansion,
@@ -252,21 +245,10 @@ class _ExpansionParser(object):
 					},
 				)
 			else:
-				print('default')
-				print(expansion.block)
-				if expansion.block is not None:
-					print(expansion.block.expansions)
-					iter = expansion.block.expansions.__iter__()
-					print(iter)
-					print(iter.__next__())
-					for an_expansion in iter:
-						print(an_expansion, an_expansion.release_date)
-				print(expansion if expansion.block is None else expansion.block.expansions_chronologically)
 				expansion._booster_expansion_collection = ExpansionCollection(
 					main = expansion,
 					basics = expansion if expansion.block is None else expansion.block.expansions_chronologically[0],
 				)
-		print('done post parse')
 
 class CardDatabase(object):
 	def __init__(
@@ -309,10 +291,8 @@ class DatabaseCreator(object):
 		cards = Table()
 		for name in raw_cards:
 			try:
-				card = _CardParser.parse(raw_cards[name])
-				# print(card)
 				cards.insert(
-					card
+					_CardParser.parse(raw_cards[name])
 				)
 			except AttributeParseException:
 				pass
@@ -322,10 +302,8 @@ class DatabaseCreator(object):
 		cardboards = Table()
 		for name in raw_cards:
 			try:
-				cardboard = _CardboardParser.parse(raw_cards[name], cards)
-				# print(cardboard)
 				cardboards.insert(
-					cardboard
+					_CardboardParser.parse(raw_cards[name], cards)
 				)
 			except AttributeParseException:
 				pass
@@ -342,16 +320,14 @@ class DatabaseCreator(object):
 		expansions = Table()
 		for code in raw_expansions:
 			try:
-				expansion = _ExpansionParser.parse(
-					raw_expansion = raw_expansions[code],
-					cardboards = cardboards,
-					printings = printings,
-					artists = artists,
-					blocks = blocks,
-				)
-				print(expansion, len(expansions), len(raw_expansions))
 				expansions.insert(
-					expansion
+					_ExpansionParser.parse(
+						raw_expansion = raw_expansions[code],
+						cardboards = cardboards,
+						printings = printings,
+						artists = artists,
+						blocks = blocks,
+					)
 				)
 			except AttributeParseException:
 				pass
@@ -379,7 +355,6 @@ class DatabaseCreator(object):
 			artists = artists,
 			blocks = blocks,
 		)
-		print('database done')
 		return CardDatabase(
 			cards = cards,
 			cardboards = cardboards,

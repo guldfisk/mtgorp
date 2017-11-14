@@ -1,3 +1,6 @@
+import typing as t
+
+from mtgorp.models.persistent import printing as _printing
 from orp.relationships import Many
 from orp.database import Model, PrimaryKey
 
@@ -6,8 +9,8 @@ class Artist(Model):
 	def __init__(self, name: str):
 		self._faces = Many(self, '_artist')
 	@property
-	def name(self):
+	def name(self) -> str:
 		return self._name
 	@property
-	def printings(self):
+	def printings(self) -> 't.Tuple[_printing.Printing]':
 		return tuple(face.owner for face in self._faces)

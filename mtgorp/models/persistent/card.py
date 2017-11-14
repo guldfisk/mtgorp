@@ -3,6 +3,7 @@ import typing as t
 from lazy_property import LazyProperty
 
 from mtgorp.models.persistent.attributes import cardtypes, colors, manacosts, powertoughness
+from mtgorp.models.persistent import cardboard as _cardboard
 from orp.database import Model, PrimaryKey
 from orp.relationships import Many
 
@@ -17,7 +18,7 @@ class Card(Model):
 		oracle_text: str = None,
 		power_toughness: powertoughness.PowerToughness = None,
 		loyalty: int = None,
-		color_identity: t.Set[colors.Color] = None
+		color_identity: t.AbstractSet[colors.Color] = None
 	):
 		self._card_type = card_type
 		self._mana_cost = mana_cost
@@ -33,34 +34,34 @@ class Card(Model):
 	def name(self) -> str:
 		return self._name
 	@property
-	def card_type(self):
+	def card_type(self) -> 't.Optional[cardtypes.CardType]':
 		return self._card_type
 	@property
-	def mana_cost(self):
+	def mana_cost(self) -> 't.Optional[manacosts.ManaCost]':
 		return self._mana_cost
 	@property
-	def color(self):
+	def color(self) -> 't.Optional[t.AbstractSet[colors.Color]]':
 		return self._color
 	@property
-	def oracle_text(self):
+	def oracle_text(self) -> t.Optional[str]:
 		return self._oracle_text
 	@property
-	def power_toughness(self):
+	def power_toughness(self) -> 't.Optional[powertoughness.PowerToughness]':
 		return self._power_toughness
 	@property
-	def loyalty(self):
+	def loyalty(self) -> t.Optional[int]:
 		return self._loyalty
 	@property
-	def color_identity(self):
+	def color_identity(self) -> 't.Optional[t.AbstractSet[colors.Color]]':
 		return self._color_identity
 	@LazyProperty
-	def cmc(self):
+	def cmc(self) -> int:
 		return self._mana_cost.cmc if self._mana_cost else 0
 	@LazyProperty
-	def cardboards(self):
+	def cardboards(self) -> 't.FrozenSet[_cardboard.Cardboard]':
 		return frozenset(side.owner for side in self._sides)
 	@property
-	def cardboard(self):
+	def cardboard(self) -> 't.Optional[_cardboard.Cardboard]':
 		try:
 			return self.cardboards.__iter__().__next__()
 		except StopIteration:
