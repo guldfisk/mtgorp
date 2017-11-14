@@ -1,9 +1,9 @@
 from enum import Enum
 
 class Rarity(Enum):
-	COMMON = 0
-	UNCOMMON = 1
-	RARE = 2
-	MYTHIC = 3
-	SPECIAL = 4
-	LAND = 5
+	LAND = 0
+	COMMON = 1
+	UNCOMMON = 2
+	RARE = 3
+	MYTHIC = 4
+	SPECIAL = 5

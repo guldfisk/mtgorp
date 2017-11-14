@@ -1,15 +1,10 @@
 import typing as t
 from abc import ABCMeta
 
-from multiset import FrozenMultiset
-
 import mtgorp.models.persistent.attributes.colors as cols
 from mtgorp.models.persistent.attributes.colors import Color as c
+from mtgorp.utilities.containers import HashableMultiset
 
-
-class _FrozenMultiset(FrozenMultiset):
-	def __hash__(self):
-		return hash(frozenset(self._elements.items()))
 
 class ManaCostAtom(metaclass=ABCMeta):
 	def __init__(self, code: str, associations: t.AbstractSet=None, cmc_value: int=1):
@@ -110,20 +105,9 @@ class HybridCostAtom(ManaCostAtom):
 				return False
 		return len(s) < len(o)
 
-# class PhyrexianCostAtom(ManaCostAtom):
-# 	def __init__(self, option):
-# 		self._wrapped = option
-# 		super().__init__(
-# 			code = option.code + 'P',
-# 			associations = option.associations,
-# 			cmc_value = option.cmc_value,
-# 		)
-# 	def _lt_tiebreaker(self, other):
-# 		return self._wrapped < other._wrapped
-
 class ManaCost(object):
 	def __init__(self, atoms: t.Iterable[ManaCostAtom]=None):
-		self._atoms = atoms if isinstance(atoms, _FrozenMultiset) else _FrozenMultiset(atoms)
+		self._atoms = atoms if isinstance(atoms, HashableMultiset) else HashableMultiset(atoms)
 	@property
 	def cmc(self) -> int:
 		return sum(atom.cmc_value for atom in self._atoms)
@@ -162,6 +146,8 @@ class ManaCost(object):
 			if s[i] > o[i]:
 				return False
 		return len(s) < len(o)
+	def __contains__(self, item):
+		return item._atoms.issubset(self._atoms)
 	def __add__(self, other):
 		return ManaCost(
 			self._atoms + other._atoms

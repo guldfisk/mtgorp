@@ -3,17 +3,21 @@ import datetime
 import os
 import sys
 import re
+import typing as t
 
 from mtgorp.managejson import paths, update
-from mtgorp.db.attributeparse import cardtype, color, manacost, powertoughness, rairty, border
+from mtgorp.db.attributeparse import cardtype, color, manacost, powertoughness, rairty, border, layout, boosterkey
 from mtgorp.db.attributeparse.exceptions import AttributeParseException
 from mtgorp.models.persistent.attributes.layout import Layout
+from mtgorp.models.persistent.attributes.flags import Flag
 from mtgorp.models.persistent.card import Card
 from mtgorp.models.persistent.cardboard import Cardboard
 from mtgorp.models.persistent.printing import Printing
 from mtgorp.models.persistent.artist import Artist
 from mtgorp.models.persistent.block import Block
 from mtgorp.models.persistent.expansion import Expansion
+from mtgorp.db.limited.boosterinformation import BoosterInformation
+from mtgorp.models.limited.boostergen import ExpansionCollection
 from orp.database import Table
 from orp.persist import PicklePersistor
 
@@ -50,41 +54,31 @@ class _CardParser(object):
 			color_identity = cls._parse_colors(raw_card.get('colorIdentity', ())),
 		)
 
-LAYOUT_SWITCH = {
-	'normal': Layout.STANDARD,
-	'leveler': Layout.STANDARD,
-	'double-faced': Layout.TRANSFORM,
-	'flip': Layout.FLIP,
-	'meld': Layout.MELD,
-	'split': Layout.SPLIT,
-	'aftermath': Layout.SPLIT,
-}
-
 class _CardboardParser(object):
 	@classmethod
 	def get_cardboard_card_names(cls, raw_card):
 		try:
 			name = raw_card['name']
-			layout = LAYOUT_SWITCH[raw_card['layout']]
+			raw_card_layout = layout.Parser.parse(raw_card['layout'])
 
-			if layout == Layout.STANDARD:
+			if raw_card_layout == Layout.STANDARD:
 				return (
 					(name,),
 					(),
 				)
-			elif layout == Layout.SPLIT or layout == Layout.FLIP:
+			elif raw_card_layout == Layout.SPLIT or raw_card_layout == Layout.FLIP or raw_card_layout == Layout.AFTERMATH:
 				if name == raw_card['names'][0]:
 					return (
-						(n for n in raw_card['names']),
+						tuple(n for n in raw_card['names']),
 						(),
 					)
-			elif layout == Layout.TRANSFORM:
+			elif raw_card_layout == Layout.TRANSFORM:
 				if name == raw_card['names'][0]:
 					return (
 						(name,),
 						(raw_card['names'][1],),
 					)
-			elif layout == Layout.MELD:
+			elif raw_card_layout == Layout.MELD:
 				if name in raw_card['names'][0:1]:
 					return (
 						(name,),
@@ -96,12 +90,11 @@ class _CardboardParser(object):
 	@classmethod
 	def parse(cls, raw_card, cards: Table):
 		try:
-			layout = LAYOUT_SWITCH[raw_card['layout']]
 			front_names, back_names = cls.get_cardboard_card_names(raw_card)
 			return Cardboard(
 				front_cards = tuple(cards[name] for name in front_names),
 				back_cards = tuple(cards[name] for name in back_names),
-				layout = layout,
+				layout = layout.Parser.parse(raw_card['layout']),
 			)
 		except KeyError:
 			raise AttributeParseException()
@@ -127,7 +120,6 @@ class _PrintingParser(object):
 		try:
 			name = raw_printing['name']
 			front_names, back_names = _CardboardParser.get_cardboard_card_names(raw_printing)
-			front_names, back_names = tuple(front_names), tuple(back_names)
 			cardboard = cardboards[
 				Cardboard.calc_name(front_names + back_names)
 			]
@@ -140,12 +132,29 @@ class _PrintingParser(object):
 			else:
 				back_artist = None
 				back_flavor = None
+
+			flags = []
+			if raw_printing.get('timeshifted', False):
+				flags.append(Flag.TIMESHIFTED)
+			information = BoosterInformation.information()
+			if expansion.code in information:
+				if 'black_list' in information[expansion.code]:
+					in_booster = not cardboard.name in information[expansion.code]['black_list']
+				else:
+					in_booster = True
+				if 'flags' in information[expansion.code]:
+					for flag in information[expansion.code]['flags']:
+						if cardboard.name in flag.get('cards', ()) and flag.get('name', '') in Flag:
+							flags.append(Flag[flag.get('name', '')])
+			else:
+				in_booster = True
+
 			return Printing(
 				id = raw_printing['multiverseid'],
 				expansion = expansion,
 				collector_number = (
-					re.sub('[^\d]', '', raw_printing['mciNumber'], flags=re.IGNORECASE)
-					if 'mciNumber' in raw_printing else
+					int(re.sub('[^\d]', '', raw_printing['number'], flags=re.IGNORECASE))
+					if 'number' in raw_printing else
 					None
 				),
 				cardboard = cardboard,
@@ -153,7 +162,9 @@ class _PrintingParser(object):
 				front_flavor = raw_printing.get('flavor', None),
 				back_artist = back_artist,
 				back_flavor = back_flavor,
-				rarity = rairty.Parser.parse(raw_printing['rarity']) if 'rarity' in raw_printing else None
+				rarity = rairty.Parser.parse(raw_printing['rarity']) if 'rarity' in raw_printing else None,
+				in_booster = in_booster,
+				flags = tuple(flags),
 			)
 		except KeyError:
 			raise AttributeParseException()
@@ -179,16 +190,26 @@ class _ExpansionParser(object):
 				raw_expansion['releaseDate'], '%Y-%m-%d'
 			).date() if 'releaseDate' in raw_expansion else None
 
+			information = BoosterInformation.information()
 			expansion = Expansion(
 				name = name,
 				code = code,
 				block = _BlockParser.parse(raw_expansion['block'], blocks) if 'block' in raw_expansion else None,
 				release_date = release_date,
-				booster = tuple(raw_expansion.get('booster', ())),
+				booster_key = (
+					boosterkey.Parser.parse(information[code]['booster_key'])
+					if code in information and 'booster_key' in information[code] else
+					boosterkey.Parser.parse(tuple(raw_expansion.get('booster', ())))
+				),
 				border = border.Parser.parse(raw_expansion['border']) if 'border' in raw_expansion else None,
 				magic_card_info_code = raw_expansion.get('magicCardsInfoCode', None),
 				mkm_name = raw_expansion.get('mkm_name', None),
 				mkm_id = raw_expansion.get('mkm_id', None),
+				fragment_dividers = (
+					tuple(information[code].get('fragment_dividers', ()))
+					if code in information else
+					()
+				),
 			)
 			for raw_printing in raw_expansion['cards']:
 				try:
@@ -206,6 +227,46 @@ class _ExpansionParser(object):
 			return expansion
 		except KeyError:
 			raise AttributeParseException()
+	@classmethod
+	def post_parse(cls, expansions: t.Dict[str, Expansion]):
+		print('i post parse')
+		information = BoosterInformation.information()
+		i = 0
+		for expansion in expansions.values():
+			i += 1
+			print(expansion.code, i, len(expansions))
+			if expansion.code in information and 'booster_expansion_collection' in information[expansion.code]:
+				print('in information')
+				print(information[expansion.code]['booster_expansion_collection'])
+
+				values = information[expansion.code]['booster_expansion_collection']
+				expansion._booster_expansion_collection = ExpansionCollection(
+					main = expansion,
+					**{
+						key:
+							(expansions[values[key][0]]
+							if values[key][1] is None
+							else expansions[values[key][0]].fragments[values[key][1]])
+						for key in
+						values
+					},
+				)
+			else:
+				print('default')
+				print(expansion.block)
+				if expansion.block is not None:
+					print(expansion.block.expansions)
+					iter = expansion.block.expansions.__iter__()
+					print(iter)
+					print(iter.__next__())
+					for an_expansion in iter:
+						print(an_expansion, an_expansion.release_date)
+				print(expansion if expansion.block is None else expansion.block.expansions_chronologically)
+				expansion._booster_expansion_collection = ExpansionCollection(
+					main = expansion,
+					basics = expansion if expansion.block is None else expansion.block.expansions_chronologically[0],
+				)
+		print('done post parse')
 
 class CardDatabase(object):
 	def __init__(
@@ -224,22 +285,22 @@ class CardDatabase(object):
 		self._blocks = blocks
 		self._expansions = expansions
 	@property
-	def cards(self):
+	def cards(self) -> t.Dict[str, Card]:
 		return self._cards
 	@property
-	def cardboards(self):
+	def cardboards(self) -> t.Dict[str, Cardboard]:
 		return self._cardboards
 	@property
-	def printings(self):
+	def printings(self) -> t.Dict[int, Printing]:
 		return self._printings
 	@property
-	def artists(self):
+	def artists(self) -> t.Dict[str, Artist]:
 		return self._artists
 	@property
-	def blocks(self):
+	def blocks(self) -> t.Dict[str, Block]:
 		return self._blocks
 	@property
-	def expansions(self):
+	def expansions(self) -> t.Dict[str, Expansion]:
 		return self._expansions
 
 class DatabaseCreator(object):
@@ -248,8 +309,10 @@ class DatabaseCreator(object):
 		cards = Table()
 		for name in raw_cards:
 			try:
+				card = _CardParser.parse(raw_cards[name])
+				# print(card)
 				cards.insert(
-					_CardParser.parse(raw_cards[name])
+					card
 				)
 			except AttributeParseException:
 				pass
@@ -259,8 +322,10 @@ class DatabaseCreator(object):
 		cardboards = Table()
 		for name in raw_cards:
 			try:
+				cardboard = _CardboardParser.parse(raw_cards[name], cards)
+				# print(cardboard)
 				cardboards.insert(
-					_CardboardParser.parse(raw_cards[name], cards)
+					cardboard
 				)
 			except AttributeParseException:
 				pass
@@ -277,17 +342,20 @@ class DatabaseCreator(object):
 		expansions = Table()
 		for code in raw_expansions:
 			try:
+				expansion = _ExpansionParser.parse(
+					raw_expansion = raw_expansions[code],
+					cardboards = cardboards,
+					printings = printings,
+					artists = artists,
+					blocks = blocks,
+				)
+				print(expansion, len(expansions), len(raw_expansions))
 				expansions.insert(
-					_ExpansionParser.parse(
-						raw_expansion = raw_expansions[code],
-						cardboards = cardboards,
-						printings = printings,
-						artists = artists,
-						blocks = blocks,
-					)
+					expansion
 				)
 			except AttributeParseException:
 				pass
+		_ExpansionParser.post_parse(expansions)
 		return expansions
 	@classmethod
 	def create_database(
@@ -311,6 +379,7 @@ class DatabaseCreator(object):
 			artists = artists,
 			blocks = blocks,
 		)
+		print('database done')
 		return CardDatabase(
 			cards = cards,
 			cardboards = cardboards,

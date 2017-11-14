@@ -5,4 +5,5 @@ class Layout(Enum):
 	TRANSFORM = 1
 	FLIP = 2
 	SPLIT = 3
-	MELD = 4
+	AFTERMATH = 4
+	MELD = 5

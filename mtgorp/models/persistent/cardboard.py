@@ -5,6 +5,8 @@ from lazy_property import LazyProperty
 
 from mtgorp.models.persistent.attributes.layout import Layout
 from mtgorp.models.persistent.card import Card
+from mtgorp.models.persistent import expansion as _expansion
+from mtgorp.models.persistent import printing as _printing
 from orp.database import Model, PrimaryKey, Key
 from orp.relationships import Many
 
@@ -61,10 +63,10 @@ class Cardboard(Model):
 		self._layout = layout
 		self.printings = Many(self, '_cardboard')
 	@classmethod
-	def calc_name(cls, names):
+	def calc_name(cls, names) -> str:
 		return cls._SPLIT_SEPARATOR.join(names)
 	@property
-	def name(self):
+	def name(self) -> str:
 		return self._name
 	@property
 	def front_cards(self):
@@ -73,20 +75,28 @@ class Cardboard(Model):
 	def back_cards(self):
 		return self._back_cards.cards
 	@LazyProperty
-	def cards(self):
+	def cards(self) -> t.Tuple[Card, ...]:
 		return tuple(self.front_cards)+tuple(self.back_cards)
 	@property
-	def layout(self):
+	def layout(self) -> Layout:
 		return self._layout
 	@property
-	def front_card(self):
+	def front_card(self) -> Card:
 		return self._front_cards.cards.__iter__().__next__()
 	@property
-	def back_card(self):
+	def back_card(self) -> t.Union[Card, None]:
 		try:
 			return self._back_cards.cards._many[0]
 		except IndexError:
 			return None
+	@property
+	def printing(self) -> '_printing.Printing':
+		return self.printings.__iter__().__next__()
+	def get_printing(self, expansion: 't.Optional[_expansion.Expansion]' = None) -> '_printing.Printing':
+		for printing in self.printings:
+			if printing.expansion==expansion:
+				return printing
+		raise KeyError()
 
 def test():
 	a_card = Card('lol')

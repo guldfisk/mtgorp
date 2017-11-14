@@ -13,7 +13,7 @@ class Parser(parser.Parser):
 		'Rare': Rarity.RARE,
 		'Mythic Rare': Rarity.MYTHIC,
 		'Basic Land': Rarity.LAND,
-		'Special': Rarity.SPECIAL
+		'Special': Rarity.SPECIAL,
 	}
 	@staticmethod
 	def parse(s: str) -> Rarity:

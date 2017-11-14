@@ -1,0 +1,99 @@
+{
+  "IXA": {
+    "blacklist": [
+      "Huatli, Dinosaur Knight",
+      "Jace, Ingenious Mind-Mage",
+      "Castaways's Despair",
+      "Grasping Current",
+      "Jace's Sentinel",
+      "Woodland Stream",
+      "Huatli's Snubhorn",
+      "Huatli's Spurring",
+      "Sun-Blessed Mount",
+      "Stone Quarry"
+    ]
+  },
+  "AKH": {
+    "blacklist": [
+      "Gideon, Martial Paragon",
+      "Liliana, Death Wielder",
+      "Liliana's Influence",
+      "Gideon's Resolve",
+      "Dessicated Narga",
+      "Companion of the Trials",
+      "Foul Orchard",
+      "Stone Quarry",
+      "Tattered Mummy",
+      "Graceful Cat"
+    ],
+    "booster_key": [
+      ["rare", "mythic rare"],
+      "uncommon",
+      "uncommon",
+      "uncommon",
+      "common",
+      "common",
+      "common",
+      "common",
+      "common",
+      "common",
+      "common",
+      "common",
+      "common",
+      ["common", "premium"],
+      "land"
+    ],
+    "booster_expansion_collection": {
+      "basics": ["AKH", null],
+      "premium": ["MPS_AKH", 0]
+    }
+  },
+  "HOU": {
+    "blacklist": [
+      "Nicol Bolas, the Deceiver",
+      "Wasp of the Bitter End",
+      "Zealot of the God-Pharaoh",
+      "Visage of Bolas",
+      "Cinder Barrens",
+      "Nissa, Genesis Mage",
+      "Avid Reclaimer",
+      "Brambleweft Behemoth",
+      "Woodland Stream"
+    ],
+    "booster_key": [
+      ["rare", "mythic rare"],
+      "uncommon",
+      "uncommon",
+      "uncommon",
+      "common",
+      "common",
+      "common",
+      "common",
+      "common",
+      "common",
+      "common",
+      "common",
+      "common",
+      ["common", "premium"],
+      "land"
+    ],
+    "booster_expansion_collection": {
+      "basics": ["AKH", null],
+      "premium": ["MPS_AKH", 1]
+    }
+  },
+  "MPS_AKH": {
+    "fragment_dividers": [31]
+  },
+  "CNS": {
+    "flags" : [
+      {
+        "name": "DRAFT_MATTERS",
+        "cards": [
+          "Aether Searcher",
+          "Agent of Acquisitions"
+        ]
+      }
+    ]
+  }
+}
