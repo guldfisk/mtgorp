@@ -33,7 +33,7 @@ class Printing(Model):
 		id: int,
 		expansion: '_expansion.Expansion',
 		cardboard: '_cardboard.Cardboard',
-		collector_number: int = None,
+		collector_number: int,
 		front_artist: Artist = None,
 		front_flavor: str = None,
 		back_artist: Artist = None,
@@ -64,7 +64,7 @@ class Printing(Model):
 	def id(self) -> int:
 		return self._id
 	@property
-	def collector_number(self) -> t.Optional[int]:
+	def collector_number(self) -> int:
 		return self._collector_number
 	@property
 	def front_face(self) -> Face:
@@ -87,8 +87,8 @@ class Printing(Model):
 	def __repr__(self):
 		return '{}({}, {}, {})'.format(
 			self.__class__.__name__,
-			self.expansion.primary_key,
-			self._collector_number,
+			self.cardboard.name,
+			self.expansion.code,
 			self.id,
 		)
 

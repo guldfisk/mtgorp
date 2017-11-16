@@ -89,7 +89,7 @@ class ExpansionFragment(Expansion):
 		for printing in of.printings:
 			if printing.collector_number is None:
 				print(printing, printing.cardboard.name)
-		self.printings = sorted(of.printings, key=lambda printing: printing.collector_number)[frm:to]
+		self.printings = set(sorted(of.printings, key=lambda printing: printing.collector_number)[frm:to])
 	@property
 	def of(self) -> 'Expansion':
 		return self._of

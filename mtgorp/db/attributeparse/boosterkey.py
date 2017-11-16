@@ -39,7 +39,6 @@ class Parser(parser.Parser):
 		'timeshifted common': boostergen.KeySlot((boostergen.TIMESHIFTED_COMMON,)),
 		'urza land': boostergen.KeySlot((
 			boostergen.Option(
-				'urzas_land',
 				PrintingPatternBuilder().types.contains(cardtypes.CardSubType("Urza's")).build(),
 			),
 		)),
@@ -52,44 +51,44 @@ class Parser(parser.Parser):
 			boostergen.TIMESHIFTED_UNCOMMON: 3,
 			boostergen.TIMESHIFTED_COMMON: 11,
 		}),
-		('land', 'checklist'): boostergen.BASIC_SLOT,
-		('rare', 'timeshifted rare'): boostergen.KeySlot({
+		frozenset(('land', 'checklist')): boostergen.BASIC_SLOT,
+		frozenset(('rare', 'timeshifted rare')): boostergen.KeySlot({
 			boostergen.TIMESHIFTED_RARE: 1,
 			boostergen.RARE: 7,
 		}),
-		('rare', 'uncommon'): boostergen.KeySlot({
+		frozenset(('rare', 'uncommon')): boostergen.KeySlot({
 			boostergen.RARE: 1,
 			boostergen.UNCOMMON_SLOT: 3,
 		}),
-		('foil mythic rare', 'foil rare', 'foil uncommon', 'foil common'): CARD_WITH_MYTHIC,
+		frozenset(('foil mythic rare', 'foil rare', 'foil uncommon', 'foil common')): CARD_WITH_MYTHIC,
 		'foil_with_mythic': CARD_WITH_MYTHIC,
 		'foil': CARD,
-		('power nine', 'foil'):  boostergen.KeySlot({
+		frozenset(('power nine', 'foil')):  boostergen.KeySlot({
 			boostergen.SPECIAL: 1,
 			boostergen.MYTHIC: 53,
 			boostergen.RARE: 371,
 			boostergen.UNCOMMON: 1113,
 			boostergen.COMMON: 4081,
 		}),
-		('common', ('double faced rare', 'double faced mythic rare')): boostergen.KeySlot({
+		frozenset(('common', ('double faced rare', 'double faced mythic rare'))): boostergen.KeySlot({
 			boostergen.DOUBLEFACED_MYTHIC: 1,
 			boostergen.DOUBLEFACED_RARE: 7,
 			boostergen.COMMON: 49,
 		}),
-		('uncommon', 'timeshifted uncommon'): boostergen.UNCOMMON_SLOT,
-		('common', 'timeshifted common'): boostergen.COMMON_SLOT,
-		('timeshifted rare', 'timeshifted uncommon'): boostergen.RARE_SLOT,
-		('common', 'double faced rare', 'double faced mythic rare'): boostergen.KeySlot({
+		frozenset(('uncommon', 'timeshifted uncommon')): boostergen.UNCOMMON_SLOT,
+		frozenset(('common', 'timeshifted common')): boostergen.COMMON_SLOT,
+		frozenset(('timeshifted rare', 'timeshifted uncommon')): boostergen.RARE_SLOT,
+		frozenset(('common', 'double faced rare', 'double faced mythic rare')): boostergen.KeySlot({
 			boostergen.DOUBLEFACED_MYTHIC: 1,
 			boostergen.DOUBLEFACED_RARE: 7,
 			boostergen.COMMON: 49,
 		}),
-		('double faced common', 'double faced uncommon'): boostergen.KeySlot({
+		frozenset(('double faced common', 'double faced uncommon')): boostergen.KeySlot({
 			boostergen.UNCOMMON: 3,
 			boostergen.COMMON: 11,
 		}),
-		('rare', 'mythic rare'): boostergen.RARE_MYTHIC_SLOT,
-		('common', 'premium'): boostergen.KeySlot({
+		frozenset(('rare', 'mythic rare')): boostergen.RARE_MYTHIC_SLOT,
+		frozenset(('common', 'premium')): boostergen.KeySlot({
 			boostergen.PREMIUM: 1,
 			boostergen.COMMON: 143,
 		})
@@ -99,6 +98,6 @@ class Parser(parser.Parser):
 		return boostergen.BoosterKey(
 			Parser.SLOT_MAP[key]
 			for key in
-			(value if isinstance(value, str) else tuple(value) for value in values)
+			(value if isinstance(value, str) else frozenset(value) for value in values)
 			if key in Parser.SLOT_MAP
 		)

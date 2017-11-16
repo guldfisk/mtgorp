@@ -92,11 +92,21 @@ class Cardboard(Model):
 	@property
 	def printing(self) -> '_printing.Printing':
 		return self.printings.__iter__().__next__()
-	def get_printing(self, expansion: 't.Optional[_expansion.Expansion]' = None) -> '_printing.Printing':
-		for printing in self.printings:
-			if printing.expansion==expansion:
-				return printing
-		raise KeyError()
+	def from_expansion(self, expansion: 't.Union[_expansion.Expansion, str]') -> '_printing.Printing':
+		if isinstance(expansion, _expansion.Expansion):
+			for printing in self.printings:
+				if printing.expansion==expansion:
+					return printing
+		else:
+			for printing in self.printings:
+				if printing.expansion.code==expansion:
+					return printing
+		raise KeyError(
+			'{} not printed in {}'.format(
+				self,
+				expansion,
+			)
+		)
 
 def test():
 	a_card = Card('lol')

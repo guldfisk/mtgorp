@@ -149,13 +149,26 @@ class _PrintingParser(object):
 			else:
 				in_booster = True
 
+			collector_number = raw_printing.get(
+				'number',
+				raw_printing.get(
+					'mciNumber',
+					None,
+				),
+			)
+			if collector_number is None:
+				raise AttributeParseException()
+
 			return Printing(
 				id = raw_printing['multiverseid'],
 				expansion = expansion,
-				collector_number = (
-					int(re.sub('[^\d]', '', raw_printing['number'], flags=re.IGNORECASE))
-					if 'number' in raw_printing else
-					None
+				collector_number = int(
+					re.sub(
+						'[^\d]',
+						'',
+						collector_number,
+						flags=re.IGNORECASE
+					)
 				),
 				cardboard = cardboard,
 				front_artist = _ArtistParser.parse(raw_printing.get('artist', None), artists),
