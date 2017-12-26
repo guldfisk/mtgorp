@@ -22,5 +22,6 @@ setup(
 		'orp',
 		'lazy-property',
 		'multiset',
+		'appdirs',
 	]
 )
