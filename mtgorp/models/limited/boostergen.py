@@ -28,7 +28,7 @@ def choice_multiset(ms: BaseMultiset):
 		)
 	]
 
-def sample_multiset(ms: BaseMultiset, amnt: int = 1):
+def sample_multiset(ms: BaseMultiset, amount: int = 1):
 	values, multiplicities = zip(*ms.items())
 	cumulative_distribution = tuple(itertools.accumulate(multiplicities))
 	return [
@@ -40,7 +40,7 @@ def sample_multiset(ms: BaseMultiset, amnt: int = 1):
 		] for index in
 		random.sample(
 			range(cumulative_distribution[-1]),
-			amnt,
+			amount,
 		)
 	 ]
 

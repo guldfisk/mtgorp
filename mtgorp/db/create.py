@@ -199,6 +199,8 @@ class _ExpansionParser(object):
 		try:
 			name = raw_expansion['name']
 			code = raw_expansion['code']
+			if code == 'NMS':
+				code = 'NEM'
 			release_date = datetime.datetime.strptime(
 				raw_expansion['releaseDate'], '%Y-%m-%d'
 			).date() if 'releaseDate' in raw_expansion else None
@@ -386,11 +388,14 @@ def update_database(
 		os.makedirs(db_path)
 	if not os.path.exists(paths.ALL_CARDS_PATH) or not os.path.exists(paths.ALL_SETS_PATH):
 		update.check_and_update()
-	sys.setrecursionlimit(50000)
-	PicklePersistor(os.path.join(paths.APP_DATA_PATH, 'db')).save(
-		DatabaseCreator.create_database(
-			all_cards_path,
-			all_sets_path,
+	previous_recursion_limit = sys.getrecursionlimit()
+	try:
+		sys.setrecursionlimit(50000)
+		PicklePersistor(os.path.join(paths.APP_DATA_PATH, 'db')).save(
+			DatabaseCreator.create_database(
+				all_cards_path,
+				all_sets_path,
+			)
 		)
-	)
-	sys.setrecursionlimit(1000)
+	finally:
+		sys.setrecursionlimit(previous_recursion_limit)

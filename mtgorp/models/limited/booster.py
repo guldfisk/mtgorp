@@ -10,7 +10,10 @@ class Booster(object):
 		self._printings = printings if isinstance(printings, Multiset) else Multiset(printings)
 		self._expansion = expansion
 	@property
-	def sorted_printings(self):
+	def printings(self) -> 't.Set[_printing.Printing]':
+		return self._printings
+	@property
+	def sorted_printings(self) -> 't.List[_printing.Printing]':
 		return sorted(self._printings, key=lambda p: p.rarity.value, reverse=True)
 	@property
 	def expansion(self):

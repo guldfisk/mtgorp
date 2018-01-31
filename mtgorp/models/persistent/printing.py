@@ -1,12 +1,13 @@
 import typing as t
 
+from orp.database import Model, PrimaryKey
+from orp.relationships import One, OneDescriptor
+
 from mtgorp.models.persistent.artist import Artist
 from mtgorp.models.persistent.attributes.rarities import Rarity
 from mtgorp.models.persistent.attributes.flags import Flag
 from mtgorp.models.persistent import cardboard as _cardboard
 from mtgorp.models.persistent import expansion as _expansion
-from orp.database import Model, PrimaryKey
-from orp.relationships import One, OneDescriptor
 
 class Face(object):
 	def __init__(

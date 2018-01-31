@@ -23,5 +23,6 @@ setup(
 		'lazy-property',
 		'multiset',
 		'appdirs',
+		'frozendict'
 	]
 )
