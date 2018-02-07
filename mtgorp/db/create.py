@@ -144,8 +144,11 @@ class _PrintingParser(object):
 					in_booster = True
 				if 'flags' in information[expansion.code]:
 					for flag in information[expansion.code]['flags']:
-						if cardboard.name in flag.get('cards', ()) and flag.get('name', '') in Flag:
-							flags.append(Flag[flag.get('name', '')])
+						if cardboard.name in flag.get('cards', ()):
+							try:
+								flags.append(Flag[flag.get('name', '')])
+							except KeyError:
+								pass
 			else:
 				in_booster = True
 

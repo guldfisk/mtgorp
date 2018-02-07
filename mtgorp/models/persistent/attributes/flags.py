@@ -2,4 +2,4 @@ from enum import Enum
 
 class Flag(Enum):
 	TIMESHIFTED = 'timeshifted'
-	DRAFT_MATTERS = 'draftmatters'
+	DRAFT_MATTERS = 'draft_matters'

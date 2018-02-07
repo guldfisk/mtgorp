@@ -88,9 +88,6 @@ class Option(object):
 		self._pattern = pattern
 		self._collection_key = collection_key
 	@property
-	def name(self):
-		return self._name
-	@property
 	def pattern(self):
 		return self._pattern
 	@property

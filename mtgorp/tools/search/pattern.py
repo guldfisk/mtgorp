@@ -4,8 +4,9 @@ from abc import ABCMeta, abstractmethod, abstractstaticmethod
 from mtgorp.models.persistent import printing as _printing
 from orp.database import Model
 
-class Extractor(object):
+class Extractor(object, metaclass=ABCMeta):
 	@staticmethod
+	@abstractmethod
 	def extract(model) -> t.Iterable[t.Any]:
 		pass
 
@@ -38,6 +39,48 @@ class PrintingManaCostExtractor(Extractor):
 	@staticmethod
 	def extract(printing: '_printing.Printing'):
 		return (card.mana_cost for card in printing.cardboard.cards)
+
+class PrintingOracleExtractor(Extractor):
+	@staticmethod
+	def extract(printing: '_printing.Printing'):
+		return (card.oracle_text for card in printing.cardboard.cards)
+
+class PrintingFlavorExtractor(Extractor):
+	@staticmethod
+	def extract(printing: '_printing.Printing'):
+		return (face.flavor for face in printing.faces)
+
+class PrintingPowerExtractor(Extractor):
+	@staticmethod
+	def extract(printing: '_printing.Printing'):
+		return (
+			card.power_toughness.power
+			if card.power_toughness is not None else
+			None
+			for card in
+			printing.cardboard.cards
+		)
+
+class PrintingToughnessExtractor(Extractor):
+	@staticmethod
+	def extract(printing: '_printing.Printing'):
+		return (
+			card.power_toughness.toughness
+			if card.power_toughness is not None else
+			None
+			for card in
+			printing.cardboard.cards
+		)
+
+class PrintingLoyaltyExtractor(Extractor):
+	@staticmethod
+	def extract(printing: '_printing.Printing'):
+		return (card.loyalty for card in printing.cardboard.cards)
+
+class PrintingArtistExtractor(Extractor):
+	@staticmethod
+	def extract(printing: '_printing.Printing'):
+		return (face.artist for face in printing.faces)
 
 class Checkable(object):
 	def __call__(self, model) -> bool:
@@ -99,6 +142,11 @@ class ContainedIn(Checker):
 	@staticmethod
 	def check(stored, remote) -> bool:
 		return remote in stored
+	
+class NotContains(Checker):
+	@staticmethod
+	def check(stored, remote) -> bool:
+		return not stored in remote
 
 class Pattern(object, metaclass=ABCMeta):
 	def __init__(self, checkables: t.AbstractSet[Checkable]):
@@ -112,6 +160,8 @@ class Pattern(object, metaclass=ABCMeta):
 	@abstractmethod
 	def match(self, model: Model) -> bool:
 		pass
+	def matches(self, models: t.Iterable[Model]) -> t.Iterable[Model]:
+		return (model for model in models if self.match(model))
 
 class All(Pattern):
 	def match(self, model: Model) -> bool:
@@ -174,10 +224,52 @@ class PatternBuilder(object, metaclass=ABCMeta):
 	@abstractmethod
 	def mana_cost(self) -> _ExtractorBuilder:
 		pass
+	@property
+	@abstractmethod
+	def oracle(self) -> _ExtractorBuilder:
+		pass
+	@property
+	@abstractmethod
+	def flavor(self) -> _ExtractorBuilder:
+		pass
+	@property
+	@abstractmethod
+	def power(self) -> _ExtractorBuilder:
+		pass
+	@property
+	@abstractmethod
+	def toughness(self) -> _ExtractorBuilder:
+		pass
+	@property
+	@abstractmethod
+	def loyalty(self) -> _ExtractorBuilder:
+		pass
+	@property
+	@abstractmethod
+	def artist(self) -> _ExtractorBuilder:
+		pass
 	def build(self) -> All:
 		return All(self._set)
 
 class PrintingPatternBuilder(PatternBuilder):
+	@property
+	def oracle(self) -> _ExtractorBuilder:
+		return _ExtractorBuilder(self, PrintingOracleExtractor)
+	@property
+	def flavor(self) -> _ExtractorBuilder:
+		return _ExtractorBuilder(self, PrintingFlavorExtractor)
+	@property
+	def power(self) -> _ExtractorBuilder:
+		return _ExtractorBuilder(self, PrintingPowerExtractor)
+	@property
+	def toughness(self) -> _ExtractorBuilder:
+		return _ExtractorBuilder(self, PrintingToughnessExtractor)
+	@property
+	def loyalty(self) -> _ExtractorBuilder:
+		return _ExtractorBuilder(self, PrintingLoyaltyExtractor)
+	@property
+	def artist(self) -> _ExtractorBuilder:
+		return _ExtractorBuilder(self, PrintingArtistExtractor)
 	@property
 	def layout(self) -> _ExtractorBuilder:
 		return _ExtractorBuilder(self, PrintingLayoutExtractor)
@@ -199,61 +291,25 @@ class PrintingPatternBuilder(PatternBuilder):
 
 def test():
 
-	import time
 	from mtgorp.db.load import Loader
-	from mtgorp.models.persistent.attributes import manacosts as mc
-	from mtgorp.tools.search.oldsearch import PrintingPatternBuilder as _PrintingPatternBuilder
 
-	class Timer(object):
-		def __init__(self):
-			self.current_time = 0
-		def middle_time(self):
-			v = time.time() - self.current_time
-			self.current_time = time.time()
-			return v
-
-	timer = Timer()
-	timer.middle_time()
-
-	# create.update_database()
-
-	print('update done', timer.middle_time())
+	from mtgorp.models.persistent.attributes.flags import Flag
+	from mtgorp.models.persistent.attributes.rarities import Rarity
 
 	db = Loader.load()
 
-	print('load done', timer.middle_time())
+	print(db.printings['Agent of Acquisitions'])
 
-	a_mana_cost = mc.ManaCost((mc.ONE_GENERIC,)+(mc.ONE_BLUE,))
-	another_mana_cost = mc.ManaCost((mc.ONE_GENERIC,)*2+(mc.ONE_BLUE,))
 
-	pattern = PrintingPatternBuilder().mana_cost.contains(a_mana_cost).mana_cost.contained_in(another_mana_cost).build()
-	old_pattern = _PrintingPatternBuilder().mana_cost.contains(a_mana_cost).mana_cost.contained_in(another_mana_cost).build()
-	# pattern = PrintingPatternBuilder().cmc.equals(a_mana_cost)
-
-	print('pattern build', timer.middle_time())
-
-	printings = tuple(printing for printing in db.printings.values() if pattern.match(printing))
-
-	print('search complete', timer.middle_time())
-
+	pattern = PrintingPatternBuilder().flags.contains(Flag.DRAFT_MATTERS).build()
 	print(
-		len(printings),
+		tuple(pattern.matches(db.printings.values()))
 	)
 
-	printings = tuple(printing for printing in db.printings.values() if pattern.match(printing))
 
-	print('second search complete', timer.middle_time())
-
+	another_pattern = PrintingPatternBuilder().power.equals(7).toughness.equals(10).build()
 	print(
-		len(printings),
-	)
-
-	printings = tuple(printing for printing in db.printings.values() if old_pattern.match(printing))
-
-	print('second search complete', timer.middle_time())
-
-	print(
-		len(printings),
+		tuple(another_pattern.matches(db.printings.values()))
 	)
 
 
