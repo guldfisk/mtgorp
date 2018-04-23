@@ -9,7 +9,9 @@ from mtgorp.models.persistent.attributes.flags import Flag
 from mtgorp.models.persistent import cardboard as _cardboard
 from mtgorp.models.persistent import expansion as _expansion
 
+
 class Face(object):
+
 	def __init__(
 		self,
 		owner,
@@ -19,16 +21,21 @@ class Face(object):
 		self._owner = owner
 		self._artist = One(self, '_faces', artist)
 		self._flavor = flavor
+
 	artist = OneDescriptor('_artist') #type: Artist
+
 	@property
 	def owner(self) -> 'Printing':
 		return self._owner
+
 	@property
 	def flavor(self) -> str:
 		return self._flavor
 
+
 class Printing(Model):
 	primary_key = PrimaryKey('id')
+
 	def __init__(
 		self,
 		id: int,
@@ -59,29 +66,39 @@ class Printing(Model):
 		self._rarity = rarity
 		self._in_booster = in_booster
 		self._flags = flags
+
 	cardboard = OneDescriptor('_cardboard') #type: _cardboard.Cardboard
+
 	expansion = OneDescriptor('_expansion') #type: _expansion.Expansion
+
 	@property
 	def id(self) -> int:
 		return self._id
+
 	@property
 	def collector_number(self) -> int:
 		return self._collector_number
+
 	@property
 	def front_face(self) -> Face:
 		return self._front_face
+
 	@property
 	def back_face(self) -> Face:
 		return self._back_face
+
 	@property
 	def faces(self) -> t.Tuple[Face, Face]:
 		return self.front_face, self.back_face
+
 	@property
 	def rarity(self) -> 'Rarity':
 		return self._rarity
+
 	@property
 	def in_booster(self) -> bool:
 		return self._in_booster
+
 	@property
 	def flags(self) -> 't.Tuple[Flag, ...]':
 		return self._flags
@@ -92,6 +109,7 @@ class Printing(Model):
 			self.expansion.code,
 			self.id,
 		)
+
 
 def test():
 	from mtgorp.models.persistent.card import Card

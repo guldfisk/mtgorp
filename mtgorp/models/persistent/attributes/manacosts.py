@@ -7,27 +7,36 @@ from mtgorp.utilities.containers import HashableMultiset
 
 
 class ManaCostAtom(metaclass=ABCMeta):
+	
 	def __init__(self, code: str, associations: t.AbstractSet=None, cmc_value: int=1):
 		self._code = code
 		self._associations = associations if isinstance(associations, frozenset) else frozenset()
 		self._cmc_value = cmc_value
+	
 	@property
 	def code(self):
 		return self._code
+	
 	@property
 	def associations(self):
 		return self._associations
+	
 	@property
 	def cmc_value (self):
 		return self._cmc_value
+	
 	def __repr__(self):
 		return '{{{}}}'.format(self.code)
+	
 	def __eq__(self, other):
 		return isinstance(other, self.__class__) and self.code == other.code
+	
 	def __hash__(self):
 		return hash((self.__class__, self.code))
+	
 	def _lt_tiebreaker(self, other):
 		return False
+	
 	def __lt__(self, other):
 		s, o = _atom_sort_value(self), _atom_sort_value(other)
 		if s < o:
@@ -36,26 +45,34 @@ class ManaCostAtom(metaclass=ABCMeta):
 			return self._lt_tiebreaker(other)
 		return False
 
+
 class VariableCostAtom(ManaCostAtom):
 	pass
 
+
 class GenericCostAtom(ManaCostAtom):
 	pass
+
 
 class ColorCostAtom(ManaCostAtom):
 	def _lt_tiebreaker(self, other):
 		return cols.color_set_sort_value(self.associations) < cols.color_set_sort_value(other.associations)
 
+
 class ColorlessCostAtom(ManaCostAtom):
 	pass
+
 
 class PhyrexianCostAtom(ManaCostAtom):
 	pass
 
+
 class OtherCostAtom(ManaCostAtom):
 	pass
 
+
 class HybridCostAtom(ManaCostAtom):
+	
 	def __init__(self, options: 't.AbstractSet[t.Union[ManaCost, ManaCostAtom]]'):
 		self._options = frozenset(self._flatten_options(options))
 		assert len(self._options) > 1
@@ -73,17 +90,23 @@ class HybridCostAtom(ManaCostAtom):
 			),
 			cmc_value=max(option.cmc for option in self._options)
 		)
+	
 	@property
 	def options(self):
 		return  self._options
+	
 	def __eq__(self, other):
 		return isinstance(other, self.__class__) and self._options == other.options
+	
 	def __hash__(self):
 		return hash((self.__class__, self._options))
+	
 	def __iter__(self):
 		return self._options.__iter__()
+	
 	def __len__(self):
 		return self._options.__len__()
+	
 	@staticmethod
 	def _flatten_options(mana_costs: 't.AbstractSet[t.Union[ManaCost, ManaCostAtom]]'):
 		for option in mana_costs:
@@ -96,6 +119,7 @@ class HybridCostAtom(ManaCostAtom):
 						yield sub_mana_cost
 			else:
 				yield option
+	
 	def _lt_tiebreaker(self, other):
 		s, o = sorted(self._options), sorted(other._options)
 		for i in range(min(len(s), len(o))):
@@ -105,19 +129,26 @@ class HybridCostAtom(ManaCostAtom):
 				return False
 		return len(s) < len(o)
 
+
 class ManaCost(object):
+	
 	def __init__(self, atoms: t.Iterable[ManaCostAtom]=None):
 		self._atoms = atoms if isinstance(atoms, HashableMultiset) else HashableMultiset(atoms)
+	
 	@property
 	def cmc(self) -> int:
 		return sum(atom.cmc_value for atom in self._atoms)
+	
 	@property
 	def colors(self) -> t.FrozenSet[cols.Color]:
 		return frozenset(set.union(*(set(atom.associations) for atom in self._atoms)))
+	
 	def __eq__(self, other):
 		return isinstance(other, ManaCost) and self._atoms == other._atoms
+	
 	def __hash__(self):
 		return hash((self.__class__, self._atoms))
+	
 	def __str__(self):
 		if not self._atoms:
 			return '{0}'
@@ -134,10 +165,13 @@ class ManaCost(object):
 		if generics > 0:
 			accumulated += '{{{}}}'.format(generics)
 		return accumulated
+	
 	def __iter__(self):
 		return self._atoms.__iter__()
+	
 	def __len__(self):
 		return self._atoms.__len__()
+	
 	def __lt__(self, other):
 		s, o = sorted(self), sorted(other)
 		for i in range(min(len(s), len(o))):
@@ -146,16 +180,20 @@ class ManaCost(object):
 			if s[i] > o[i]:
 				return False
 		return len(s) < len(o)
+	
 	def __contains__(self, item):
 		return item._atoms.issubset(self._atoms)
+	
 	def __add__(self, other):
 		return ManaCost(
 			self._atoms + other._atoms
 		)
+	
 	def __sub__(self, other):
 		return ManaCost(
 			self._atoms.difference(other._atoms)
 		)
+
 
 _cost_type_order = (
 	VariableCostAtom,
@@ -172,8 +210,10 @@ _cost_type_order_map = {
 
 _MAX_TYPE_ORDER = len(_cost_type_order) + 1
 
+
 def _atom_sort_value(atom):
 	return _cost_type_order_map.get(type(atom), _MAX_TYPE_ORDER)
+
 
 ONE_WHITE = ColorCostAtom('W', frozenset({c.WHITE}))
 ONE_BLUE = ColorCostAtom('U', frozenset({c.BLUE}))

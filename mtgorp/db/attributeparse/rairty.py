@@ -3,8 +3,10 @@ import mtgorp.db.attributeparse.parser as parser
 from mtgorp.models.persistent.attributes.rarities import Rarity
 from mtgorp.db.attributeparse.exceptions import AttributeParseException
 
+
 class RarityParseException(AttributeParseException):
 	pass
+
 
 class Parser(parser.Parser):
 	_RARITY_MAP = {
@@ -15,11 +17,12 @@ class Parser(parser.Parser):
 		'Basic Land': Rarity.LAND,
 		'Special': Rarity.SPECIAL,
 	}
+	
 	@staticmethod
 	def parse(s: str) -> Rarity:
 		try:
 			return Parser._RARITY_MAP[
 				s
 			]
-		except:
+		except KeyError:
 			raise RarityParseException()

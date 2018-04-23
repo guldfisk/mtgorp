@@ -7,14 +7,17 @@ import mtgorp.db.attributeparse.parser as parser
 from mtgorp.db.attributeparse.exceptions import AttributeParseException
 from mtgorp.models.persistent.attributes.manacosts import ManaCostAtom, HybridCostAtom, ManaCost, ONE_GENERIC, SINGULAR_ATOM_MAP
 
+
 class ManaCostParseException(AttributeParseException):
 	pass
+
 
 class Parser(parser.Parser):
 	generic_matcher = re.compile('\\d+$')
 	singular_matcher = re.compile('\\w+$')
 	matcher = re.compile('[^\\s/]+')
 	atom_matcher = re.compile('{([^\\s{}]+)}')
+
 	@staticmethod
 	def _parse_cluster_component(s: str) -> t.Iterable[ManaCostAtom]:
 		if Parser.generic_matcher.match(s):
@@ -27,6 +30,7 @@ class Parser(parser.Parser):
 				pass
 		else:
 			raise ManaCostParseException()
+
 	@staticmethod
 	def _parse_cluster(s: str) -> t.Iterable[ManaCostAtom]:
 		if '/' in s:
@@ -43,6 +47,7 @@ class Parser(parser.Parser):
 			for m in Parser.matcher.finditer(s):
 				for atom in Parser._parse_cluster_component(m.group()):
 					yield atom
+
 	@staticmethod
 	def parse(s: str) -> ManaCost:
 		return ManaCost(

@@ -31,7 +31,7 @@ class CardList(list):
 		super(CardList, self).__init__(*args)
 		self.head = 0
 	def matchList(self, mo):
-		return CardList([card for card in self if mo.match(card)])
+		return CardList([card for card in self if mo.check(card)])
 	def get(self, amnt=1):
 		self.head += amnt
 		if self.head>len(self): self.head = len(self)-1

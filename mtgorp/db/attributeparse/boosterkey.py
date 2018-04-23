@@ -5,6 +5,7 @@ from mtgorp.models.limited import boostergen
 from mtgorp.models.persistent.attributes import cardtypes
 from mtgorp.tools.search.pattern import PrintingPatternBuilder
 
+
 class Parser(parser.Parser):
 	CARD_WITH_MYTHIC = boostergen.KeySlot({
 		boostergen.MYTHIC: 1,
@@ -26,7 +27,7 @@ class Parser(parser.Parser):
 		'double faced rare': boostergen.KeySlot((boostergen.DOUBLEFACED_RARE,)),
 		'foil rare': boostergen.RARE_SLOT,
 		'draft-matters': boostergen.KeySlot({
-			boostergen.DRAFT_MATTERS_mythic: 1,
+			boostergen.DRAFT_MATTERS_MYTHIC: 1,
 			boostergen.DRAFT_MATTERS_RARE: 7,
 			boostergen.DRAFT_MATTERS_UNCOMMON: 21,
 			boostergen.DRAFT_MATTERS_COMMON: 77,
@@ -39,7 +40,7 @@ class Parser(parser.Parser):
 		'timeshifted common': boostergen.KeySlot((boostergen.TIMESHIFTED_COMMON,)),
 		'urza land': boostergen.KeySlot((
 			boostergen.Option(
-				PrintingPatternBuilder().types.contains(cardtypes.CardSubType("Urza's")).build(),
+				PrintingPatternBuilder().types.contains(cardtypes.CardSubType("Urza's")).all(),
 			),
 		)),
 		'timeshifted rare': boostergen.KeySlot((boostergen.TIMESHIFTED_RARE,)),
@@ -93,6 +94,7 @@ class Parser(parser.Parser):
 			boostergen.COMMON: 143,
 		})
 	}
+
 	@staticmethod
 	def parse(values: t.Tuple[t.Union[str, t.Tuple[str, ...]], ...]) -> boostergen.BoosterKey:
 		return boostergen.BoosterKey(

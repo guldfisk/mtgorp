@@ -3,8 +3,10 @@ import mtgorp.db.attributeparse.parser as parser
 from mtgorp.models.persistent.attributes.colors import Color
 from mtgorp.db.attributeparse.exceptions import AttributeParseException
 
+
 class ColorParseException(AttributeParseException):
 	pass
+
 
 class Parser(parser.Parser):
 	switch = {
@@ -19,6 +21,7 @@ class Parser(parser.Parser):
 		'G': Color.GREEN,
 		'GREEN': Color.GREEN
 	}
+	
 	@staticmethod
 	def parse(s: str) -> Color:
 		try:

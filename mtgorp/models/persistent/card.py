@@ -7,8 +7,10 @@ from mtgorp.models.persistent import cardboard as _cardboard
 from orp.database import Model, PrimaryKey
 from orp.relationships import Many
 
+
 class Card(Model):
 	primary_key = PrimaryKey('name')
+
 	def __init__(
 		self,
 		name: str,
@@ -30,42 +32,54 @@ class Card(Model):
 		self._loyalty = loyalty
 		self._color_identity = color_identity
 		self._sides = Many(self, '_cards')
+
 	@property
 	def name(self) -> str:
 		return self._name
+
 	@property
 	def card_type(self) -> 't.Optional[cardtypes.CardType]':
 		return self._card_type
+
 	@property
 	def mana_cost(self) -> 't.Optional[manacosts.ManaCost]':
 		return self._mana_cost
+
 	@property
 	def color(self) -> 't.Optional[t.AbstractSet[colors.Color]]':
 		return self._color
+
 	@property
 	def oracle_text(self) -> t.Optional[str]:
 		return self._oracle_text
+
 	@property
 	def power_toughness(self) -> 't.Optional[powertoughness.PowerToughness]':
 		return self._power_toughness
+
 	@property
 	def loyalty(self) -> t.Optional[int]:
 		return self._loyalty
+
 	@property
 	def color_identity(self) -> 't.Optional[t.AbstractSet[colors.Color]]':
 		return self._color_identity
+
 	@LazyProperty
 	def cmc(self) -> int:
 		return self._mana_cost.cmc if self._mana_cost else 0
+
 	@LazyProperty
 	def cardboards(self) -> 't.FrozenSet[_cardboard.Cardboard]':
 		return frozenset(side.owner for side in self._sides)
+
 	@property
 	def cardboard(self) -> 't.Optional[_cardboard.Cardboard]':
 		try:
 			return self.cardboards.__iter__().__next__()
 		except StopIteration:
 			return None
+
 
 def test():
 	pass

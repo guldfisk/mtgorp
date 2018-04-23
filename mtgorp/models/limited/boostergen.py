@@ -16,7 +16,6 @@ from mtgorp.models.persistent.attributes.flags import Flag
 from mtgorp.models.persistent.attributes.layout import Layout
 from mtgorp.models.persistent.attributes import cardtypes
 
-random.seed()
 
 def choice_multiset(ms: BaseMultiset):
 	values, multiplicities = zip(*ms.items())
@@ -28,26 +27,30 @@ def choice_multiset(ms: BaseMultiset):
 		)
 	]
 
-def sample_multiset(ms: BaseMultiset, amount: int = 1):
-	values, multiplicities = zip(*ms.items())
-	cumulative_distribution = tuple(itertools.accumulate(multiplicities))
-	return [
-		values[
-			bisect.bisect(
-				cumulative_distribution,
-				index,
-			)
-		] for index in
-		random.sample(
-			range(cumulative_distribution[-1]),
-			amount,
-		)
-	 ]
+
+# def sample_multiset(ms: BaseMultiset, amount: int = 1):
+# 	values, multiplicities = zip(*ms.items())
+# 	cumulative_distribution = tuple(itertools.accumulate(multiplicities))
+# 	return [
+# 		values[
+# 			bisect.bisect(
+# 				cumulative_distribution,
+# 				index,
+# 			)
+# 		] for index in
+# 		random.sample(
+# 			range(cumulative_distribution[-1]),
+# 			amount,
+# 		)
+# 	 ] #Pretty sure this can select same element twice
+
 
 class GenerateBoosterException(Exception):
 	pass
 
+
 class ExpansionCollection(object):
+
 	def __init__(
 		self,
 		main: '_expansion.Expansion',
@@ -62,39 +65,52 @@ class ExpansionCollection(object):
 		}
 		self._expansions.update(expansions)
 		self._expansions = frozendict(self._expansions)
+
 	@property
 	def main(self):
 		return self._expansions['main']
+
 	@property
 	def basics(self):
 		return self._expansions['basics']
+
 	@property
 	def premium(self):
 		return self._expansions['premium']
+
 	def __getitem__(self, item: str) -> '_expansion.Expansion':
 		return self._expansions[item]
+
 	def __eq__(self, other):
 		return isinstance(other, self.__class__) and self._expansions == other._expansions
+
 	def __hash__(self):
 		return hash((self.__class__, self._expansions))
+
 	def __repr__(self):
 		return '{}({})'.format(
 			self.__class__.__name__,
 			self._expansions,
 		)
 
+
 class Option(object):
+
 	def __init__(self, pattern: Pattern, collection_key: str = 'main'):
 		self._pattern = pattern
 		self._collection_key = collection_key
+
 	@property
 	def pattern(self):
 		return self._pattern
+
 	@property
 	def collection_key(self):
 		return self._collection_key
+
 	def __hash__(self):
 		return hash((self.__class__, self._pattern, self._collection_key))
+
 	def __eq__(self, other):
 		return (
 			isinstance(other, self.__class__)
@@ -102,59 +118,63 @@ class Option(object):
 			and self._collection_key == other._collection_key
 		)
 
-COMMON = Option(PrintingPatternBuilder().rarity.equals(Rarity.COMMON).build())
-UNCOMMON = Option(PrintingPatternBuilder().rarity.equals(Rarity.UNCOMMON).build())
-RARE = Option(PrintingPatternBuilder().rarity.equals(Rarity.RARE).build())
-MYTHIC = Option(PrintingPatternBuilder().rarity.equals(Rarity.MYTHIC).build())
-SPECIAL = Option(PrintingPatternBuilder().rarity.equals(Rarity.SPECIAL).build())
+
+COMMON = Option(PrintingPatternBuilder().rarity.equals(Rarity.COMMON).all())
+UNCOMMON = Option(PrintingPatternBuilder().rarity.equals(Rarity.UNCOMMON).all())
+RARE = Option(PrintingPatternBuilder().rarity.equals(Rarity.RARE).all())
+MYTHIC = Option(PrintingPatternBuilder().rarity.equals(Rarity.MYTHIC).all())
+SPECIAL = Option(PrintingPatternBuilder().rarity.equals(Rarity.SPECIAL).all())
 TIMESHIFTED_COMMON = Option(
-	PrintingPatternBuilder().rarity.equals(Rarity.COMMON).flags.contains(Flag.TIMESHIFTED).build(),
+	PrintingPatternBuilder().rarity.equals(Rarity.COMMON).flags.contains(Flag.TIMESHIFTED).all(),
 )
 TIMESHIFTED_UNCOMMON = Option(
-	PrintingPatternBuilder().rarity.equals(Rarity.UNCOMMON).flags.contains(Flag.TIMESHIFTED).build(),
+	PrintingPatternBuilder().rarity.equals(Rarity.UNCOMMON).flags.contains(Flag.TIMESHIFTED).all(),
 )
 TIMESHIFTED_RARE = Option(
-	PrintingPatternBuilder().rarity.equals(Rarity.RARE).flags.contains(Flag.TIMESHIFTED).build(),
+	PrintingPatternBuilder().rarity.equals(Rarity.RARE).flags.contains(Flag.TIMESHIFTED).all(),
 )
 TIMESHIFTED_MYTHIC = Option(
-	PrintingPatternBuilder().rarity.equals(Rarity.MYTHIC).flags.contains(Flag.TIMESHIFTED).build(),
+	PrintingPatternBuilder().rarity.equals(Rarity.MYTHIC).flags.contains(Flag.TIMESHIFTED).all(),
 )
 DOUBLEFACED_COMMON = Option(
-	PrintingPatternBuilder().rarity.equals(Rarity.COMMON).layout.equals(Layout.TRANSFORM).build(),
+	PrintingPatternBuilder().rarity.equals(Rarity.COMMON).layout.equals(Layout.TRANSFORM).all(),
 )
 DOUBLEFACED_UNCOMMON = Option(
-	PrintingPatternBuilder().rarity.equals(Rarity.UNCOMMON).layout.equals(Layout.TRANSFORM).build(),
+	PrintingPatternBuilder().rarity.equals(Rarity.UNCOMMON).layout.equals(Layout.TRANSFORM).all(),
 )
 DOUBLEFACED_RARE = Option(
-	PrintingPatternBuilder().rarity.equals(Rarity.RARE).layout.equals(Layout.TRANSFORM).build(),
+	PrintingPatternBuilder().rarity.equals(Rarity.RARE).layout.equals(Layout.TRANSFORM).all(),
 )
 DOUBLEFACED_MYTHIC = Option(
-	PrintingPatternBuilder().rarity.equals(Rarity.MYTHIC).layout.equals(Layout.TRANSFORM).build(),
+	PrintingPatternBuilder().rarity.equals(Rarity.MYTHIC).layout.equals(Layout.TRANSFORM).all(),
 )
 PREMIUM = Option(
-	PrintingPatternBuilder().build(),
+	PrintingPatternBuilder().all(),
 	'premium'
 )
 BASIC = Option(
-	PrintingPatternBuilder().types.contains(cardtypes.BASIC).build(),
+	PrintingPatternBuilder().types.contains(cardtypes.BASIC).all(),
 	'basics'
 )
 DRAFT_MATTERS_COMMON = Option(
-	PrintingPatternBuilder().flags.contains(Flag.DRAFT_MATTERS).rarity.equals(Rarity.COMMON).build(),
+	PrintingPatternBuilder().flags.contains(Flag.DRAFT_MATTERS).rarity.equals(Rarity.COMMON).all(),
 )
 DRAFT_MATTERS_UNCOMMON = Option(
-	PrintingPatternBuilder().flags.contains(Flag.DRAFT_MATTERS).rarity.equals(Rarity.UNCOMMON).build(),
+	PrintingPatternBuilder().flags.contains(Flag.DRAFT_MATTERS).rarity.equals(Rarity.UNCOMMON).all(),
 )
 DRAFT_MATTERS_RARE = Option(
-	PrintingPatternBuilder().flags.contains(Flag.DRAFT_MATTERS).rarity.equals(Rarity.RARE).build(),
+	PrintingPatternBuilder().flags.contains(Flag.DRAFT_MATTERS).rarity.equals(Rarity.RARE).all(),
 )
-DRAFT_MATTERS_mythic = Option(
-	PrintingPatternBuilder().flags.contains(Flag.DRAFT_MATTERS).rarity.equals(Rarity.MYTHIC).build(),
+DRAFT_MATTERS_MYTHIC = Option(
+	PrintingPatternBuilder().flags.contains(Flag.DRAFT_MATTERS).rarity.equals(Rarity.MYTHIC).all(),
 )
 
+
 class KeySlot(object):
+
 	def __init__(self, options: t.Iterable[Option]):
 		self._options = options if isinstance(options, HashableMultiset) else HashableMultiset(options)
+
 	def get_map_slot(self, expansion_collection: ExpansionCollection) -> 'MapSlot':
 		return MapSlot(
 			{
@@ -162,17 +182,20 @@ class KeySlot(object):
 					printing
 					for printing in
 					expansion_collection[option.collection_key].printings
-					if printing.in_booster and option.pattern.match(printing)
+					if printing.in_booster and option.pattern.check(printing)
 				):
 					weight
 				for option, weight in
 				self._options.items()
 			}
 		)
+
 	def __hash__(self):
 		return hash((self.__class__, self._options))
+
 	def __eq__(self, other):
 		return isinstance(other, self.__class__) and self._options == other._options
+
 
 COMMON_SLOT = KeySlot((COMMON,))
 UNCOMMON_SLOT = KeySlot((UNCOMMON,))
@@ -188,12 +211,16 @@ RARE_MYTHIC_SLOT = KeySlot(
 PREMIUM_SLOT = KeySlot((PREMIUM,))
 BASIC_SLOT = KeySlot((BASIC,))
 
+
 class BoosterKey(object):
+
 	def __init__(self, slots: t.Iterable[KeySlot]):
 		self._slots = slots if isinstance(slots, HashableMultiset) else HashableMultiset(slots)
+
 	@property
 	def slots(self):
 		return self._slots
+
 	def get_booster_map(self, expansion_collection: ExpansionCollection) -> 'BoosterMap':
 		return BoosterMap(
 			{
@@ -202,30 +229,38 @@ class BoosterKey(object):
 				self.slots.items()
 			}
 		)
+
 	def __hash__(self):
 		return hash((self.__class__, self._slots))
+
 	def __eq__(self, other):
 		return isinstance(other, self.__class__) and self._slots == other.slots
+
 	def __repr__(self):
 		return '{}({})'.format(
 			self.__class__.__name__,
 			self._slots.items(),
 		)
 
+
 class MapSlot(object):
+
 	def __init__(self, options: 't.Iterable[t.FrozenSet[_printing.Printing]]'):
 		self.options = options if isinstance(options, HashableMultiset) else HashableMultiset(options)
-	def _filter_options(self, forbidden: BaseMultiset):
-		for value, multiplicity in self.options.items():
-			filtered = value - forbidden
-			if filtered:
-				yield filtered, multiplicity
+
+	# def _filter_options(self, forbidden: BaseMultiset):
+	# 	for value, multiplicity in self.options.items():
+	# 		filtered = value - forbidden
+	# 		if filtered:
+	# 			yield filtered, multiplicity
+
 	def sample(self):
 		return random.choice(
 			choice_multiset(
 				self.options
 			)
 		)
+
 	def sample_slot(self):
 		return choice_multiset(self.options)
 		# if not forbidden:
@@ -245,9 +280,12 @@ class MapSlot(object):
 		# 	choice_multiset(new_options)
 		# )
 
+
 class BoosterMap(object):
+
 	def __init__(self, slots: t.Iterable[MapSlot]):
 		self.slots = slots if isinstance(slots, HashableMultiset) else HashableMultiset(slots)
+
 	def generate_booster(self) -> _booster.Booster:
 		slots = Multiset(slot.sample_slot() for slot in self.slots)
 		printings = Multiset()
@@ -268,6 +306,7 @@ class BoosterMap(object):
 		# 		printings.add(printing)
 		# 		forbidden.add(printing)
 		# return _booster.Booster(printings)
+
 
 def test():
 	from mtgorp.db.load import Loader

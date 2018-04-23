@@ -5,8 +5,10 @@ import mtgorp.db.attributeparse.parser as parser
 from mtgorp.models.persistent.attributes.cardtypes import CardType, CardTypes, CardSubType, ALL_TYPES
 from mtgorp.db.attributeparse.exceptions import AttributeParseException
 
+
 class CardTypeParseException(AttributeParseException):
 	pass
+
 
 class Parser(parser.Parser):
 	card_type_switch = {
@@ -15,6 +17,7 @@ class Parser(parser.Parser):
 	super_type_matcher = re.compile('[^—]*')
 	sub_type_matcher = re.compile('.*—(.*)')
 	type_matcher = re.compile('\\w+')
+
 	@staticmethod
 	def parse(s: str) -> CardTypes:
 		super_type_field = Parser.super_type_matcher.match(s)

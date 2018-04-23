@@ -6,14 +6,17 @@ DATA_PATH = os.path.join(
 	'data.json'
 )
 
+
 class BoosterInformation(object):
 	_data = dict()
+
 	@staticmethod
 	def information():
 		if not BoosterInformation._data:
 			with open(DATA_PATH, 'r') as f:
 				BoosterInformation._data = json.load(f)
 		return BoosterInformation._data
+
 
 def test():
 	print(BoosterInformation.information())

@@ -10,8 +10,10 @@ from mtgorp.models.limited.booster import Booster
 from orp.relationships import Many, One, OneDescriptor
 from orp.database import Model, PrimaryKey
 
+
 class Expansion(Model):
 	primary_key = PrimaryKey('code')
+
 	def __init__(
 		self,
 		code: str,
@@ -38,15 +40,19 @@ class Expansion(Model):
 		self.printings = Many(self, '_expansion')
 		self._fragment_dividers = fragment_dividers
 		self._booster_map = None
+
 	block = OneDescriptor('_block') #type: Block
+
 	def fragmentize(self, frm: t.Union[int, None] = 0, to: t.Union[int, None] = None) -> 'ExpansionFragment':
 		return ExpansionFragment(self, frm, to)
+
 	def generate_booster(self) -> Booster:
 		if self._booster_map is None:
 			self._booster_map = self._booster_key.get_booster_map(self._booster_expansion_collection)
 		return self._booster_map.generate_booster()
+
 	@LazyProperty
-	def fragments(self) -> 't.Tuple[ExpansionFragment]':
+	def fragments(self) -> 't.Tuple[ExpansionFragment, ...]':
 		if self._fragment_dividers:
 			fragments = []
 			indexes = (0,)+self._fragment_dividers+(None,)
@@ -55,52 +61,65 @@ class Expansion(Model):
 			return tuple(fragments)
 		else:
 			return self.fragmentize(0, None),
+
 	@property
 	def name(self) -> str:
 		return self._name
+
 	@property
 	def code(self) -> str:
 		return self._code
+
 	@property
 	def release_date(self) -> t.Optional[datetime.date]:
 		return self._release_date
+
 	@property
 	def booster_key(self) -> 't.Optional[boostergen.BoosterKey]':
 		return self._booster_key
+
 	@property
 	def booster_expansion_collection(self) -> 't.Optional[boostergen.ExpansionCollection]':
 		return self._booster_expansion_collection
+
 	@property
 	def border(self) -> 't.Optional[Border]':
 		return self._border
+
 	@property
 	def magic_card_info_code(self) -> t.Optional[str]:
 		return self._magic_card_info_code
+
 	@property
 	def mkm_name(self) -> t.Optional[str]:
 		return self._mkm_name
+
 	@property
 	def mkm_id(self) -> t.Optional[int]:
 		return self._mkm_id
 
+
 class ExpansionFragment(Expansion):
 	primary_key = PrimaryKey(('of', 'frm', 'to'))
+
 	def __init__(self, of: Expansion, frm: t.Union[int, None], to: t.Union[int, None]):
-		for printing in of.printings:
-			if printing.collector_number is None:
-				print(printing, printing.cardboard.name)
 		self.printings = set(sorted(of.printings, key=lambda printing: printing.collector_number)[frm:to])
+
 	@property
 	def of(self) -> 'Expansion':
 		return self._of
+
 	@property
 	def frm(self) -> int:
 		return self._frm
+
 	@property
 	def to(self) -> int:
 		return self._to
+
 	def __getattr__(self, item):
 		return object.__getattribute__(self, '_of').__getattribute__(item)
+
 
 def test():
 	from mtgorp.db.load import Loader

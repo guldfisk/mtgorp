@@ -12,10 +12,13 @@ from orp.relationships import Many
 
 
 class OrderedMultiSet(list):
+
 	def add(self, element):
 		self.append(element)
 
+
 class Side(object):
+
 	def __init__(self, owner):
 		self._owner = owner
 		self._cards = Many(
@@ -23,12 +26,15 @@ class Side(object):
 			'_sides',
 			container_type = OrderedMultiSet,
 		)
+
 	@property
 	def owner(self):
 		return self._owner
+
 	@property
 	def cards(self):
 		return self._cards
+
 
 class Cardboard(Model):
 	primary_key = PrimaryKey(
@@ -47,6 +53,7 @@ class Cardboard(Model):
 		)
 	)
 	_SPLIT_SEPARATOR = ' // '
+
 	def __init__(
 		self,
 		front_cards: t.Tuple[Card, ...],
@@ -62,36 +69,46 @@ class Cardboard(Model):
 				self._back_cards.cards.add(c)
 		self._layout = layout
 		self.printings = Many(self, '_cardboard') #type: t.Set[_printing.Printing]
+
 	@classmethod
 	def calc_name(cls, names) -> str:
 		return cls._SPLIT_SEPARATOR.join(names)
+
 	@property
 	def name(self) -> str:
 		return self._name
+
 	@property
 	def front_cards(self) -> 't.Tuple[Card]':
 		return self._front_cards.cards
+
 	@property
 	def back_cards(self) -> 't.Tuple[Card]':
 		return self._back_cards.cards
+
 	@LazyProperty
 	def cards(self) -> 't.Tuple[Card, ...]':
 		return tuple(self.front_cards)+tuple(self.back_cards)
+
 	@property
 	def layout(self) -> Layout:
 		return self._layout
+
 	@property
 	def front_card(self) -> Card:
 		return self._front_cards.cards.__iter__().__next__()
+
 	@property
 	def back_card(self) -> 't.Optional[Card]':
 		try:
 			return self._back_cards.cards._many[0]
 		except IndexError:
 			return None
+
 	@property
 	def printing(self) -> '_printing.Printing':
 		return self.printings.__iter__().__next__()
+
 	def from_expansion(self, expansion: 't.Union[_expansion.Expansion, str]') -> '_printing.Printing':
 		if isinstance(expansion, _expansion.Expansion):
 			for printing in self.printings:
@@ -107,6 +124,7 @@ class Cardboard(Model):
 				expansion,
 			)
 		)
+
 
 def test():
 	a_card = Card('lol')

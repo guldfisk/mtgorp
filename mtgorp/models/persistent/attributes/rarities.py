@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class Rarity(Enum):
 	LAND = 0
 	COMMON = 1

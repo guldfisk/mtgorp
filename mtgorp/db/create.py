@@ -21,10 +21,13 @@ from mtgorp.models.limited.boostergen import ExpansionCollection
 from orp.database import Table
 from orp.persist import PicklePersistor
 
+
 class _CardParser(object):
+
 	@classmethod
 	def _parse_colors(cls, cols):
 		return {color.Parser.parse(s) for s in cols}
+
 	@classmethod
 	def parse(cls, raw_card):
 		try:
@@ -34,8 +37,8 @@ class _CardParser(object):
 
 		power, toughness = raw_card.get('power', None), raw_card.get('toughness', None)
 		pt = powertoughness.PowerToughness(
-			powertoughness.Parser.parse_ptvalue(power),
-			powertoughness.Parser.parse_ptvalue(toughness),
+			powertoughness.Parser.parse_pt_value(power),
+			powertoughness.Parser.parse_pt_value(toughness),
 		) if power is not None and toughness is not None else None
 
 		try:
@@ -54,7 +57,9 @@ class _CardParser(object):
 			color_identity = cls._parse_colors(raw_card.get('colorIdentity', ())),
 		)
 
+
 class _CardboardParser(object):
+
 	@classmethod
 	def get_cardboard_card_names(cls, raw_card):
 		try:
@@ -87,6 +92,7 @@ class _CardboardParser(object):
 			raise AttributeParseException()
 		except KeyError:
 			raise AttributeParseException()
+
 	@classmethod
 	def parse(cls, raw_card, cards: Table):
 		try:
@@ -99,7 +105,9 @@ class _CardboardParser(object):
 		except KeyError:
 			raise AttributeParseException()
 
+
 class _ArtistParser(object):
+
 	@classmethod
 	def parse(cls, name: str, artists: Table):
 		artist = Artist(name)
@@ -108,13 +116,16 @@ class _ArtistParser(object):
 			return artist
 		return artists[name]
 
+
 class _PrintingParser(object):
+
 	@classmethod
 	def _find_printing_from_name(cls, name: str, raw_printings):
 		for printing in raw_printings:
 			if printing.get('name', '') == name:
 				return printing
 		raise AttributeParseException()
+
 	@classmethod
 	def parse(cls, raw_printing, raw_printings, expansion: Expansion, artists: Table, cardboards: Table):
 		try:
@@ -185,7 +196,9 @@ class _PrintingParser(object):
 		except KeyError:
 			raise AttributeParseException()
 
+
 class _BlockParser(object):
+
 	@classmethod
 	def parse(cls, name: str, blocks: Table):
 		block = Block(
@@ -196,7 +209,9 @@ class _BlockParser(object):
 			return block
 		return blocks[name]
 
+
 class _ExpansionParser(object):
+
 	@classmethod
 	def parse(cls, raw_expansion, cardboards: Table, printings: Table, artists: Table, blocks: Table):
 		try:
@@ -245,6 +260,7 @@ class _ExpansionParser(object):
 			return expansion
 		except KeyError:
 			raise AttributeParseException()
+
 	@classmethod
 	def post_parse(cls, expansions: t.Dict[str, Expansion]):
 		information = BoosterInformation.information()
@@ -255,9 +271,11 @@ class _ExpansionParser(object):
 					main = expansion,
 					**{
 						key:
-							(expansions[values[key][0]]
-							if values[key][1] is None
-							else expansions[values[key][0]].fragments[values[key][1]])
+							(
+								expansions[values[key][0]]
+								if values[key][1] is None
+								else expansions[values[key][0]].fragments[values[key][1]]
+							)
 						for key in
 						values
 					},
@@ -268,7 +286,9 @@ class _ExpansionParser(object):
 					basics = expansion if expansion.block is None else expansion.block.expansions_chronologically[0],
 				)
 
+
 class CardDatabase(object):
+
 	def __init__(
 		self,
 		cards: Table,
@@ -284,26 +304,34 @@ class CardDatabase(object):
 		self._artists = artists
 		self._blocks = blocks
 		self._expansions = expansions
+
 	@property
 	def cards(self) -> t.Dict[str, Card]:
 		return self._cards
+
 	@property
 	def cardboards(self) -> t.Dict[str, Cardboard]:
 		return self._cardboards
+
 	@property
 	def printings(self) -> t.Dict[int, Printing]:
 		return self._printings
+
 	@property
 	def artists(self) -> t.Dict[str, Artist]:
 		return self._artists
+
 	@property
 	def blocks(self) -> t.Dict[str, Block]:
 		return self._blocks
+
 	@property
 	def expansions(self) -> t.Dict[str, Expansion]:
 		return self._expansions
 
+
 class DatabaseCreator(object):
+
 	@classmethod
 	def create_card_table(cls, raw_cards):
 		cards = Table()
@@ -315,6 +343,7 @@ class DatabaseCreator(object):
 			except AttributeParseException:
 				pass
 		return cards
+
 	@classmethod
 	def create_cardboard_table(cls, raw_cards, cards):
 		cardboards = Table()
@@ -326,6 +355,7 @@ class DatabaseCreator(object):
 			except AttributeParseException:
 				pass
 		return cardboards
+
 	@classmethod
 	def create_expansion_table(
 		cls,
@@ -351,6 +381,7 @@ class DatabaseCreator(object):
 				pass
 		_ExpansionParser.post_parse(expansions)
 		return expansions
+
 	@classmethod
 	def create_database(
 		cls,
@@ -382,6 +413,7 @@ class DatabaseCreator(object):
 			expansions = expansions,
 		)
 
+
 def update_database(
 	all_cards_path = paths.ALL_CARDS_PATH,
 	all_sets_path = paths.ALL_SETS_PATH,
@@ -391,7 +423,9 @@ def update_database(
 		os.makedirs(db_path)
 	if not os.path.exists(paths.ALL_CARDS_PATH) or not os.path.exists(paths.ALL_SETS_PATH):
 		update.check_and_update()
+
 	previous_recursion_limit = sys.getrecursionlimit()
+
 	try:
 		sys.setrecursionlimit(50000)
 		PicklePersistor(os.path.join(paths.APP_DATA_PATH, 'db')).save(

@@ -7,7 +7,9 @@ from xml.etree import ElementTree
 from mtgorp.managejson import download, paths
 from mtgorp.db import create
 
-MTGJSON_RSS_URL = 'http://mtgjson.com/atom.xml'
+
+MTG_JSON_RSS_URL = 'http://mtgjson.com/atom.xml'
+
 
 def check_rss(url):
 	rg = r.get(url)
@@ -19,16 +21,19 @@ def check_rss(url):
 			break
 	return last_updates
 
+
 def update():
 	download.re_download()
 	create.update_database()
+
 
 def delete_content(f):
 	f.seek(0)
 	f.truncate()
 
+
 def check_and_update():
-	last_updates = check_rss(MTGJSON_RSS_URL)
+	last_updates = check_rss(MTG_JSON_RSS_URL)
 	if not last_updates:
 		return False
 	if not os.path.exists(paths.JSON_PATH):
@@ -42,6 +47,7 @@ def check_and_update():
 			f.write(last_updates)
 			return True
 		return False
+
 
 if __name__=='__main__':
 	check_and_update()

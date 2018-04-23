@@ -9,7 +9,9 @@ from mtgorp.models.persistent.attributes import cardtypes
 
 from mtgorp.utilities.containers import HashableMultiset
 
+
 class Deck(object):
+	
 	def __init__(self, maindeck: t.Iterable[Printing], sideboard: t.Iterable[Printing] = None):
 		self._maindeck = maindeck if isinstance(maindeck, HashableMultiset) else HashableMultiset(maindeck)
 		self._sideboard = (
@@ -21,21 +23,28 @@ class Deck(object):
 			if sideboard is not None else
 			HashableMultiset()
 		)
+	
 	@property
 	def maindeck(self) -> t.FrozenSet[Printing]:
 		return self._maindeck
+	
 	@property
 	def sideboard(self) -> t.FrozenSet[Printing]:
 		return self._sideboard
+	
 	@property
 	def seventy_five(self) -> t.FrozenSet[Printing]:
 		return self._maindeck + self._sideboard
+	
 	def __iter__(self) -> t.Iterable[Printing]:
 		return self.seventy_five.__iter__()
+	
 	def __eq__(self, other) -> bool:
 		return isinstance(other, Deck) and other.seventy_five == self.seventy_five
+	
 	def __hash__(self) -> int:
 		return hash(self.seventy_five)
+	
 	def to_json(self) -> str:
 		return json.dumps(
 			{
@@ -43,6 +52,7 @@ class Deck(object):
 				'sideboard': tuple(printing.id for printing in self._sideboard),
 			}
 		)
+	
 	def to_xml(self) -> str:
 		deck = ElementTree.Element('deck')
 		maindeck = ElementTree.SubElement(deck, 'maindeck')
@@ -52,6 +62,7 @@ class Deck(object):
 		for printing in self._sideboard:
 			ElementTree.SubElement(sideboard, str(printing.id))
 		return ElementTree.tostring(deck)
+	
 	@staticmethod
 	def _groupify(
 			printings: t.Iterable[Printing],
@@ -69,8 +80,8 @@ class Deck(object):
 					i += 1
 			out.append(matches)
 		return out
-	_CREATURE = PrintingPatternBuilder().types.contains(cardtypes.CREATURE).build()
-	_NON_CREATURE = PrintingPatternBuilder().types.contains(cardtypes.CREATURE).build()
+	_CREATURE = PrintingPatternBuilder().types.contains(cardtypes.CREATURE).all()
+	_NON_CREATURE = PrintingPatternBuilder().types.contains(cardtypes.CREATURE).all()
 	# def to_named_list(self) -> :
 	# 	return '\n'.join(
 	# 		(self.maindeck.items()

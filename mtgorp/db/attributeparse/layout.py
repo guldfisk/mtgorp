@@ -3,8 +3,10 @@ import mtgorp.db.attributeparse.parser as parser
 from mtgorp.models.persistent.attributes.layout import Layout
 from mtgorp.db.attributeparse.exceptions import AttributeParseException
 
+
 class LayoutParseException(AttributeParseException):
 	pass
+
 
 class Parser(parser.Parser):
 	LAYOUT_MAP = {
@@ -16,6 +18,7 @@ class Parser(parser.Parser):
 		'split': Layout.SPLIT,
 		'aftermath': Layout.AFTERMATH,
 	}
+
 	@staticmethod
 	def parse(s: str) -> Layout:
 		try:
