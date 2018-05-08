@@ -37,8 +37,8 @@ class Card(Model):
 	def name(self) -> str:
 		return self._name
 
-	@property
-	def card_type(self) -> 't.Optional[cardtypes.CardType]':
+	@property	
+	def card_type(self) -> 't.Optional[cardtypes.CardTypes]':
 		return self._card_type
 
 	@property

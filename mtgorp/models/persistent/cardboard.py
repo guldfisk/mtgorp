@@ -124,21 +124,3 @@ class Cardboard(Model):
 				expansion,
 			)
 		)
-
-
-def test():
-	a_card = Card('lol')
-	another_card = Card('xd')
-
-	a_cardboard = Cardboard(
-		front_cards = (a_card,),
-		back_cards = (another_card,),
-	)
-
-	print(
-		a_cardboard,
-		a_cardboard.cards,
-	)
-
-if __name__ == '__main__':
-	test()

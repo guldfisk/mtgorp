@@ -17,6 +17,7 @@ class Parser(parser.Parser):
 		'meld': Layout.MELD,
 		'split': Layout.SPLIT,
 		'aftermath': Layout.AFTERMATH,
+		'sage': Layout.SAGA,
 	}
 
 	@staticmethod

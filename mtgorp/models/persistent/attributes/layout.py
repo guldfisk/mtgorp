@@ -8,3 +8,4 @@ class Layout(Enum):
 	SPLIT = 3
 	AFTERMATH = 4
 	MELD = 5
+	SAGA = 6
