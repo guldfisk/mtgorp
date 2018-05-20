@@ -2,27 +2,29 @@ import typing as t
 
 from lazy_property import LazyProperty
 
-from mtgorp.models.persistent.attributes import cardtypes, colors, manacosts, powertoughness
-from mtgorp.models.persistent import cardboard as _cardboard
 from orp.database import Model, PrimaryKey
 from orp.relationships import Many
 
+from mtgorp.models.persistent.attributes import typeline, colors, manacosts, powertoughness
+from mtgorp.models.interfaces import Cardboard
+from mtgorp.models.interfaces import Card as _Card
 
-class Card(Model):
+
+class Card(Model, _Card):
 	primary_key = PrimaryKey('name')
 
 	def __init__(
 		self,
 		name: str,
-		card_type: cardtypes.CardTypes = None,
+		type_line: typeline.TypeLine = None,
 		mana_cost: manacosts.ManaCost = None,
 		color: t.AbstractSet[colors.Color] = None,
 		oracle_text: str = None,
 		power_toughness: powertoughness.PowerToughness = None,
-		loyalty: int = None,
+		loyalty: powertoughness.PTValue = None,
 		color_identity: t.AbstractSet[colors.Color] = None
 	):
-		self._card_type = card_type
+		self._type_line = type_line
 		self._mana_cost = mana_cost
 		self._color = (
 			color if isinstance(color, frozenset) else frozenset(color)
@@ -38,8 +40,8 @@ class Card(Model):
 		return self._name
 
 	@property	
-	def card_type(self) -> 't.Optional[cardtypes.CardTypes]':
-		return self._card_type
+	def type_line(self) -> 't.Optional[typeline.TypeLine]':
+		return self._type_line
 
 	@property
 	def mana_cost(self) -> 't.Optional[manacosts.ManaCost]':
@@ -58,7 +60,7 @@ class Card(Model):
 		return self._power_toughness
 
 	@property
-	def loyalty(self) -> t.Optional[int]:
+	def loyalty(self) -> t.Optional[powertoughness.PTValue]:
 		return self._loyalty
 
 	@property
@@ -70,48 +72,12 @@ class Card(Model):
 		return self._mana_cost.cmc if self._mana_cost else 0
 
 	@LazyProperty
-	def cardboards(self) -> 't.FrozenSet[_cardboard.Cardboard]':
+	def cardboards(self) -> t.FrozenSet[Cardboard]:
 		return frozenset(side.owner for side in self._sides)
 
 	@property
-	def cardboard(self) -> 't.Optional[_cardboard.Cardboard]':
+	def cardboard(self) -> t.Optional[Cardboard]:
 		try:
 			return self.cardboards.__iter__().__next__()
 		except StopIteration:
 			return None
-
-
-def test():
-	pass
-	# fire = Card('Fire')
-	# ice = Card('Ice')
-	# insectile_abberation = Card('Insectile Abberation')
-	# a_cardboard = Cardboard(
-	# 	(fire, ice),
-	# 	(insectile_abberation,)
-	# )
-	# another_cardboard = Cardboard(
-	# 	(ice, ice)
-	# )
-	# an_expansion = Expansion('an expansion', 'aex')
-	# a_printing = Printing(a_cardboard, an_expansion)
-	# another_printing = Printing(another_cardboard, an_expansion)
-	# print(
-	# 	a_printing,
-	# 	another_printing,
-	# )
-	# vs = (
-	# 	an_expansion.printings,
-	# 	a_printing.cardboard,
-	# 	a_cardboard,
-	# 	a_cardboard.printings,
-	# 	ice,
-	# 	ice.cardboards,
-	# 	fire.cardboards,
-	# )
-	#
-	# for v in vs:
-	# 	print(v)
-
-if __name__ == '__main__':
-	test()

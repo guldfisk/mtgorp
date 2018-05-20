@@ -1,9 +1,10 @@
 import typing as t
 from abc import ABCMeta, abstractmethod
 
-from mtgorp.models.persistent import printing as _printing
-from mtgorp.models.persistent import cardboard as _cardboard
-from orp.database import Model
+from mtgorp.models.interfaces import Cardboard, Printing
+
+
+searchable = t.Union[Cardboard, Printing]
 
 
 class Extractor(object, metaclass=ABCMeta):
@@ -17,119 +18,119 @@ class Extractor(object, metaclass=ABCMeta):
 class PrintingLayoutExtractor(Extractor):
 
 	@staticmethod
-	def extract(printing: _printing.Printing) -> t.Iterable[t.Any]:
+	def extract(printing: Printing) -> t.Iterable[t.Any]:
 		return printing.cardboard.layout,
 
 
 class CardboardLayoutExtractor(Extractor):
 
 	@staticmethod
-	def extract(cardboard: _cardboard.Cardboard) -> t.Iterable[t.Any]:
+	def extract(cardboard: Cardboard) -> t.Iterable[t.Any]:
 		return cardboard.layout,
 
 
 class PrintingCMCExtractor(Extractor):
 
 	@staticmethod
-	def extract(printing: '_printing.Printing') -> t.Iterable[t.Any]:
+	def extract(printing: Printing) -> t.Iterable[t.Any]:
 		return (card.cmc for card in printing.cardboard.cards)
 
 
 class CardboardCMCExtractor(Extractor):
 
 	@staticmethod
-	def extract(cardboard: _cardboard.Cardboard) -> t.Iterable[t.Any]:
+	def extract(cardboard: Cardboard) -> t.Iterable[t.Any]:
 		return (card.cmc for card in cardboard.cards)
 
 
 class PrintingRarityExtractor(Extractor):
 
 	@staticmethod
-	def extract(printing: '_printing.Printing') -> t.Iterable[t.Any]:
+	def extract(printing: Printing) -> t.Iterable[t.Any]:
 		return printing.rarity,
 
 
 class CardboardRarityExtractor(Extractor):
 
 	@staticmethod
-	def extract(cardboard: _cardboard.Cardboard) -> t.Iterable[t.Any]:
+	def extract(cardboard: Cardboard) -> t.Iterable[t.Any]:
 		return (printing.rarity for printing in cardboard.printings)
 
 
 class PrintingFlagsExtractor(Extractor):
 
 	@staticmethod
-	def extract(printing: '_printing.Printing') -> t.Iterable[t.Any]:
+	def extract(printing: Printing) -> t.Iterable[t.Any]:
 		return printing.flags,
 
 
 class CardboardFlagExtractor(Extractor):
 
 	@staticmethod
-	def extract(cardboard: _cardboard.Cardboard) -> t.Iterable[t.Any]:
+	def extract(cardboard: Cardboard) -> t.Iterable[t.Any]:
 		return (printing.flags for printing in cardboard.printings)
 
 
 class PrintingTypesExtractor(Extractor):
 
 	@staticmethod
-	def extract(printing: '_printing.Printing') -> t.Iterable[t.Any]:
-		return (card.card_type for card in printing.cardboard.cards)
+	def extract(printing: Printing) -> t.Iterable[t.Any]:
+		return (card.type_line for card in printing.cardboard.cards)
 
 
 class CardboardTypesExtractor(Extractor):
 
 	@staticmethod
-	def extract(cardboard: _cardboard.Cardboard) -> t.Iterable[t.Any]:
-		return (card.card_type for card in cardboard.cards)
+	def extract(cardboard: Cardboard) -> t.Iterable[t.Any]:
+		return (card.type_line for card in cardboard.cards)
 
 
 class PrintingManaCostExtractor(Extractor):
 
 	@staticmethod
-	def extract(printing: '_printing.Printing') -> t.Iterable[t.Any]:
+	def extract(printing: Printing) -> t.Iterable[t.Any]:
 		return (card.mana_cost for card in printing.cardboard.cards)
 
 
 class CardboardManaCostExtractor(Extractor):
 
 	@staticmethod
-	def extract(cardboard: _cardboard.Cardboard) -> t.Iterable[t.Any]:
+	def extract(cardboard: Cardboard) -> t.Iterable[t.Any]:
 		return (card.mana_cost for card in cardboard.cards)
 
 
 class PrintingOracleExtractor(Extractor):
 
 	@staticmethod
-	def extract(printing: '_printing.Printing') -> t.Iterable[t.Any]:
+	def extract(printing: Printing) -> t.Iterable[t.Any]:
 		return (card.oracle_text for card in printing.cardboard.cards)
 
 
 class CardboardOracleExtractor(Extractor):
 
 	@staticmethod
-	def extract(cardboard: _cardboard.Cardboard) -> t.Iterable[t.Any]:
+	def extract(cardboard: Cardboard) -> t.Iterable[t.Any]:
 		return (card.oracle_text for card in cardboard.cards)
 
 
 class PrintingFlavorExtractor(Extractor):
 
 	@staticmethod
-	def extract(printing: '_printing.Printing') -> t.Iterable[t.Any]:
+	def extract(printing: Printing) -> t.Iterable[t.Any]:
 		return (face.flavor for face in printing.faces)
 
 
 class CardboardFlavorExtractor(Extractor):
 
 	@staticmethod
-	def extract(cardboard: _cardboard.Cardboard) -> t.Iterable[t.Any]:
+	def extract(cardboard: Cardboard) -> t.Iterable[t.Any]:
 		return (face.flavor for printing in cardboard.printings for face in printing.faces)
 
 
 class PrintingPowerExtractor(Extractor):
 
 	@staticmethod
-	def extract(printing: '_printing.Printing') -> t.Iterable[t.Any]:
+	def extract(printing: Printing) -> t.Iterable[t.Any]:
 		return (
 			card.power_toughness.power
 			if card.power_toughness is not None else
@@ -142,7 +143,7 @@ class PrintingPowerExtractor(Extractor):
 class CardboardPowerExtractor(Extractor):
 
 	@staticmethod
-	def extract(cardboard: _cardboard.Cardboard) -> t.Iterable[t.Any]:
+	def extract(cardboard: Cardboard) -> t.Iterable[t.Any]:
 		return (
 			card.power_toughness.power
 			if card.power_toughness is not None else
@@ -155,7 +156,7 @@ class CardboardPowerExtractor(Extractor):
 class PrintingToughnessExtractor(Extractor):
 
 	@staticmethod
-	def extract(printing: '_printing.Printing') -> t.Iterable[t.Any]:
+	def extract(printing: Printing) -> t.Iterable[t.Any]:
 		return (
 			card.power_toughness.toughness
 			if card.power_toughness is not None else
@@ -168,7 +169,7 @@ class PrintingToughnessExtractor(Extractor):
 class CardboardToughnessExtractor(Extractor):
 
 	@staticmethod
-	def extract(cardboard: _cardboard.Cardboard) -> t.Iterable[t.Any]:
+	def extract(cardboard: Cardboard) -> t.Iterable[t.Any]:
 		return (
 			card.power_toughness.toughness
 			if card.power_toughness is not None else
@@ -181,34 +182,34 @@ class CardboardToughnessExtractor(Extractor):
 class PrintingLoyaltyExtractor(Extractor):
 
 	@staticmethod
-	def extract(printing: '_printing.Printing') -> t.Iterable[t.Any]:
+	def extract(printing: Printing) -> t.Iterable[t.Any]:
 		return (card.loyalty for card in printing.cardboard.cards)
 
 
 class CardboardLoyaltyExtractor(Extractor):
 
 	@staticmethod
-	def extract(cardboard: _cardboard.Cardboard) -> t.Iterable[t.Any]:
+	def extract(cardboard: Cardboard) -> t.Iterable[t.Any]:
 		return (card.loyalty for card in cardboard.cards)
 
 
 class PrintingArtistExtractor(Extractor):
 
 	@staticmethod
-	def extract(printing: '_printing.Printing') -> t.Iterable[t.Any]:
+	def extract(printing: Printing) -> t.Iterable[t.Any]:
 		return (face.artist for face in printing.faces)
 
 
 class CardboardArtistExtractor(Extractor):
 
 	@staticmethod
-	def extract(cardboard: _cardboard.Cardboard) -> t.Iterable[t.Any]:
+	def extract(cardboard: Cardboard) -> t.Iterable[t.Any]:
 		return (face.artist for printing in cardboard.printings for face in printing.faces)
 
 
 class Matchable(object):
 	@abstractmethod
-	def match(self, model: Model) -> bool:
+	def match(self, model: searchable) -> bool:
 		pass
 
 	def __call__(self, model) -> bool:
@@ -231,7 +232,7 @@ class AttributeMatch(Matchable, metaclass=ABCMeta):
 	def __hash__(self):
 		return hash((self.__class__, self._extractor, self._value))
 
-	def match(self, model: Model) -> bool:
+	def match(self, model: searchable) -> bool:
 		return any(
 			extracted is not None and self.check(extracted)
 			for extracted in
@@ -245,47 +246,55 @@ class AttributeMatch(Matchable, metaclass=ABCMeta):
 	def __repr__(self) -> str:
 		return '{}({}, {})'.format(
 			self.__class__.__name__,
-			self._extractor,
+			self._extractor.__name__,
 			self._value,
 		)
 
 
 class Equals(AttributeMatch):
+
 	def check(self, remote) -> bool:
 		return self._value == remote
 
 
 class GreaterThan(AttributeMatch):
+
 	def check(self, remote) -> bool:
 		return remote > self._value
 
 
 class GreaterThanOrEquals(AttributeMatch):
+
 	def check(self, remote) -> bool:
 		return remote >= self._value
 
 
 class LessThan(AttributeMatch):
+
 	def check(self, remote) -> bool:
 		return remote < self._value
 
 
 class LessThanOrEquals(AttributeMatch):
+
 	def check(self, remote) -> bool:
 		return remote <= self._value
 
 
 class Contains(AttributeMatch):
+
 	def check(self, remote) -> bool:
 		return self._value in remote
 
 
 class ContainedIn(AttributeMatch):
+
 	def check(self, remote) -> bool:
 		return remote in self._value
 
 
 class NotContains(AttributeMatch):
+
 	def check(self, remote) -> bool:
 		return not self._value in remote
 
@@ -294,6 +303,16 @@ class Pattern(Matchable, metaclass=ABCMeta):
 
 	def __init__(self, checkables: t.AbstractSet[Matchable]):
 		self._matchables = frozenset(checkables)
+
+	def _and(self, checkable: Matchable):
+		return self.__class__(self._matchables | frozenset((checkable,)))
+
+	@abstractmethod
+	def match(self, model: searchable) -> bool:
+		pass
+
+	def matches(self, models: t.Iterable[searchable]) -> t.Iterable[searchable]:
+		return (model for model in models if self.match(model))
 
 	def __eq__(self, other):
 		return (
@@ -304,28 +323,50 @@ class Pattern(Matchable, metaclass=ABCMeta):
 	def __hash__(self):
 		return hash((self.__class__, self._matchables))
 
-	def _and(self, checkable: Matchable):
-		return self.__class__(self._matchables | frozenset((checkable,)))
-
-	@abstractmethod
-	def match(self, model: Model) -> bool:
-		pass
-
-	def matches(self, models: t.Iterable[Model]) -> t.Iterable[Model]:
-		return (model for model in models if self.match(model))
-
+	def __repr__(self):
+		return '{}{}'.format(
+			self.__class__.__name__,
+			tuple(self._matchables),
+		)
 
 class All(Pattern):
-	def match(self, model: Model) -> bool:
+
+	def match(self, model: searchable) -> bool:
 		return all(check.match(model) for check in self._matchables)
 
 
 class Any(Pattern):
-	def match(self, model: Model) -> bool:
+
+	def match(self, model: searchable) -> bool:
 		return any(check.match(model) for check in self._matchables)
 
 
+class Not(Matchable):
+
+	def __init__(self, wrapping: Matchable):
+		self._wrapping = wrapping
+
+	def match(self, model: searchable) -> bool:
+		return not self._wrapping.match(model)
+
+	def __hash__(self):
+		return hash((self.__class__, self._wrapping))
+
+	def __eq__(self, other):
+		return (
+			self.__class__ == other.__class__
+			and self._wrapping == other._wrapping
+		)
+
+	def __repr__(self):
+		return '{}({})'.format(
+			self.__class__.__name__,
+			self._wrapping,
+		)
+
+
 class _CheckerBuilder(object):
+
 	def __init__(self, owner: '_ExtractorBuilder', checker: t.Type[AttributeMatch]):
 		self.owner = owner
 		self.checker = checker
@@ -541,23 +582,28 @@ def test():
 
 	from mtgorp.models.persistent.attributes.flags import Flag
 	from mtgorp.models.persistent.attributes.rarities import Rarity
+	from mtgorp.models.persistent.attributes import manacosts
 
 	db = Loader.load()
 
-	print(db.cardboards['Bloodghast'].from_expansion('ZEN'))
+	# pattern = PrintingPatternBuilder().flags.contains(Flag.DRAFT_MATTERS).all()
+	# print(
+	# 	tuple(pattern.matches(db.printings.values()))
+	# )
+	#
+	# another_pattern = PrintingPatternBuilder().power.equals(7).toughness.equals(10).any()
+	# print(
+	# 	tuple(another_pattern.matches(db.printings.values()))
+	# )
 
-
-	pattern = PrintingPatternBuilder().flags.contains(Flag.DRAFT_MATTERS).all()
-	print(
-		tuple(pattern.matches(db.printings.values()))
+	third_pattern = All(
+		{
+			Any({Equals(PrintingPowerExtractor, 7), Equals(PrintingToughnessExtractor, 10)}),
+			Equals(PrintingCMCExtractor, 7),
+			Not(Contains(PrintingManaCostExtractor, manacosts.ONE_GREEN)),
+		}
 	)
 
-	another_pattern = PrintingPatternBuilder().power.equals(7).toughness.equals(10).any()
-	print(
-		tuple(another_pattern.matches(db.printings.values()))
-	)
-
-	third_pattern = Any({Equals(PrintingPowerExtractor, 7), Equals(PrintingToughnessExtractor, 10)})
 	print(
 		tuple(
 			third_pattern.matches(db.printings.values())
@@ -565,13 +611,7 @@ def test():
 	)
 
 	print(
-		another_pattern._matchables,
-	)
-	print(
-		third_pattern._matchables,
-	)
-	print(
-		another_pattern == third_pattern
+		third_pattern,
 	)
 
 if __name__ == '__main__':

@@ -5,7 +5,7 @@ from xml.etree import ElementTree
 
 from mtgorp.models.persistent.printing import Printing
 from mtgorp.tools.search.pattern import Pattern, PrintingPatternBuilder
-from mtgorp.models.persistent.attributes import cardtypes
+from mtgorp.models.persistent.attributes import typeline
 
 from mtgorp.utilities.containers import HashableMultiset
 
@@ -13,7 +13,12 @@ from mtgorp.utilities.containers import HashableMultiset
 class Deck(object):
 	
 	def __init__(self, maindeck: t.Iterable[Printing], sideboard: t.Iterable[Printing] = None):
-		self._maindeck = maindeck if isinstance(maindeck, HashableMultiset) else HashableMultiset(maindeck)
+		self._maindeck = (
+			maindeck
+			if isinstance(maindeck, HashableMultiset)
+			else HashableMultiset(maindeck)
+		) #type: HashableMultiset[Printing]
+
 		self._sideboard = (
 			(
 				sideboard
@@ -22,18 +27,18 @@ class Deck(object):
 			)
 			if sideboard is not None else
 			HashableMultiset()
-		)
+		) #type: HashableMultiset[Printing]
 	
 	@property
-	def maindeck(self) -> t.FrozenSet[Printing]:
+	def maindeck(self) -> HashableMultiset[Printing]:
 		return self._maindeck
 	
 	@property
-	def sideboard(self) -> t.FrozenSet[Printing]:
+	def sideboard(self) -> HashableMultiset[Printing]:
 		return self._sideboard
 	
 	@property
-	def seventy_five(self) -> t.FrozenSet[Printing]:
+	def seventy_five(self) -> HashableMultiset[Printing]:
 		return self._maindeck + self._sideboard
 	
 	def __iter__(self) -> t.Iterable[Printing]:
@@ -80,8 +85,8 @@ class Deck(object):
 					i += 1
 			out.append(matches)
 		return out
-	_CREATURE = PrintingPatternBuilder().types.contains(cardtypes.CREATURE).all()
-	_NON_CREATURE = PrintingPatternBuilder().types.contains(cardtypes.CREATURE).all()
+	_CREATURE = PrintingPatternBuilder().types.contains(typeline.CREATURE).all()
+	_NON_CREATURE = PrintingPatternBuilder().types.contains(typeline.CREATURE).all()
 	# def to_named_list(self) -> :
 	# 	return '\n'.join(
 	# 		(self.maindeck.items()

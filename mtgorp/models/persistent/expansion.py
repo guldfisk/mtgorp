@@ -3,15 +3,16 @@ import typing as t
 
 from lazy_property import LazyProperty
 
-from mtgorp.models.persistent.attributes.borders import Border
-from mtgorp.models.persistent.block import Block
-from mtgorp.models.limited import boostergen
-from mtgorp.models.limited.booster import Booster
 from orp.relationships import Many, One, OneDescriptor
 from orp.database import Model, PrimaryKey
 
+from mtgorp.models.persistent.attributes.borders import Border
+from mtgorp.models.interfaces import Block, BoosterKey, ExpansionCollection, Booster, Printing
+from mtgorp.models.interfaces import Expansion as _Expansion
+from mtgorp.models.interfaces import ExpansionFragment as _ExpansionFragment
 
-class Expansion(Model):
+
+class Expansion(Model, _Expansion):
 	primary_key = PrimaryKey('code')
 
 	def __init__(
@@ -20,8 +21,8 @@ class Expansion(Model):
 		name: str = None,
 		block: Block = None,
 		release_date: datetime.date = None,
-		booster_key: 'boostergen.BoosterKey' = None,
-		booster_expansion_collection: 'boostergen.ExpansionCollection' = None,
+		booster_key: BoosterKey = None,
+		booster_expansion_collection: ExpansionCollection = None,
 		border: Border = None,
 		magic_card_info_code: str = None,
 		mkm_name: str = None,
@@ -37,11 +38,16 @@ class Expansion(Model):
 		self._magic_card_info_code = magic_card_info_code
 		self._mkm_name = mkm_name
 		self._mkm_id = mkm_id
-		self.printings = Many(self, '_expansion')
 		self._fragment_dividers = fragment_dividers
 		self._booster_map = None
 
+		self._printings = Many(self, '_expansion')
+
 	block = OneDescriptor('_block') #type: Block
+
+	@property
+	def printings(self) -> Many[Printing]:
+		return self._printings
 
 	def fragmentize(self, frm: t.Union[int, None] = 0, to: t.Union[int, None] = None) -> 'ExpansionFragment':
 		return ExpansionFragment(self, frm, to)
@@ -75,15 +81,15 @@ class Expansion(Model):
 		return self._release_date
 
 	@property
-	def booster_key(self) -> 't.Optional[boostergen.BoosterKey]':
+	def booster_key(self) -> t.Optional[BoosterKey]:
 		return self._booster_key
 
 	@property
-	def booster_expansion_collection(self) -> 't.Optional[boostergen.ExpansionCollection]':
+	def booster_expansion_collection(self) -> t.Optional[ExpansionCollection]:
 		return self._booster_expansion_collection
 
 	@property
-	def border(self) -> 't.Optional[Border]':
+	def border(self) -> t.Optional[Border]:
 		return self._border
 
 	@property
@@ -99,14 +105,18 @@ class Expansion(Model):
 		return self._mkm_id
 
 
-class ExpansionFragment(Expansion):
+class ExpansionFragment(_ExpansionFragment):
+
 	primary_key = PrimaryKey(('of', 'frm', 'to'))
 
-	def __init__(self, of: Expansion, frm: t.Union[int, None], to: t.Union[int, None]):
-		self.printings = set(sorted(of.printings, key=lambda printing: printing.collector_number)[frm:to])
+	def __init__(self, of: _Expansion, frm: t.Union[int, None], to: t.Union[int, None]):
+		self._of = of
+		self._frm = frm
+		self._to = to
+		self._printings = set(sorted(of.printings, key=lambda printing: printing.collector_number)[frm:to])
 
 	@property
-	def of(self) -> 'Expansion':
+	def of(self) -> Expansion:
 		return self._of
 
 	@property
@@ -117,29 +127,56 @@ class ExpansionFragment(Expansion):
 	def to(self) -> int:
 		return self._to
 
-	def __getattr__(self, item):
-		return object.__getattribute__(self, '_of').__getattribute__(item)
+	@property
+	def block(self) -> 'Block':
+		return self._of.block
 
+	@property
+	def printings(self) -> Many[Printing]:
+		return self._printings
 
-def test():
-	from mtgorp.db.load import Loader
+	def fragmentize(self, frm: t.Optional[int] = 0, to: t.Optional[int] = None) -> 'ExpansionFragment':
+		return ExpansionFragment(self, to, frm)
 
-	db = Loader.load()
+	def generate_booster(self) -> 'Booster':
+		pass
 
-	akh = db.expansions['AKH']
+	@property
+	def fragments(self) -> 't.Tuple[ExpansionFragment, ...]':
+		return self._of.fragments
 
-	akh_fragment = akh.fragments[0]
+	@property
+	def name(self) -> str:
+		return self._of.name
 
-	print(akh_fragment, len(akh.printings), len(akh_fragment.printings))
+	@property
+	def code(self) -> str:
+		return self._of.code
 
-	hou = db.expansions['HOU']
+	@property
+	def release_date(self) -> t.Optional[datetime.date]:
+		return self._of.release_date
 
-	hou._fragment_dividers = (12, 100)
+	@property
+	def booster_key(self) -> 't.Optional[BoosterKey]':
+		return self._of.booster_key
 
-	print(len(hou.printings))
+	@property
+	def booster_expansion_collection(self) -> t.Optional[ExpansionCollection]:
+		return self._of.booster_expansion_collection
 
-	for fragment in hou.fragments:
-		print(fragment, len(fragment.printings), fragment.code)
+	@property
+	def border(self) -> t.Optional[Border]:
+		return self._of.border
 
-if __name__ == '__main__':
-	test()
+	@property
+	def magic_card_info_code(self) -> t.Optional[str]:
+		return self._of.magic_card_info_code
+
+	@property
+	def mkm_name(self) -> t.Optional[str]:
+		return self._of.mkm_name
+
+	@property
+	def mkm_id(self) -> t.Optional[int]:
+		return self._of.mkm_id

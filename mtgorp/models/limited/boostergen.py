@@ -6,18 +6,22 @@ import typing as t
 from multiset import Multiset, BaseMultiset
 from frozendict import frozendict
 
-from mtgorp.models.persistent import expansion as _expansion
-from mtgorp.models.persistent import printing as _printing
-from mtgorp.tools.search.pattern import PrintingPatternBuilder, Pattern
-from mtgorp.models.limited import booster as _booster
-from mtgorp.utilities.containers import HashableMultiset
 from mtgorp.models.persistent.attributes.rarities import Rarity
 from mtgorp.models.persistent.attributes.flags import Flag
 from mtgorp.models.persistent.attributes.layout import Layout
-from mtgorp.models.persistent.attributes import cardtypes
+from mtgorp.models.persistent.attributes import typeline
+from mtgorp.models.interfaces import Printing, Expansion
+from mtgorp.models.interfaces import BoosterKey as _BoosterKey
+from mtgorp.models.interfaces import BoosterMap as _BoosterMap
+from mtgorp.models.interfaces import ExpansionCollection as _ExpansionCollection
+from mtgorp.models.limited.booster import Booster
+
+from mtgorp.tools.search.pattern import PrintingPatternBuilder, Pattern
+
+from mtgorp.utilities.containers import HashableMultiset
 
 
-def choice_multiset(ms: BaseMultiset):
+def multiset_choice(ms: BaseMultiset):
 	values, multiplicities = zip(*ms.items())
 	cumulative_distribution = tuple(itertools.accumulate(multiplicities))
 	return values[
@@ -49,49 +53,47 @@ class GenerateBoosterException(Exception):
 	pass
 
 
-class ExpansionCollection(object):
+class ExpansionCollection(_ExpansionCollection):
 
 	def __init__(
 		self,
-		main: '_expansion.Expansion',
-		basics: '_expansion.Expansion' = None,
-		premium: '_expansion.Expansion' = None,
-		**expansions: '_expansion.Expansion'
+		main: Expansion,
+		basics: t.Optional[Expansion] = None,
+		premium: t.Optional[Expansion] = None,
+		**expansions,
 	):
-		self._expansions = {
-			'main': main,
-			'basics': basics,
-			'premium': premium,
-		}
-		self._expansions.update(expansions)
-		self._expansions = frozendict(self._expansions)
+		expansions.update(
+			{
+				'main': main,
+				'basics': main if basics is None else basics,
+				'premium': main if premium is None else premium,
+			}
+		)
+		self._expansions = frozendict(expansions)
 
 	@property
-	def main(self):
+	def main(self) -> Expansion:
 		return self._expansions['main']
 
 	@property
-	def basics(self):
+	def basics(self) -> Expansion:
 		return self._expansions['basics']
 
 	@property
-	def premium(self):
+	def premium(self) -> Expansion:
 		return self._expansions['premium']
 
-	def __getitem__(self, item: str) -> '_expansion.Expansion':
-		return self._expansions[item]
+	def __getitem__(self, item: str) -> Expansion:
+		return self._expansions.__getitem__(item)
 
-	def __eq__(self, other):
-		return isinstance(other, self.__class__) and self._expansions == other._expansions
+	def __eq__(self, other) -> bool:
+		return (
+			isinstance(other, self.__class__)
+			and self._expansions == other._expansions
+		)
 
 	def __hash__(self):
-		return hash((self.__class__, self._expansions))
-
-	def __repr__(self):
-		return '{}({})'.format(
-			self.__class__.__name__,
-			self._expansions,
-		)
+		return hash(self._expansions)
 
 
 class Option(object):
@@ -101,7 +103,7 @@ class Option(object):
 		self._collection_key = collection_key
 
 	@property
-	def pattern(self):
+	def pattern(self) -> Pattern:
 		return self._pattern
 
 	@property
@@ -153,7 +155,7 @@ PREMIUM = Option(
 	'premium'
 )
 BASIC = Option(
-	PrintingPatternBuilder().types.contains(cardtypes.BASIC).all(),
+	PrintingPatternBuilder().types.contains(typeline.BASIC).all(),
 	'basics'
 )
 DRAFT_MATTERS_COMMON = Option(
@@ -173,7 +175,11 @@ DRAFT_MATTERS_MYTHIC = Option(
 class KeySlot(object):
 
 	def __init__(self, options: t.Iterable[Option]):
-		self._options = options if isinstance(options, HashableMultiset) else HashableMultiset(options)
+		self._options = (
+			options
+			if isinstance(options, HashableMultiset) else
+			HashableMultiset(options)
+		) #type: HashableMultiset[Option]
 
 	def get_map_slot(self, expansion_collection: ExpansionCollection) -> 'MapSlot':
 		return MapSlot(
@@ -182,7 +188,7 @@ class KeySlot(object):
 					printing
 					for printing in
 					expansion_collection[option.collection_key].printings
-					if printing.in_booster and option.pattern.check(printing)
+					if printing.in_booster and option.pattern.match(printing)
 				):
 					weight
 				for option, weight in
@@ -212,10 +218,14 @@ PREMIUM_SLOT = KeySlot((PREMIUM,))
 BASIC_SLOT = KeySlot((BASIC,))
 
 
-class BoosterKey(object):
+class BoosterKey(_BoosterKey):
 
 	def __init__(self, slots: t.Iterable[KeySlot]):
-		self._slots = slots if isinstance(slots, HashableMultiset) else HashableMultiset(slots)
+		self._slots = (
+			slots
+			if isinstance(slots, HashableMultiset) else
+			HashableMultiset(slots)
+		) #type: HashableMultiset[KeySlot]
 
 	@property
 	def slots(self):
@@ -245,7 +255,7 @@ class BoosterKey(object):
 
 class MapSlot(object):
 
-	def __init__(self, options: 't.Iterable[t.FrozenSet[_printing.Printing]]'):
+	def __init__(self, options: t.Iterable[t.FrozenSet[Printing]]):
 		self.options = options if isinstance(options, HashableMultiset) else HashableMultiset(options)
 
 	# def _filter_options(self, forbidden: BaseMultiset):
@@ -256,13 +266,13 @@ class MapSlot(object):
 
 	def sample(self):
 		return random.choice(
-			choice_multiset(
+			multiset_choice(
 				self.options
 			)
 		)
 
 	def sample_slot(self):
-		return choice_multiset(self.options)
+		return multiset_choice(self.options)
 		# if not forbidden:
 		# 	return choice_multiset(
 		# 		choice_multiset(self.options)
@@ -281,14 +291,15 @@ class MapSlot(object):
 		# )
 
 
-class BoosterMap(object):
+class BoosterMap(_BoosterMap):
 
 	def __init__(self, slots: t.Iterable[MapSlot]):
 		self.slots = slots if isinstance(slots, HashableMultiset) else HashableMultiset(slots)
 
-	def generate_booster(self) -> _booster.Booster:
+	def generate_booster(self) -> Booster:
 		slots = Multiset(slot.sample_slot() for slot in self.slots)
 		printings = Multiset()
+
 		for value, multiplicity in slots.items():
 			printings.update(
 				random.sample(
@@ -296,7 +307,8 @@ class BoosterMap(object):
 					multiplicity,
 				)
 			)
-		return _booster.Booster(printings)
+
+		return Booster(printings)
 
 		# printings = Multiset()
 		# for slot, multiplicity in self.slots.items():

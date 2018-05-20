@@ -2,22 +2,27 @@ import typing as t
 
 from mtgorp.db.attributeparse import parser
 from mtgorp.models.limited import boostergen
-from mtgorp.models.persistent.attributes import cardtypes
+from mtgorp.models.persistent.attributes import typeline
 from mtgorp.tools.search.pattern import PrintingPatternBuilder
 
 
 class Parser(parser.Parser):
-	CARD_WITH_MYTHIC = boostergen.KeySlot({
-		boostergen.MYTHIC: 1,
-		boostergen.RARE: 7,
-		boostergen.UNCOMMON: 21,
-		boostergen.COMMON: 77,
-	})
-	CARD = boostergen.KeySlot({
-		boostergen.RARE: 1,
-		boostergen.UNCOMMON: 3,
-		boostergen.COMMON: 11,
-	})
+	CARD_WITH_MYTHIC = boostergen.KeySlot(
+		{
+			boostergen.MYTHIC: 1,
+			boostergen.RARE: 7,
+			boostergen.UNCOMMON: 21,
+			boostergen.COMMON: 77,
+		}
+	)
+	CARD = boostergen.KeySlot(
+		{
+			boostergen.RARE: 1,
+			boostergen.UNCOMMON: 3,
+			boostergen.COMMON: 11,
+		}
+	)
+
 	SLOT_MAP = {
 		'double faced mythic rare': boostergen.KeySlot((boostergen.DOUBLEFACED_MYTHIC,)),
 		'double faced uncommon': boostergen.KeySlot((boostergen.DOUBLEFACED_UNCOMMON,)),
@@ -40,7 +45,7 @@ class Parser(parser.Parser):
 		'timeshifted common': boostergen.KeySlot((boostergen.TIMESHIFTED_COMMON,)),
 		'urza land': boostergen.KeySlot((
 			boostergen.Option(
-				PrintingPatternBuilder().types.contains(cardtypes.CardSubType("Urza's")).all(),
+				PrintingPatternBuilder().types.contains(typeline.URZAS).all(),
 			),
 		)),
 		'timeshifted rare': boostergen.KeySlot((boostergen.TIMESHIFTED_RARE,)),
@@ -93,7 +98,7 @@ class Parser(parser.Parser):
 			boostergen.PREMIUM: 1,
 			boostergen.COMMON: 143,
 		})
-	}
+	} #type: t.Dict[t.Union[t.AbstractSet[str], str], boostergen.KeySlot]
 
 	@staticmethod
 	def parse(values: t.Tuple[t.Union[str, t.Tuple[str, ...]], ...]) -> boostergen.BoosterKey:

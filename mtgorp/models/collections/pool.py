@@ -13,7 +13,12 @@ class Pool(object):
 		printings: t.Iterable[Printing],
 		decks: t.Iterable[Deck],
 	):
-		self._printings = printings if isinstance(printings, HashableMultiset) else HashableMultiset(printings)
+		self._printings = (
+			printings
+			if isinstance(printings, HashableMultiset) else
+			HashableMultiset(printings)
+		) #type: HashableMultiset[Printing]
+
 		self._decks = decks if isinstance(decks, tuple) else tuple(decks)
 	
 	@property

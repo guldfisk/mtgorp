@@ -1,11 +1,13 @@
 import typing as t
 
-from mtgorp.models.persistent import printing as _printing
 from orp import relationships as _relationships
 from orp.database import Model, PrimaryKey
 
+from mtgorp.models.interfaces import Printing
+from mtgorp.models.interfaces import Artist as _Artist
 
-class Artist(Model):
+
+class Artist(Model, _Artist):
 	primary_key = PrimaryKey('name')
 
 	def __init__(self, name: str):
@@ -16,5 +18,5 @@ class Artist(Model):
 		return self._name
 
 	@property
-	def printings(self) -> 't.Tuple[_printing.Printing, ...]':
+	def printings(self) -> t.Tuple[Printing, ...]:
 		return tuple(face.owner for face in self._faces)

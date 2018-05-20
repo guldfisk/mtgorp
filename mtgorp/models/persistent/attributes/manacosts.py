@@ -2,27 +2,27 @@ import typing as t
 from abc import ABCMeta
 
 import mtgorp.models.persistent.attributes.colors as cols
-from mtgorp.models.persistent.attributes.colors import Color as c
+from mtgorp.models.persistent.attributes.colors import Color
 from mtgorp.utilities.containers import HashableMultiset
 
 
 class ManaCostAtom(metaclass=ABCMeta):
 	
-	def __init__(self, code: str, associations: t.AbstractSet=None, cmc_value: int=1):
+	def __init__(self, code: str, associations: t.Optional[t.AbstractSet[Color]]=None, cmc_value: int=1):
 		self._code = code
 		self._associations = associations if isinstance(associations, frozenset) else frozenset()
 		self._cmc_value = cmc_value
 	
 	@property
-	def code(self):
+	def code(self) -> str:
 		return self._code
 	
 	@property
-	def associations(self):
+	def associations(self) -> t.AbstractSet[Color]:
 		return self._associations
 	
 	@property
-	def cmc_value (self):
+	def cmc_value (self) -> int:
 		return self._cmc_value
 	
 	def __repr__(self):
@@ -34,7 +34,7 @@ class ManaCostAtom(metaclass=ABCMeta):
 	def __hash__(self):
 		return hash((self.__class__, self.code))
 	
-	def _lt_tiebreaker(self, other):
+	def _lt_tiebreaker(self, other) -> bool:
 		return False
 	
 	def __lt__(self, other):
@@ -55,8 +55,12 @@ class GenericCostAtom(ManaCostAtom):
 
 
 class ColorCostAtom(ManaCostAtom):
-	def _lt_tiebreaker(self, other):
-		return cols.color_set_sort_value(self.associations) < cols.color_set_sort_value(other.associations)
+
+	def _lt_tiebreaker(self, other) -> bool:
+		return (
+			cols.color_set_sort_value(self.associations)
+			< cols.color_set_sort_value(other.associations)
+		)
 
 
 class ColorlessCostAtom(ManaCostAtom):
@@ -74,8 +78,10 @@ class OtherCostAtom(ManaCostAtom):
 class HybridCostAtom(ManaCostAtom):
 	
 	def __init__(self, options: 't.AbstractSet[t.Union[ManaCost, ManaCostAtom]]'):
-		self._options = frozenset(self._flatten_options(options))
+		self._options = frozenset(self._flatten_options(options)) #type: t.AbstractSet[ManaCost]
+
 		assert len(self._options) > 1
+
 		super(HybridCostAtom, self).__init__(
 			code='/'.join(
 				str(option)
@@ -101,20 +107,22 @@ class HybridCostAtom(ManaCostAtom):
 	def __hash__(self):
 		return hash((self.__class__, self._options))
 	
-	def __iter__(self):
+	def __iter__(self) -> 't.Iterator[ManaCost]':
 		return self._options.__iter__()
 	
 	def __len__(self):
 		return self._options.__len__()
 	
 	@staticmethod
-	def _flatten_options(mana_costs: 't.AbstractSet[t.Union[ManaCost, ManaCostAtom]]'):
+	def _flatten_options(mana_costs: 't.Union[t.AbstractSet[t.Union[ManaCost, ManaCostAtom]], HybridCostAtom]'):
 		for option in mana_costs:
-			if isinstance(option, ManaCostAtom):
-				for mana_cost in HybridCostAtom._flatten_options({ManaCost((option,))}):
+			if isinstance(option, HybridCostAtom):
+				for mana_cost in option:
 					yield mana_cost
-			elif len(option)==1 and isinstance(option.__iter__().__next__(), HybridCostAtom):
-				for hybrid_mana_cost in HybridCostAtom._flatten_options(option._atoms):
+			elif isinstance(option, ManaCostAtom):
+				yield ManaCost((option,))
+			elif len(option) == 1 and isinstance(option.__iter__().__next__(), HybridCostAtom):
+				for hybrid_mana_cost in HybridCostAtom._flatten_options(option):
 					for sub_mana_cost in hybrid_mana_cost:
 						yield sub_mana_cost
 			else:
@@ -122,11 +130,13 @@ class HybridCostAtom(ManaCostAtom):
 	
 	def _lt_tiebreaker(self, other):
 		s, o = sorted(self._options), sorted(other._options)
-		for i in range(min(len(s), len(o))):
-			if s[i] < o[i]:
+
+		for _s, _o in zip(s, o):
+			if _s < _o:
 				return True
-			if s[i] > o[i]:
+			if _s > _o:
 				return False
+
 		return len(s) < len(o)
 
 
@@ -152,8 +162,10 @@ class ManaCost(object):
 	def __str__(self):
 		if not self._atoms:
 			return '{0}'
+
 		accumulated = ''
 		generics = 0
+
 		for atom in sorted(self._atoms):
 			if atom == ONE_GENERIC:
 				generics += 1
@@ -162,8 +174,10 @@ class ManaCost(object):
 				accumulated += '{{{}}}'.format(generics)
 				generics = 0
 			accumulated += str(atom)
+
 		if generics > 0:
 			accumulated += '{{{}}}'.format(generics)
+
 		return accumulated
 	
 	def __iter__(self):
@@ -182,8 +196,10 @@ class ManaCost(object):
 		return len(s) < len(o)
 	
 	def __contains__(self, item):
-		return item._atoms.issubset(self._atoms)
-	
+		if isinstance(item, ManaCost):
+			return item._atoms.issubset(self._atoms)
+		return item in self._atoms
+
 	def __add__(self, other):
 		return ManaCost(
 			self._atoms + other._atoms
@@ -215,11 +231,11 @@ def _atom_sort_value(atom):
 	return _cost_type_order_map.get(type(atom), _MAX_TYPE_ORDER)
 
 
-ONE_WHITE = ColorCostAtom('W', frozenset({c.WHITE}))
-ONE_BLUE = ColorCostAtom('U', frozenset({c.BLUE}))
-ONE_BLACK = ColorCostAtom('B', frozenset({c.BLACK}))
-ONE_RED = ColorCostAtom('R', frozenset({c.RED}))
-ONE_GREEN = ColorCostAtom('G', frozenset({c.GREEN}))
+ONE_WHITE = ColorCostAtom('W', frozenset({Color.WHITE}))
+ONE_BLUE = ColorCostAtom('U', frozenset({Color.BLUE}))
+ONE_BLACK = ColorCostAtom('B', frozenset({Color.BLACK}))
+ONE_RED = ColorCostAtom('R', frozenset({Color.RED}))
+ONE_GREEN = ColorCostAtom('G', frozenset({Color.GREEN}))
 
 ONE_GENERIC = GenericCostAtom('1')
 
@@ -251,6 +267,7 @@ SINGULAR_ATOM_MAP = {
 }
 
 _TWO_GENERIC = ManaCost((ONE_GENERIC, ONE_GENERIC))
+
 GENERIC_WHITE = HybridCostAtom({ONE_WHITE, _TWO_GENERIC})
 GENERIC_BLUE = HybridCostAtom({ONE_BLUE, _TWO_GENERIC})
 GENERIC_BLACK = HybridCostAtom({ONE_BLACK, _TWO_GENERIC})
@@ -267,43 +284,3 @@ UG_HYBRID = HybridCostAtom({ONE_BLUE, ONE_GREEN})
 BR_HYBRID = HybridCostAtom({ONE_BLACK, ONE_RED})
 BG_HYBRID = HybridCostAtom({ONE_BLACK, ONE_GREEN})
 RG_HYBRID = HybridCostAtom({ONE_RED, ONE_GREEN})
-
-
-def test():
-	mc1 = ManaCost(
-		(
-			ONE_BLACK,
-			ONE_PHYREXIAN_GREEN,
-			ONE_GENERIC,
-			ONE_GENERIC,
-		)
-	)
-
-	mc2= ManaCost(
-		(
-			ONE_BLACK,
-			ONE_PHYREXIAN_GREEN,
-			ONE_GENERIC,
-			ONE_GENERIC,
-			ONE_BLACK,
-			VARIABLE_GENERIC,
-		),
-	)
-
-	mc3 = ManaCost((GENERIC_BLUE,))
-
-	h1 = HybridCostAtom(
-		{
-			ONE_BLACK,
-			ManaCost(
-				(
-					ONE_GENERIC,
-					WU_HYBRID,
-				)
-			),
-		}
-	)
-
-
-if __name__ == '__main__':
-	test()

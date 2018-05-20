@@ -6,11 +6,11 @@ from orp.relationships import One, OneDescriptor
 from mtgorp.models.persistent.artist import Artist
 from mtgorp.models.persistent.attributes.rarities import Rarity
 from mtgorp.models.persistent.attributes.flags import Flag
-from mtgorp.models.persistent import cardboard as _cardboard
-from mtgorp.models.persistent import expansion as _expansion
+from mtgorp.models.interfaces import Artist, Cardboard, Expansion
+from mtgorp.models.interfaces import Face as _Face
+from mtgorp.models.interfaces import Printing as _Printing
 
-
-class Face(object):
+class Face(_Face):
 
 	def __init__(
 		self,
@@ -33,14 +33,14 @@ class Face(object):
 		return self._flavor
 
 
-class Printing(Model):
+class Printing(Model, _Printing):
 	primary_key = PrimaryKey('id')
 
 	def __init__(
 		self,
 		id: int,
-		expansion: '_expansion.Expansion',
-		cardboard: '_cardboard.Cardboard',
+		expansion: Expansion,
+		cardboard: Cardboard,
 		collector_number: int,
 		front_artist: Artist = None,
 		front_flavor: str = None,
@@ -67,9 +67,8 @@ class Printing(Model):
 		self._in_booster = in_booster
 		self._flags = flags
 
-	cardboard = OneDescriptor('_cardboard') #type: _cardboard.Cardboard
-
-	expansion = OneDescriptor('_expansion') #type: _expansion.Expansion
+	cardboard = OneDescriptor('_cardboard') #type: Cardboard
+	expansion = OneDescriptor('_expansion') #type: Expansion
 
 	@property
 	def id(self) -> int:
@@ -102,6 +101,7 @@ class Printing(Model):
 	@property
 	def flags(self) -> 't.Tuple[Flag, ...]':
 		return self._flags
+
 	def __repr__(self):
 		return '{}({}, {}, {})'.format(
 			self.__class__.__name__,
@@ -109,28 +109,3 @@ class Printing(Model):
 			self.expansion.code,
 			self.id,
 		)
-
-
-def test():
-	from mtgorp.models.persistent.card import Card
-	a_card = Card('lol')
-	another_card = Card('xd')
-
-	a_cardboard = cardboard.Cardboard(
-		front_cards = (a_card,),
-		back_cards = (another_card,),
-	)
-
-	an_expansion = _expansion.Expansion('LOL')
-	a_printing = Printing(
-		expansion = an_expansion,
-		collector_number = '1',
-		cardboard = a_cardboard
-	)
-
-	print(
-		a_printing
-	)
-
-if __name__ == '__main__':
-	test()

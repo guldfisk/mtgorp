@@ -1,6 +1,7 @@
 import os
 import json
 
+
 DATA_PATH = os.path.join(
 	os.path.dirname(__file__),
 	'data.json'
@@ -16,10 +17,3 @@ class BoosterInformation(object):
 			with open(DATA_PATH, 'r') as f:
 				BoosterInformation._data = json.load(f)
 		return BoosterInformation._data
-
-
-def test():
-	print(BoosterInformation.information())
-
-if __name__ == '__main__':
-	test()

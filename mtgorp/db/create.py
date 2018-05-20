@@ -6,7 +6,9 @@ import re
 import typing as t
 
 from mtgorp.managejson import paths, update
-from mtgorp.db.attributeparse import cardtype, color, manacost, powertoughness, rairty, border, layout, boosterkey
+from mtgorp.db.attributeparse import (
+	typeline, color, powertoughness, rairty, border, layout, boosterkey, loyalty, manacost
+)
 from mtgorp.db.attributeparse.exceptions import AttributeParseException
 from mtgorp.models.persistent.attributes.layout import Layout
 from mtgorp.models.persistent.attributes.flags import Flag
@@ -36,6 +38,7 @@ class _CardParser(object):
 			raise AttributeParseException()
 
 		power, toughness = raw_card.get('power', None), raw_card.get('toughness', None)
+
 		pt = powertoughness.PowerToughness(
 			powertoughness.Parser.parse_pt_value(power),
 			powertoughness.Parser.parse_pt_value(toughness),
@@ -48,12 +51,16 @@ class _CardParser(object):
 
 		return Card(
 			name = name,
-			card_type = cardtype.Parser.parse(raw_card.get('type', '')),
+			type_line= typeline.Parser.parse(raw_card.get('type', '')),
 			mana_cost = mana_cost,
 			color = cls._parse_colors(raw_card.get('colors', ())),
 			oracle_text = re.sub('\(.*?\)', '', raw_card.get('text', ''), flags=re.IGNORECASE),
 			power_toughness = pt,
-			loyalty = raw_card.get('loyalty', None),
+			loyalty = (
+				loyalty.Parser.parse(raw_card['loyalty'])
+				if 'loyalty' in raw_card else
+				None
+			),
 			color_identity = cls._parse_colors(raw_card.get('colorIdentity', ())),
 		)
 
@@ -71,25 +78,30 @@ class _CardboardParser(object):
 					(name,),
 					(),
 				)
+
 			elif raw_card_layout == Layout.SPLIT or raw_card_layout == Layout.FLIP or raw_card_layout == Layout.AFTERMATH:
 				if name == raw_card['names'][0]:
 					return (
 						tuple(n for n in raw_card['names']),
 						(),
 					)
+
 			elif raw_card_layout == Layout.TRANSFORM:
 				if name == raw_card['names'][0]:
 					return (
 						(name,),
 						(raw_card['names'][1],),
 					)
+
 			elif raw_card_layout == Layout.MELD:
 				if name in raw_card['names'][0:1]:
 					return (
 						(name,),
 						(raw_card['names'][-1],),
 					)
+
 			raise AttributeParseException()
+
 		except KeyError:
 			raise AttributeParseException()
 
@@ -97,6 +109,7 @@ class _CardboardParser(object):
 	def parse(cls, raw_card, cards: Table):
 		try:
 			front_names, back_names = cls.get_cardboard_card_names(raw_card)
+
 			return Cardboard(
 				front_cards = tuple(cards[name] for name in front_names),
 				back_cards = tuple(cards[name] for name in back_names),
@@ -111,9 +124,11 @@ class _ArtistParser(object):
 	@classmethod
 	def parse(cls, name: str, artists: Table):
 		artist = Artist(name)
+
 		if not artist.name in artists:
 			artists.insert(artist)
 			return artist
+
 		return artists[name]
 
 
@@ -134,8 +149,10 @@ class _PrintingParser(object):
 			cardboard = cardboards[
 				Cardboard.calc_name(front_names + back_names)
 			]
+
 			if name != cardboard.front_card.name:
 				raise AttributeParseException()
+
 			if cardboard.back_card is not None:
 				raw_back_printing = cls._find_printing_from_name(cardboard.back_card.name, raw_printings)
 				back_artist = _ArtistParser.parse(raw_back_printing.get('artist', None), artists)
@@ -145,12 +162,14 @@ class _PrintingParser(object):
 				back_flavor = None
 
 			flags = []
+
 			if raw_printing.get('timeshifted', False):
 				flags.append(Flag.TIMESHIFTED)
+
 			information = BoosterInformation.information()
 			if expansion.code in information:
-				if 'black_list' in information[expansion.code]:
-					in_booster = not cardboard.name in information[expansion.code]['black_list']
+				if 'blacklist' in information[expansion.code]:
+					in_booster = not cardboard.name in information[expansion.code]['blacklist']
 				else:
 					in_booster = True
 				if 'flags' in information[expansion.code]:
@@ -193,6 +212,7 @@ class _PrintingParser(object):
 				in_booster = in_booster,
 				flags = tuple(flags),
 			)
+
 		except KeyError:
 			raise AttributeParseException()
 
@@ -201,12 +221,12 @@ class _BlockParser(object):
 
 	@classmethod
 	def parse(cls, name: str, blocks: Table):
-		block = Block(
-			name = name
-		)
+		block = Block(name=name)
+
 		if not block.name in blocks:
 			blocks.insert(block)
 			return block
+
 		return blocks[name]
 
 

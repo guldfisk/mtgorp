@@ -8,30 +8,45 @@ class PTValue(object):
 		self._variable = variable
 	
 	@property
-	def value(self):
+	def value(self) -> int:
 		return 0 if self._variable else self._value
 	
 	@property
-	def variable(self):
+	def variable(self) -> bool:
 		return self._variable
 	
 	def __str__(self):
 		return '*' if self._variable else str(self._value)
 	
 	def __eq__(self, other):
-		return self.value == other
+		return (
+			isinstance(other, int) and self.value == other
+			or isinstance(other, self.__class__) and self.value == other.value
+		)
 	
 	def __lt__(self, other):
-		return self.value < other
+		return (
+			isinstance(other, int) and self.value < other
+			or isinstance(other, self.__class__) and self.value == other.value
+		)
 	
 	def __le__(self, other):
-		return self.value <= other
+		return (
+			isinstance(other, int) and self.value <= other
+			or isinstance(other, self.__class__) and self.value == other.value
+		)
 	
 	def __gt__(self, other):
-		return self.value > other
+		return (
+			isinstance(other, int) and self.value > other
+			or isinstance(other, self.__class__) and self.value == other.value
+		)
 	
 	def __ge__(self, other):
-		return self.value >= other
+		return (
+			isinstance(other, int) and self.value >= other
+			or isinstance(other, self.__class__) and self.value == other.value
+		)
 
 
 class PowerToughness(object):
@@ -41,15 +56,19 @@ class PowerToughness(object):
 		self._toughness = toughness if isinstance(toughness, PTValue) else PTValue(toughness)
 	
 	@property
-	def power(self):
+	def power(self) -> PTValue:
 		return self._power
 	
 	@property
-	def toughness(self):
+	def toughness(self) -> PTValue:
 		return self._toughness
 	
 	def __eq__(self, other):
-		return isinstance(other, PowerToughness) and self.power == other.power and self.toughness == other.toughness
+		return (
+			isinstance(other, PowerToughness)
+			and self.power == other.power
+			and self.toughness == other.toughness
+		)
 	
 	def __hash__(self):
 		return hash((self.power, self.toughness))
@@ -60,13 +79,3 @@ class PowerToughness(object):
 	def __iter__(self):
 		yield self.power
 		yield self.toughness
-
-
-def test():
-	pass
-	# pt = Parser.parse_string('12/-23*')
-	#
-	# print(pt)
-
-if __name__ == '__main__':
-	test()

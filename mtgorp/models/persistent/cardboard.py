@@ -3,12 +3,13 @@ from itertools import chain
 
 from lazy_property import LazyProperty
 
-from mtgorp.models.persistent.attributes.layout import Layout
-from mtgorp.models.persistent.card import Card
-from mtgorp.models.persistent import expansion as _expansion
-from mtgorp.models.persistent import printing as _printing
 from orp.database import Model, PrimaryKey, Key
 from orp.relationships import Many
+
+from mtgorp.models.persistent.attributes.layout import Layout
+from mtgorp.models.interfaces import Card, Expansion, Printing
+from mtgorp.models.interfaces import Side as _Side
+from mtgorp.models.interfaces import Cardboard as _Cardboard
 
 
 class OrderedMultiSet(list):
@@ -17,9 +18,9 @@ class OrderedMultiSet(list):
 		self.append(element)
 
 
-class Side(object):
+class Side(_Side):
 
-	def __init__(self, owner):
+	def __init__(self, owner: 'Cardboard'):
 		self._owner = owner
 		self._cards = Many(
 			self,
@@ -28,15 +29,15 @@ class Side(object):
 		)
 
 	@property
-	def owner(self):
+	def owner(self) -> 'Cardboard':
 		return self._owner
 
 	@property
-	def cards(self):
+	def cards(self) -> Many[Card]:
 		return self._cards
 
 
-class Cardboard(Model):
+class Cardboard(Model, _Cardboard):
 	primary_key = PrimaryKey(
 		Key(
 			'name',
@@ -61,14 +62,19 @@ class Cardboard(Model):
 		layout: Layout = Layout.STANDARD,
 	):
 		self._front_cards = Side(self)
+
 		for c in front_cards:
 			self._front_cards.cards.add(c)
+
 		self._back_cards = Side(self)
+
 		if back_cards is not None:
 			for c in back_cards:
 				self._back_cards.cards.add(c)
+
 		self._layout = layout
-		self.printings = Many(self, '_cardboard') #type: t.Set[_printing.Printing]
+
+		self._printings = Many(self, '_cardboard') #type: Many[Printing]
 
 	@classmethod
 	def calc_name(cls, names) -> str:
@@ -79,11 +85,15 @@ class Cardboard(Model):
 		return self._name
 
 	@property
-	def front_cards(self) -> 't.Tuple[Card]':
+	def printings(self) -> Many[Printing]:
+		return self._printings
+
+	@property
+	def front_cards(self) -> Many[Card]:
 		return self._front_cards.cards
 
 	@property
-	def back_cards(self) -> 't.Tuple[Card]':
+	def back_cards(self) -> Many[Card]:
 		return self._back_cards.cards
 
 	@LazyProperty
@@ -106,11 +116,11 @@ class Cardboard(Model):
 			return None
 
 	@property
-	def printing(self) -> '_printing.Printing':
+	def printing(self) -> Printing:
 		return self.printings.__iter__().__next__()
 
-	def from_expansion(self, expansion: 't.Union[_expansion.Expansion, str]') -> '_printing.Printing':
-		if isinstance(expansion, _expansion.Expansion):
+	def from_expansion(self, expansion: t.Union[Expansion, str]) -> Printing:
+		if isinstance(expansion, Expansion):
 			for printing in self.printings:
 				if printing.expansion==expansion:
 					return printing
@@ -118,6 +128,7 @@ class Cardboard(Model):
 			for printing in self.printings:
 				if printing.expansion.code==expansion:
 					return printing
+
 		raise KeyError(
 			'{} not printed in {}'.format(
 				self,

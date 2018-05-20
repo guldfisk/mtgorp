@@ -11,27 +11,23 @@ class Color(Enum):
 	
 	@property
 	def code(self):
-		return '{{{}}}'.format(self.value)
-	
+		return '{{{}}}'.format(self._value)
+
+	@property
+	def position(self) -> int:
+		return self._position
+
 	def __lt__(self, other):
 		return self.position < other.position
 	
 	def __new__(cls, code, position):
 		obj = object.__new__(cls)
 		obj._value_ = code
-		obj.position = position
+		obj._position = position
 		return obj
 
 
 def color_set_sort_value(color_set: t.AbstractSet[Color]):
 	return (
-		sum(1<<c.position for c in color_set)
+		sum(1 << c.position for c in color_set)
 	)
-
-
-def test():
-	print(isinstance(Color.WHITE, Color))
-
-
-if __name__ == '__main__':
-	test()
