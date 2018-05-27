@@ -3,9 +3,9 @@ import typing as t
 from orp.database import Model, PrimaryKey
 from orp.relationships import One, OneDescriptor
 
-from mtgorp.models.persistent.artist import Artist
 from mtgorp.models.persistent.attributes.rarities import Rarity
-from mtgorp.models.persistent.attributes.flags import Flag
+from mtgorp.models.persistent.attributes.flags import Flag, Flags
+from mtgorp.models.persistent.attributes.borders import Border
 from mtgorp.models.interfaces import Artist, Cardboard, Expansion
 from mtgorp.models.interfaces import Face as _Face
 from mtgorp.models.interfaces import Printing as _Printing
@@ -48,7 +48,7 @@ class Printing(Model, _Printing):
 		back_flavor: str = None,
 		rarity: Rarity = None,
 		in_booster: bool = True,
-		flags: t.Tuple[Flag, ...] = (),
+		flags: t.Optional[Flags] = None,
 	):
 		self._expansion = One(self, 'printings', expansion)
 		self._cardboard = One(self, 'printings', cardboard)
@@ -65,7 +65,7 @@ class Printing(Model, _Printing):
 		)
 		self._rarity = rarity
 		self._in_booster = in_booster
-		self._flags = flags
+		self._flags = Flags() if flags is None else flags
 
 	cardboard = OneDescriptor('_cardboard') #type: Cardboard
 	expansion = OneDescriptor('_expansion') #type: Expansion
@@ -99,8 +99,12 @@ class Printing(Model, _Printing):
 		return self._in_booster
 
 	@property
-	def flags(self) -> 't.Tuple[Flag, ...]':
+	def flags(self) -> Flags:
 		return self._flags
+
+	@property
+	def border(self) -> t.Optional[Border]:
+		return self.expansion.border
 
 	def __repr__(self):
 		return '{}({}, {}, {})'.format(

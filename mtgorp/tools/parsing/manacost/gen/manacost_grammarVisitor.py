@@ -1,4 +1,4 @@
-# Generated from /home/biggenerals/PycharmProjects/mtgorp/mtgorp/db/attributeparse/manacost/manacost_grammar.g4 by ANTLR 4.7
+# Generated from /home/biggenerals/PycharmProjects/mtgorp/mtgorp/tools/parsing/manacost/manacost_grammar.g4 by ANTLR 4.7
 from antlr4 import *
 if __name__ is not None and "." in __name__:
     from .manacost_grammarParser import manacost_grammarParser
@@ -9,8 +9,13 @@ else:
 
 class manacost_grammarVisitor(ParseTreeVisitor):
 
-    # Visit a parse tree produced by manacost_grammarParser#start.
-    def visitStart(self, ctx:manacost_grammarParser.StartContext):
+    # Visit a parse tree produced by manacost_grammarParser#Empty.
+    def visitEmpty(self, ctx:manacost_grammarParser.EmptyContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by manacost_grammarParser#NonEmpty.
+    def visitNonEmpty(self, ctx:manacost_grammarParser.NonEmptyContext):
         return self.visitChildren(ctx)
 
 

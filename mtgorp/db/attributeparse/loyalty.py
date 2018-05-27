@@ -11,7 +11,7 @@ class LoyaltyParseException(AttributeParseException):
 
 
 class Parser(parser.Parser):
-	matcher = re.compile('\\d+')
+	matcher = re.compile('-?\\d+')
 
 	@staticmethod
 	def parse(s: str) -> PTValue:

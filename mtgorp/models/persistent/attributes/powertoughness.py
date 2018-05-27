@@ -15,37 +15,43 @@ class PTValue(object):
 	def variable(self) -> bool:
 		return self._variable
 	
-	def __str__(self):
+	def __repr__(self):
 		return '*' if self._variable else str(self._value)
 	
 	def __eq__(self, other):
-		return (
-			isinstance(other, int) and self.value == other
-			or isinstance(other, self.__class__) and self.value == other.value
-		)
-	
+		if isinstance(other, int):
+			return self.value == other
+		if isinstance(other, self.__class__):
+			if self._variable or other.variable:
+				return self._variable and other.variable
+			return self._value == other._value
+		return False
+
+	def __hash__(self) -> int:
+		return hash(self.value)
+
 	def __lt__(self, other):
 		return (
 			isinstance(other, int) and self.value < other
-			or isinstance(other, self.__class__) and self.value == other.value
+			or isinstance(other, self.__class__) and self.value < other.value
 		)
 	
 	def __le__(self, other):
 		return (
 			isinstance(other, int) and self.value <= other
-			or isinstance(other, self.__class__) and self.value == other.value
+			or isinstance(other, self.__class__) and self.value <= other.value
 		)
 	
 	def __gt__(self, other):
 		return (
 			isinstance(other, int) and self.value > other
-			or isinstance(other, self.__class__) and self.value == other.value
+			or isinstance(other, self.__class__) and self.value > other.value
 		)
 	
 	def __ge__(self, other):
 		return (
 			isinstance(other, int) and self.value >= other
-			or isinstance(other, self.__class__) and self.value == other.value
+			or isinstance(other, self.__class__) and self.value >= other.value
 		)
 
 

@@ -1,4 +1,4 @@
-# Generated from /home/biggenerals/PycharmProjects/mtgorp/mtgorp/db/attributeparse/manacost/manacost_grammar.g4 by ANTLR 4.7
+# Generated from /home/biggenerals/PycharmProjects/mtgorp/mtgorp/tools/parsing/manacost/manacost_grammar.g4 by ANTLR 4.7
 from antlr4 import *
 if __name__ is not None and "." in __name__:
     from .manacost_grammarParser import manacost_grammarParser
@@ -8,12 +8,21 @@ else:
 # This class defines a complete listener for a parse tree produced by manacost_grammarParser.
 class manacost_grammarListener(ParseTreeListener):
 
-    # Enter a parse tree produced by manacost_grammarParser#start.
-    def enterStart(self, ctx:manacost_grammarParser.StartContext):
+    # Enter a parse tree produced by manacost_grammarParser#Empty.
+    def enterEmpty(self, ctx:manacost_grammarParser.EmptyContext):
         pass
 
-    # Exit a parse tree produced by manacost_grammarParser#start.
-    def exitStart(self, ctx:manacost_grammarParser.StartContext):
+    # Exit a parse tree produced by manacost_grammarParser#Empty.
+    def exitEmpty(self, ctx:manacost_grammarParser.EmptyContext):
+        pass
+
+
+    # Enter a parse tree produced by manacost_grammarParser#NonEmpty.
+    def enterNonEmpty(self, ctx:manacost_grammarParser.NonEmptyContext):
+        pass
+
+    # Exit a parse tree produced by manacost_grammarParser#NonEmpty.
+    def exitNonEmpty(self, ctx:manacost_grammarParser.NonEmptyContext):
         pass
 
 

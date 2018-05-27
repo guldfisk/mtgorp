@@ -1,6 +1,8 @@
 import typing as t
 from abc import ABCMeta
 
+from lazy_property import LazyProperty
+
 import mtgorp.models.persistent.attributes.colors as cols
 from mtgorp.models.persistent.attributes.colors import Color
 from mtgorp.utilities.containers import HashableMultiset
@@ -149,13 +151,25 @@ class ManaCost(object):
 	def cmc(self) -> int:
 		return sum(atom.cmc_value for atom in self._atoms)
 	
-	@property
+	@LazyProperty
 	def colors(self) -> t.FrozenSet[cols.Color]:
 		return frozenset(set.union(*(set(atom.associations) for atom in self._atoms)))
 	
 	def __eq__(self, other):
 		return isinstance(other, ManaCost) and self._atoms == other._atoms
-	
+
+	def __lt__(self, other):
+		return isinstance(other, ManaCost) and self._atoms < other._atoms
+
+	def __le__(self, other):
+		return isinstance(other, ManaCost) and self._atoms <= other._atoms
+
+	def __gt__(self, other):
+		return isinstance(other, ManaCost) and self._atoms > other._atoms
+
+	def __ge__(self, other):
+		return isinstance(other, ManaCost) and self._atoms >= other._atoms
+
 	def __hash__(self):
 		return hash((self.__class__, self._atoms))
 	
@@ -185,15 +199,6 @@ class ManaCost(object):
 	
 	def __len__(self):
 		return self._atoms.__len__()
-	
-	def __lt__(self, other):
-		s, o = sorted(self), sorted(other)
-		for i in range(min(len(s), len(o))):
-			if s[i] < o[i]:
-				return True
-			if s[i] > o[i]:
-				return False
-		return len(s) < len(o)
 	
 	def __contains__(self, item):
 		if isinstance(item, ManaCost):

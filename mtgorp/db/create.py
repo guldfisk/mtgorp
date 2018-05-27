@@ -5,13 +5,17 @@ import sys
 import re
 import typing as t
 
+from orp.database import Table
+from orp.persist import PicklePersistor
+
 from mtgorp.managejson import paths, update
+from mtgorp.db.database import CardDatabase
 from mtgorp.db.attributeparse import (
-	typeline, color, powertoughness, rairty, border, layout, boosterkey, loyalty, manacost
+	typeline, color, powertoughness, rarity, border, layout, boosterkey, loyalty, manacost
 )
 from mtgorp.db.attributeparse.exceptions import AttributeParseException
 from mtgorp.models.persistent.attributes.layout import Layout
-from mtgorp.models.persistent.attributes.flags import Flag
+from mtgorp.models.persistent.attributes.flags import Flag, Flags
 from mtgorp.models.persistent.card import Card
 from mtgorp.models.persistent.cardboard import Cardboard
 from mtgorp.models.persistent.printing import Printing
@@ -20,8 +24,6 @@ from mtgorp.models.persistent.block import Block
 from mtgorp.models.persistent.expansion import Expansion
 from mtgorp.db.limited.boosterinformation import BoosterInformation
 from mtgorp.models.limited.boostergen import ExpansionCollection
-from orp.database import Table
-from orp.persist import PicklePersistor
 
 
 class _CardParser(object):
@@ -57,7 +59,7 @@ class _CardParser(object):
 			oracle_text = re.sub('\(.*?\)', '', raw_card.get('text', ''), flags=re.IGNORECASE),
 			power_toughness = pt,
 			loyalty = (
-				loyalty.Parser.parse(raw_card['loyalty'])
+				loyalty.Parser.parse(str(raw_card['loyalty']))
 				if 'loyalty' in raw_card else
 				None
 			),
@@ -208,9 +210,9 @@ class _PrintingParser(object):
 				front_flavor = raw_printing.get('flavor', None),
 				back_artist = back_artist,
 				back_flavor = back_flavor,
-				rarity = rairty.Parser.parse(raw_printing['rarity']) if 'rarity' in raw_printing else None,
+				rarity = rarity.Parser.parse(raw_printing['rarity']) if 'rarity' in raw_printing else None,
 				in_booster = in_booster,
-				flags = tuple(flags),
+				flags = Flags(flags),
 			)
 
 		except KeyError:
@@ -305,49 +307,6 @@ class _ExpansionParser(object):
 					main = expansion,
 					basics = expansion if expansion.block is None else expansion.block.expansions_chronologically[0],
 				)
-
-
-class CardDatabase(object):
-
-	def __init__(
-		self,
-		cards: Table,
-		cardboards: Table,
-		printings: Table,
-		artists: Table,
-		blocks: Table,
-		expansions: Table,
-	):
-		self._cards = cards
-		self._cardboards = cardboards
-		self._printings = printings
-		self._artists = artists
-		self._blocks = blocks
-		self._expansions = expansions
-
-	@property
-	def cards(self) -> t.Dict[str, Card]:
-		return self._cards
-
-	@property
-	def cardboards(self) -> t.Dict[str, Cardboard]:
-		return self._cardboards
-
-	@property
-	def printings(self) -> t.Dict[int, Printing]:
-		return self._printings
-
-	@property
-	def artists(self) -> t.Dict[str, Artist]:
-		return self._artists
-
-	@property
-	def blocks(self) -> t.Dict[str, Block]:
-		return self._blocks
-
-	@property
-	def expansions(self) -> t.Dict[str, Expansion]:
-		return self._expansions
 
 
 class DatabaseCreator(object):

@@ -1,7 +1,10 @@
 grammar manacost_grammar;
 
 
-start : mana_cost EOF;
+start :
+    EOF #Empty
+    | mana_cost EOF #NonEmpty
+;
 
 mana_cost :
     mana_cost_atom #Atom

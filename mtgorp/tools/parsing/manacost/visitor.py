@@ -18,7 +18,10 @@ class ManaCostBuilder(list):
 
 class ManaCostVisitor(manacost_grammarVisitor):
 
-	def visitStart(self, ctx: manacost_grammarParser.StartContext):
+	def visitEmpty(self, ctx: manacost_grammarParser.EmptyContext):
+		return ManaCostBuilder([])
+
+	def visitNonEmpty(self, ctx: manacost_grammarParser.NonEmptyContext):
 		return self.visit(ctx.mana_cost())
 
 	def visitAtomManaCost(self, ctx:manacost_grammarParser.AtomManaCostContext):

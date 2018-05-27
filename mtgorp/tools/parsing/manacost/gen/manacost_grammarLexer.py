@@ -1,4 +1,4 @@
-# Generated from /home/biggenerals/PycharmProjects/mtgorp/mtgorp/db/attributeparse/manacost/manacost_grammar.g4 by ANTLR 4.7
+# Generated from /home/biggenerals/PycharmProjects/mtgorp/mtgorp/tools/parsing/manacost/manacost_grammar.g4 by ANTLR 4.7
 from antlr4 import *
 from io import StringIO
 from typing.io import TextIO

@@ -457,6 +457,30 @@ class TypeLine(object):
 			and self._types == other.types
 		)
 
+	def __gt__(self, other):
+		return (
+			isinstance(other, TypeLine)
+			and self._types > other.types
+		)
+
+	def __ge__(self, other):
+		return (
+			isinstance(other, TypeLine)
+			and self._types >= other.types
+		)
+
+	def __lt__(self, other):
+		return (
+			isinstance(other, TypeLine)
+			and self._types < other.types
+		)
+
+	def __le__(self, other):
+		return (
+			isinstance(other, TypeLine)
+			and self._types <= other.types
+		)
+
 	def __hash__(self):
 		return hash(self._types)
 
@@ -486,7 +510,9 @@ class TypeLine(object):
 		return self._types.__iter__()
 
 	def __contains__(self, item):
-		return item in self.__iter__()
+		if isinstance(item, self.__class__):
+			return item._types.issubset(self._types)
+		return item in self._types
 
 	@property
 	def types(self) -> t.AbstractSet[BaseCardType]:
