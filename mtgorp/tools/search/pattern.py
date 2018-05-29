@@ -493,18 +493,32 @@ class Not(Matchable):
 		)
 
 
+class _NotDescriptor(object):
+
+	def __get__(self, instance, owner) -> '_CheckerBuilder':
+		instance._negative = True
+		return instance
+
+
 class _CheckerBuilder(object):
 
 	def __init__(self, owner: '_ExtractorBuilder', checker: t.Type[AttributeMatch]):
-		self.owner = owner
-		self.checker = checker
+		self._owner = owner
+		self._checker = checker
+		self._negative = False
 
 	def __call__(self, value):
-		self.owner.owner._add(self.checker(self.owner.extractor, value))
-		return self.owner.owner
+		if self._negative:
+			self._owner.owner.add(Not(self._checker(self._owner.extractor, value)))
+		else:
+			self._owner.owner.add(self._checker(self._owner.extractor, value))
+		return self._owner.owner
+
+	no = _NotDescriptor()
 
 
 class _CheckerDescriptor(object):
+
 	def __init__(self, checker: t.Type[AttributeMatch]):
 		self.checker = checker
 
@@ -515,9 +529,11 @@ class _CheckerDescriptor(object):
 
 
 class _ExtractorBuilder(object):
+
 	def __init__(self, owner: 'PatternBuilder', extractor: t.Type[Extractor]):
 		self.owner = owner
 		self.extractor = extractor
+
 	equals = _CheckerDescriptor(Equals) #type: _CheckerBuilder
 	greater_than = _CheckerDescriptor(GreaterThan) #type: _CheckerBuilder
 	greater_than_or_equals = _CheckerDescriptor(GreaterThanOrEquals) #type: _CheckerBuilder
@@ -532,8 +548,9 @@ class PatternBuilder(object, metaclass=ABCMeta):
 	def __init__(self):
 		self._set = set()
 
-	def _add(self, checkable: Matchable):
+	def add(self, checkable: Matchable) -> 'PatternBuilder':
 		self._set.add(checkable)
+		return self
 
 	@property
 	@abstractmethod
@@ -619,6 +636,10 @@ class PatternBuilder(object, metaclass=ABCMeta):
 
 class PrintingPatternBuilder(PatternBuilder):
 
+	def add(self, checkable: Matchable) -> 'PrintingPatternBuilder':
+		self._set.add(checkable)
+		return self
+
 	@property
 	def name(self) -> _ExtractorBuilder:
 		return _ExtractorBuilder(self, PrintingNameExtractor)
@@ -681,6 +702,10 @@ class PrintingPatternBuilder(PatternBuilder):
 
 
 class CardboardPatternBuilder(PatternBuilder):
+
+	def add(self, checkable: Matchable) -> 'CardboardPatternBuilder':
+		self._set.add(checkable)
+		return self
 
 	@property
 	def name(self) -> _ExtractorBuilder:
@@ -763,25 +788,25 @@ def test():
 	# 	tuple(another_pattern.matches(db.printings.values()))
 	# )
 
-	third_pattern = All(
-		{
-			# Any({Equals(PrintingPowerExtractor, 7), Equals(PrintingToughnessExtractor, 10)}),
-			# Equals(PrintingCMCExtractor, 7),
-			# Not(Contains(PrintingManaCostExtractor, manacosts.ONE_GREEN)),
-			# Contains(PrintingFlagsExtractor, Flags((Flag.DRAFT_MATTERS,))),
-			Equals(PrintingExpansionExtractor, db.expansions['AKH'])
-		}
-	)
+	pattern = CardboardPatternBuilder().expansion.equals.no(db.expansions['AKH']).all()
 
+	# third_pattern = All(
+	# 	{
+	# 		# Any({Equals(PrintingPowerExtractor, 7), Equals(PrintingToughnessExtractor, 10)}),
+	# 		# Equals(PrintingCMCExtractor, 7),
+	# 		# Not(Contains(PrintingManaCostExtractor, manacosts.ONE_GREEN)),
+	# 		# Contains(PrintingFlagsExtractor, Flags((Flag.DRAFT_MATTERS,))),
+	# 		Equals(PrintingExpansionExtractor, db.expansions['AKH'])
+	# 	}
+	# )
+	#
 	print(
 		tuple(
-			third_pattern.matches(db.printings.values())
+			pattern.matches(db.cardboards.values())
 		)
 	)
 
-	print(
-		third_pattern,
-	)
+	print(pattern)
 
 if __name__ == '__main__':
 	test()

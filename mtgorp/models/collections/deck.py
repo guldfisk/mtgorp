@@ -1,16 +1,13 @@
 import typing as t
 
-import json
-from xml.etree import ElementTree
-
 from mtgorp.models.persistent.printing import Printing
 from mtgorp.tools.search.pattern import Pattern, PrintingPatternBuilder
 from mtgorp.models.persistent.attributes import typeline
+from mtgorp.utilities.containers import HashableMultiset, Multiset
+from mtgorp.models.collections.serilization.serializeable import Serializeable, model_tree, SerializationException
 
-from mtgorp.utilities.containers import HashableMultiset
 
-
-class Deck(object):
+class Deck(Serializeable):
 	
 	def __init__(self, maindeck: t.Iterable[Printing], sideboard: t.Iterable[Printing] = None):
 		self._maindeck = (
@@ -45,49 +42,97 @@ class Deck(object):
 		return self.seventy_five.__iter__()
 	
 	def __eq__(self, other) -> bool:
-		return isinstance(other, Deck) and other.seventy_five == self.seventy_five
+		return (
+			isinstance(other, Deck)
+			and self._maindeck == other.maindeck
+			and self._sideboard == other.sideboard
+		)
 	
 	def __hash__(self) -> int:
 		return hash(self.seventy_five)
+
+	def __repr__(self) -> str:
+		return f'{self.__class__.__name__}({len(self._maindeck)}, {len(self._sideboard)})'
+
+	def to_model_tree(self) -> model_tree:
+		return {
+			'maindeck': self._maindeck,
+			'sideboard': self._sideboard,
+		}
+
+	@classmethod
+	def from_model_tree(cls, tree: model_tree) -> 'Deck':
+		try:
+			return Deck(
+				tree['maindeck'],
+				tree.get('sideboard', None),
+			)
+		except KeyError:
+			raise SerializationException()
+
+	# def to_xml(self) -> str:
+	# 	deck = ElementTree.Element('deck')
+	# 	maindeck = ElementTree.SubElement(deck, 'maindeck')
+	# 	for printing in self._maindeck:
+	# 		ElementTree.SubElement(maindeck, str(printing.id))
+	# 	sideboard = ElementTree.SubElement(deck, 'sideboard')
+	# 	for printing in self._sideboard:
+	# 		ElementTree.SubElement(sideboard, str(printing.id))
+	# 	return ElementTree.tostring(deck)
 	
-	def to_json(self) -> str:
-		return json.dumps(
-			{
-				'maindeck': tuple(printing.id for printing in self._maindeck),
-				'sideboard': tuple(printing.id for printing in self._sideboard),
-			}
-		)
-	
-	def to_xml(self) -> str:
-		deck = ElementTree.Element('deck')
-		maindeck = ElementTree.SubElement(deck, 'maindeck')
-		for printing in self._maindeck:
-			ElementTree.SubElement(maindeck, str(printing.id))
-		sideboard = ElementTree.SubElement(deck, 'sideboard')
-		for printing in self._sideboard:
-			ElementTree.SubElement(sideboard, str(printing.id))
-		return ElementTree.tostring(deck)
-	
-	@staticmethod
+	@classmethod
 	def _groupify(
-			printings: t.Iterable[Printing],
-			patterns: t.Iterable[Pattern],
-	) -> t.List[t.List[Printing]]:
+		cls,
+		printings: t.Iterable[Printing],
+		patterns: t.Iterable[Pattern],
+	) -> t.List[Multiset[Printing]]:
+
 		_printings = list(printings)
 		out = []
+
 		for pattern in patterns:
-			matches = []
+			matches = Multiset()
 			i = 0
 			while i <len(_printings):
 				if pattern.match(_printings[i]):
-					matches.append(_printings.pop(i))
+					matches.add(_printings.pop(i))
 				else:
 					i += 1
 			out.append(matches)
+
+		out.append(Multiset(_printings))
+
 		return out
+
 	_CREATURE = PrintingPatternBuilder().types.contains(typeline.CREATURE).all()
-	_NON_CREATURE = PrintingPatternBuilder().types.contains(typeline.CREATURE).all()
-	# def to_named_list(self) -> :
-	# 	return '\n'.join(
-	# 		(self.maindeck.items()
-	# 	)
+	_NON_CREATURE_NON_LAND = (
+		PrintingPatternBuilder()
+			.types
+			.contains
+			.no(typeline.CREATURE)
+			.types
+			.contains
+			.no(typeline.LAND)
+			.all()
+	)
+
+	@classmethod
+	def named_list(cls, printings: Multiset[Printing]) -> str:
+		return '\n'.join(
+			f'{multiplicity}x [{printing.expansion.code}] {printing.cardboard.name}'
+			for printing, multiplicity in
+			printings.items()
+		)
+
+	def to_list(self) -> str:
+		return '\n\n'.join(
+			self.named_list(group)
+			for group in
+			self._groupify(
+				self.maindeck,
+				(
+					self._CREATURE,
+					self._NON_CREATURE_NON_LAND,
+				)
+			)
+		)
