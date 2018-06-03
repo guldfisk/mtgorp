@@ -7,7 +7,7 @@ from orp.database import Model, PrimaryKey, Key
 from orp.relationships import Many
 
 from mtgorp.models.persistent.attributes.layout import Layout
-from mtgorp.models.interfaces import Card, Expansion, Printing
+from mtgorp.models.interfaces import Card, Expansion, Printing, Block
 from mtgorp.models.interfaces import Side as _Side
 from mtgorp.models.interfaces import Cardboard as _Cardboard
 
@@ -122,16 +122,33 @@ class Cardboard(Model, _Cardboard):
 	def from_expansion(self, expansion: t.Union[Expansion, str]) -> Printing:
 		if isinstance(expansion, Expansion):
 			for printing in self.printings:
-				if printing.expansion==expansion:
+				if printing.expansion == expansion:
 					return printing
 		else:
 			for printing in self.printings:
-				if printing.expansion.code==expansion:
+				if printing.expansion.code == expansion:
 					return printing
 
 		raise KeyError(
 			'{} not printed in {}'.format(
 				self,
 				expansion,
+			)
+		)
+
+	def from_block(self, block: t.Union[Block, str]) -> Printing:
+		if isinstance(block, Block):
+			for printing in self.printings:
+				if printing.expansion.block == block:
+					return printing
+		else:
+			for printing in self.printings:
+				if printing.expansion.block is not None and printing.expansion.block.name == block:
+					return printing
+
+		raise KeyError(
+			'{} not printed in {}'.format(
+				self,
+				block,
 			)
 		)

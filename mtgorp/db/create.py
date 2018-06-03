@@ -96,7 +96,7 @@ class _CardboardParser(object):
 					)
 
 			elif raw_card_layout == Layout.MELD:
-				if name in raw_card['names'][0:1]:
+				if name in raw_card['names'][0:2]:
 					return (
 						(name,),
 						(raw_card['names'][-1],),
@@ -117,6 +117,7 @@ class _CardboardParser(object):
 				back_cards = tuple(cards[name] for name in back_names),
 				layout = layout.Parser.parse(raw_card['layout']),
 			)
+
 		except KeyError:
 			raise AttributeParseException()
 

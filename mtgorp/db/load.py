@@ -11,8 +11,8 @@ DB_PATH = os.path.join(paths.APP_DATA_PATH, 'db')
 
 class Loader(object):
 
-	@staticmethod
-	def load() -> CardDatabase:
+	@classmethod
+	def load(cls) -> CardDatabase:
 		return PicklePersistor(
 			os.path.join(paths.APP_DATA_PATH, 'db')
 		).load()

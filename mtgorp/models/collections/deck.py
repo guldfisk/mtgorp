@@ -62,13 +62,10 @@ class Deck(Serializeable):
 
 	@classmethod
 	def from_model_tree(cls, tree: model_tree) -> 'Deck':
-		try:
-			return Deck(
-				tree['maindeck'],
-				tree.get('sideboard', None),
-			)
-		except KeyError:
-			raise SerializationException()
+		return Deck(
+			tree['maindeck'],
+			tree.get('sideboard', None),
+		)
 
 	# def to_xml(self) -> str:
 	# 	deck = ElementTree.Element('deck')

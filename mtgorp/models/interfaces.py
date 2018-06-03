@@ -155,7 +155,11 @@ class Cardboard(ABC):
 		pass
 
 	@abstractmethod
-	def from_expansion(self, expansion: 't.Union[Expansion, str]') -> 'Printing':
+	def from_expansion(self, expansion: t.Union['Expansion', str]) -> 'Printing':
+		pass
+
+	@abstractmethod
+	def from_block(self, block: t.Union['Block', str]) -> 'Printing':
 		pass
 
 

@@ -54,14 +54,11 @@ class Pool(Serializeable):
 
 	@classmethod
 	def from_model_tree(cls, tree: model_tree) -> 'Pool':
-		try:
-			return Pool(
-				tree['printings'],
-				(
-					Deck.from_model_tree(_tree)
-					for _tree in
-					tree.get('decks')
-				)
+		return Pool(
+			tree['printings'],
+			(
+				Deck.from_model_tree(_tree)
+				for _tree in
+				tree.get('decks', ())
 			)
-		except KeyError:
-			raise SerializationException()
+		)
