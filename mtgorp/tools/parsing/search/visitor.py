@@ -89,8 +89,12 @@ class SearchVisitor(search_grammarVisitor):
 
 	def visitNameRestriction(self, ctx: search_grammarParser.NameRestrictionContext):
 		value = self.visit(ctx.value())
-		if issubclass(value, p.Extractor) and not value.extraction_type == str:
+
+		if not isinstance(value, str) and issubclass(value, p.Extractor) and not value.extraction_type == str:
 			raise TypeParseException('Mismatched dynamic value type')
+		else:
+			value = value.lower()
+
 		return (
 			(
 				p.Contains
@@ -103,7 +107,7 @@ class SearchVisitor(search_grammarVisitor):
 					if self._target == PatternTarget.CARDBOARD else
 					p.PrintingNameExtractor
 				),
-				value if issubclass(value, p.Extractor) else value.lower()
+				value,
 			)
 		)
 
