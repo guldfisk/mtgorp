@@ -85,7 +85,7 @@ DYNAMIC_VALUE : '@';
 NAME_CODE : [nN]|'name'|'NAME';
 TYPE_CODE : [tT]|'type'|'type';
 MANA_CODE : [mM]|'manacost'|'MANACOST';
-ORACLE_CODE : [oO]'oracle'|'ORACLE';
+ORACLE_CODE : [oO]|'oracle'|'ORACLE';
 POWER_CODE : 'power'|'POWER'|'po'|'PO';
 TOUGHNESS_CODE : [gG]|'toughness'|'TOUGHNESS'|'to'|'TO';
 LOYALTY_CODE : 'loyalty'|'LOYALTY';

@@ -36,8 +36,8 @@ class _CardParser(object):
 	def parse(cls, raw_card):
 		try:
 			name = raw_card['name']
-		except KeyError:
-			raise AttributeParseException()
+		except KeyError as e:
+			raise AttributeParseException(e)
 
 		power, toughness = raw_card.get('power', None), raw_card.get('toughness', None)
 
@@ -81,7 +81,11 @@ class _CardboardParser(object):
 					(),
 				)
 
-			elif raw_card_layout == Layout.SPLIT or raw_card_layout == Layout.FLIP or raw_card_layout == Layout.AFTERMATH:
+			elif (
+				raw_card_layout == Layout.SPLIT
+				or raw_card_layout == Layout.FLIP
+				or raw_card_layout == Layout.AFTERMATH
+			):
 				if name == raw_card['names'][0]:
 					return (
 						tuple(n for n in raw_card['names']),
@@ -102,10 +106,10 @@ class _CardboardParser(object):
 						(raw_card['names'][-1],),
 					)
 
-			raise AttributeParseException()
+			raise AttributeParseException('Unknown layout')
 
-		except KeyError:
-			raise AttributeParseException()
+		except KeyError as e:
+			raise AttributeParseException(e)
 
 	@classmethod
 	def parse(cls, raw_card, cards: Table):
@@ -118,8 +122,8 @@ class _CardboardParser(object):
 				layout = layout.Parser.parse(raw_card['layout']),
 			)
 
-		except KeyError:
-			raise AttributeParseException()
+		except KeyError as e:
+			raise AttributeParseException(e)
 
 
 class _ArtistParser(object):
@@ -142,19 +146,20 @@ class _PrintingParser(object):
 		for printing in raw_printings:
 			if printing.get('name', '') == name:
 				return printing
-		raise AttributeParseException()
+		raise AttributeParseException(f'No printing called "{name}"')
 
 	@classmethod
 	def parse(cls, raw_printing, raw_printings, expansion: Expansion, artists: Table, cardboards: Table):
 		try:
 			name = raw_printing['name']
+
 			front_names, back_names = _CardboardParser.get_cardboard_card_names(raw_printing)
 			cardboard = cardboards[
 				Cardboard.calc_name(front_names + back_names)
 			]
 
 			if name != cardboard.front_card.name:
-				raise AttributeParseException()
+				raise AttributeParseException('Printing not front')
 
 			if cardboard.back_card is not None:
 				raw_back_printing = cls._find_printing_from_name(cardboard.back_card.name, raw_printings)
@@ -192,18 +197,20 @@ class _PrintingParser(object):
 					None,
 				),
 			)
-			if collector_number is None:
-				raise AttributeParseException()
 
 			return Printing(
 				id = raw_printing['multiverseid'],
 				expansion = expansion,
-				collector_number = int(
-					re.sub(
-						'[^\d]',
-						'',
-						collector_number,
-						flags=re.IGNORECASE
+				collector_number = (
+					-1
+					if collector_number is None else
+					int(
+						re.sub(
+							'[^\d]',
+							'',
+							collector_number,
+							flags=re.IGNORECASE
+						)
 					)
 				),
 				cardboard = cardboard,
@@ -216,8 +223,8 @@ class _PrintingParser(object):
 				flags = Flags(flags),
 			)
 
-		except KeyError:
-			raise AttributeParseException()
+		except KeyError as e:
+			raise AttributeParseException(e)
 
 
 class _BlockParser(object):
@@ -280,9 +287,11 @@ class _ExpansionParser(object):
 					)
 				except AttributeParseException:
 					pass
+
 			return expansion
-		except KeyError:
-			raise AttributeParseException()
+
+		except KeyError as e:
+			raise AttributeParseException(e)
 
 	@classmethod
 	def post_parse(cls, expansions: t.Dict[str, Expansion]):

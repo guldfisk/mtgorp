@@ -90,7 +90,7 @@ class SearchVisitor(search_grammarVisitor):
 	def visitNameRestriction(self, ctx: search_grammarParser.NameRestrictionContext):
 		value = self.visit(ctx.value())
 		if issubclass(value, p.Extractor) and not value.extraction_type == str:
-			raise TypeParseException()
+			raise TypeParseException('Mismatched dynamic value type')
 		return (
 			(
 				p.Contains
@@ -133,7 +133,7 @@ class SearchVisitor(search_grammarVisitor):
 					if self._target == PatternTarget.CARDBOARD else
 					p.PrintingManaCostExtractor
 				),
-				self._mana_cost_parser.parse(self.visit(ctx.value()))
+				self._mana_cost_parser.parse(self.visit(ctx.static_value()))
 			)
 		)
 
@@ -142,7 +142,7 @@ class SearchVisitor(search_grammarVisitor):
 
 		if isinstance(value, type) and issubclass(value, p.Extractor):
 			if not value.extraction_type == str:
-				raise TypeParseException()
+				raise TypeParseException('Mismatched dynamic value type')
 		else:
 			value = value.lower()
 
@@ -163,8 +163,8 @@ class SearchVisitor(search_grammarVisitor):
 		value = self.visit(ctx.value())
 
 		if isinstance(value, type) and issubclass(value, p.Extractor):
-			if value.extraction_type in (int, PTValue):
-				raise TypeParseException()
+			if not value.extraction_type in (int, PTValue):
+				raise TypeParseException('Mismatched dynamic value type')
 		else:
 			value = PTValueParser.parse(value)
 
@@ -186,7 +186,7 @@ class SearchVisitor(search_grammarVisitor):
 
 		if isinstance(value, type) and issubclass(value, p.Extractor):
 			if not value.extraction_type in (int, PTValue):
-				raise TypeParseException()
+				raise TypeParseException('Mismatched dynamic value type')
 		else:
 			value = PTValueParser.parse(value)
 
@@ -208,7 +208,7 @@ class SearchVisitor(search_grammarVisitor):
 
 		if isinstance(value, type) and issubclass(value, p.Extractor):
 			if not value.extraction_type in (int, PTValue):
-				raise TypeParseException()
+				raise TypeParseException('Mismatched dynamic value type')
 		else:
 			value = PTValueParser.parse(value)
 
@@ -230,7 +230,7 @@ class SearchVisitor(search_grammarVisitor):
 
 		if isinstance(value, type) and issubclass(value, p.Extractor):
 			if not value.extraction_type == str:
-				raise TypeParseException()
+				raise TypeParseException('Mismatched dynamic value type')
 		else:
 			value = value.lower()
 
@@ -251,7 +251,7 @@ class SearchVisitor(search_grammarVisitor):
 		if ctx.UNSIGNED_INTEGER() is None:
 			value = self.visit(ctx.dynamic_value())
 			if not value.extraction_type in (int, PTValue):
-				raise TypeParseException()
+				raise TypeParseException('Mismatched dynamic value type')
 		else:
 			value = int(str(ctx.UNSIGNED_INTEGER()))
 
@@ -287,7 +287,7 @@ class SearchVisitor(search_grammarVisitor):
 
 		if isinstance(value, type) and issubclass(value, p.Extractor):
 			if not value.extraction_type == str:
-				raise TypeParseException()
+				raise TypeParseException('Mismatched dynamic value type')
 
 		return (
 			(
@@ -307,7 +307,7 @@ class SearchVisitor(search_grammarVisitor):
 
 		if isinstance(value, type) and issubclass(value, p.Extractor):
 			if not value.extraction_type == str:
-				raise TypeParseException()
+				raise TypeParseException('Mismatched dynamic value type')
 
 		return (
 			(
@@ -327,7 +327,7 @@ class SearchVisitor(search_grammarVisitor):
 
 		if isinstance(value, type) and issubclass(value, p.Extractor):
 			if not value.extraction_type == str:
-				raise TypeParseException()
+				raise TypeParseException('Mismatched dynamic value type')
 
 		return (
 			(
@@ -347,7 +347,7 @@ class SearchVisitor(search_grammarVisitor):
 
 		if isinstance(value, type) and issubclass(value, p.Extractor):
 			if not value.extraction_type == str:
-				raise TypeParseException()
+				raise TypeParseException('Mismatched dynamic value type')
 
 		return (
 			(

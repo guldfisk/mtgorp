@@ -23,3 +23,12 @@ class Serializeable(ABC):
 	@abstractmethod
 	def from_model_tree(cls, tree: model_tree) -> 'Serializeable':
 		pass
+
+	@abstractmethod
+	def __hash__(self) -> int:
+		return super().__hash__()
+
+	@abstractmethod
+	def __eq__(self, other: object) -> bool:
+		return super().__eq__(other)
+

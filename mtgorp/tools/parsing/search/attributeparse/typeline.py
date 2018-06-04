@@ -36,4 +36,4 @@ class TypeLineParser(object):
 			_type = cls.type_map.get(s.lower())
 			types.append(cls._unique_type(s.lower()) if _type is None else _type)
 
-		return TypeLine(types)
+		return TypeLine(*types)
