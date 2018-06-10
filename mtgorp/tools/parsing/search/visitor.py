@@ -3,6 +3,7 @@ from enum import Enum
 from mtgorp.db.database import CardDatabase
 from mtgorp.models.persistent.attributes.powertoughness import PTValue
 from mtgorp.tools.search import pattern as p
+from mtgorp.tools.search import extraction as e
 from mtgorp.tools.parsing.manacost.parse import ManaCostParser
 from mtgorp.tools.parsing.search.attributeparse.typeline import TypeLineParser
 from mtgorp.tools.parsing.search.attributeparse.ptvalue import PTValueParser
@@ -20,11 +21,6 @@ from mtgorp.tools.parsing.exceptions import ParseException
 
 class TypeParseException(ParseException):
 	pass
-
-
-class PatternTarget(Enum):
-	CARDBOARD = 0
-	PRINTING = 1
 
 
 class SearchPatternBuilder(list):
@@ -48,29 +44,15 @@ class _Chain(list):
 class SearchVisitor(search_grammarVisitor):
 
 	def __init__(self, db: CardDatabase):
-		self._target = PatternTarget.CARDBOARD #type: PatternTarget
 		self._mana_cost_parser = ManaCostParser()
 		self._expansion_parser = ExpansionParser(db)
 		self._block_parser = BlockParser(db)
 
 	def visitStart(self, ctx: search_grammarParser.StartContext):
-		pattern = self.visit(ctx.pattern())
+		pattern = self.visit(ctx.operation())
 		if not isinstance(pattern, SearchPatternBuilder):
-			return AllBuilder([pattern]), self._target
-		return pattern, self._target
-
-	def visitDefaultPattern(self, ctx: search_grammarParser.DefaultPatternContext):
-		return self.visit(ctx.operation())
-
-	def visitMatchTypePattern(self, ctx: search_grammarParser.MatchTypePatternContext):
-		self.visit(ctx.match_type())
-		return self.visit(ctx.operation())
-
-	def visitCardboardCode(self, ctx: search_grammarParser.CardboardCodeContext):
-		self._target = PatternTarget.CARDBOARD
-
-	def visitPrintingCode(self, ctx: search_grammarParser.PrintingCodeContext):
-		self._target = PatternTarget.PRINTING
+			return AllBuilder([pattern])
+		return pattern
 
 	def visitNot(self, ctx: search_grammarParser.NotContext):
 		return p.Not(self.visit(ctx.operation()))
@@ -90,7 +72,7 @@ class SearchVisitor(search_grammarVisitor):
 	def visitNameRestriction(self, ctx: search_grammarParser.NameRestrictionContext):
 		value = self.visit(ctx.value())
 
-		if not isinstance(value, str) and issubclass(value, p.Extractor) and not value.extraction_type == str:
+		if not isinstance(value, str) and not value.extraction_type == str:
 			raise TypeParseException('Mismatched dynamic value type')
 		else:
 			value = value.lower()
@@ -102,11 +84,7 @@ class SearchVisitor(search_grammarVisitor):
 				self.visit(ctx.operator())
 			)
 			(
-				(
-					p.CardboardNameExtractor
-					if self._target == PatternTarget.CARDBOARD else
-					p.PrintingNameExtractor
-				),
+				e.NameExtractor,
 				value,
 			)
 		)
@@ -117,11 +95,7 @@ class SearchVisitor(search_grammarVisitor):
 				self.visit(ctx.operator())
 			)
 				(
-				(
-					p.CardboardTypesExtractor
-					if self._target == PatternTarget.CARDBOARD else
-					p.PrintingTypesExtractor
-				),
+				e.TypeLineExtractor,
 				TypeLineParser.parse(self.visit(ctx.value_chain()))
 			)
 		)
@@ -132,11 +106,7 @@ class SearchVisitor(search_grammarVisitor):
 				self.visit(ctx.operator())
 			)
 				(
-				(
-					p.CardboardManaCostExtractor
-					if self._target == PatternTarget.CARDBOARD else
-					p.PrintingManaCostExtractor
-				),
+				e.ManaCostExtractor,
 				self._mana_cost_parser.parse(self.visit(ctx.static_value()))
 			)
 		)
@@ -144,7 +114,7 @@ class SearchVisitor(search_grammarVisitor):
 	def visitOracleRestriction(self, ctx: search_grammarParser.OracleRestrictionContext):
 		value = self.visit(ctx.value())
 
-		if isinstance(value, type) and issubclass(value, p.Extractor):
+		if isinstance(value, type):
 			if not value.extraction_type == str:
 				raise TypeParseException('Mismatched dynamic value type')
 		else:
@@ -154,11 +124,7 @@ class SearchVisitor(search_grammarVisitor):
 			(
 				self.visit(ctx.operator())
 			)(
-				(
-					p.CardboardOracleExtractor
-					if self._target == PatternTarget.CARDBOARD else
-					p.PrintingOracleExtractor
-				),
+				e.OracleExtractor,
 				value,
 			)
 		)
@@ -166,7 +132,7 @@ class SearchVisitor(search_grammarVisitor):
 	def visitPowerRestriction(self, ctx: search_grammarParser.PowerRestrictionContext):
 		value = self.visit(ctx.value())
 
-		if isinstance(value, type) and issubclass(value, p.Extractor):
+		if isinstance(value, type):
 			if not value.extraction_type in (int, PTValue):
 				raise TypeParseException('Mismatched dynamic value type')
 		else:
@@ -176,19 +142,15 @@ class SearchVisitor(search_grammarVisitor):
 			(
 				self.visit(ctx.operator())
 			)(
-				(
-					p.CardboardPowerExtractor
-					if self._target == PatternTarget.CARDBOARD else
-					p.PrintingPowerExtractor
-				),
-				value
+				e.PowerExtractor,
+				value,
 			)
 		)
 
 	def visitToughnessRestriction(self, ctx: search_grammarParser.ToughnessRestrictionContext):
 		value = self.visit(ctx.value())
 
-		if isinstance(value, type) and issubclass(value, p.Extractor):
+		if isinstance(value, type):
 			if not value.extraction_type in (int, PTValue):
 				raise TypeParseException('Mismatched dynamic value type')
 		else:
@@ -198,19 +160,15 @@ class SearchVisitor(search_grammarVisitor):
 			(
 				self.visit(ctx.operator())
 			)(
-				(
-					p.CardboardToughnessExtractor
-					if self._target == PatternTarget.CARDBOARD else
-					p.PrintingToughnessExtractor
-				),
-				value
+				e.ToughnessExtractor,
+				value,
 			)
 		)
 
 	def visitLoyaltyRestriction(self, ctx: search_grammarParser.LoyaltyRestrictionContext):
 		value = self.visit(ctx.value())
 
-		if isinstance(value, type) and issubclass(value, p.Extractor):
+		if isinstance(value, type):
 			if not value.extraction_type in (int, PTValue):
 				raise TypeParseException('Mismatched dynamic value type')
 		else:
@@ -220,19 +178,15 @@ class SearchVisitor(search_grammarVisitor):
 			(
 				self.visit(ctx.operator())
 			)(
-				(
-					p.CardboardLoyaltyExtractor
-					if self._target == PatternTarget.CARDBOARD else
-					p.PrintingLoyaltyExtractor
-				),
-				value
+				e.LoyaltyExtractor,
+				value,
 			)
 		)
 
 	def visitArtistRestriction(self, ctx: search_grammarParser.ArtistRestrictionContext):
 		value = self.visit(ctx.value())
 
-		if isinstance(value, type) and issubclass(value, p.Extractor):
+		if isinstance(value, type):
 			if not value.extraction_type == str:
 				raise TypeParseException('Mismatched dynamic value type')
 		else:
@@ -242,11 +196,7 @@ class SearchVisitor(search_grammarVisitor):
 			(
 				self.visit(ctx.operator())
 			)(
-				(
-					p.CardboardArtistExtractor
-					if self._target == PatternTarget.CARDBOARD else
-					p.PrintingArtistExtractor
-				),
+				e.ArtistExtractor,
 				value
 			)
 		)
@@ -263,11 +213,7 @@ class SearchVisitor(search_grammarVisitor):
 			(
 				self.visit(ctx.operator())
 			)(
-				(
-					p.CardboardCMCExtractor
-					if self._target == PatternTarget.CARDBOARD else
-					p.PrintingCMCExtractor
-				),
+				e.CmcExtractor,
 				value
 			)
 		)
@@ -277,19 +223,15 @@ class SearchVisitor(search_grammarVisitor):
 			(
 				self.visit(ctx.operator())
 			)(
-				(
-					p.CardboardFlagsExtractor
-					if self._target == PatternTarget.CARDBOARD else
-					p.PrintingFlagsExtractor
-				),
-				FlagParser.parse(self.visit(ctx.value_chain()))
+				e.FlagsExtractor,
+				FlagParser.parse(self.visit(ctx.value_chain())),
 			)
 		)
 
 	def visitRarityRestriction(self, ctx: search_grammarParser.RarityRestrictionContext):
 		value = self.visit(ctx.value())
 
-		if isinstance(value, type) and issubclass(value, p.Extractor):
+		if isinstance(value, type):
 			if not value.extraction_type == str:
 				raise TypeParseException('Mismatched dynamic value type')
 
@@ -297,11 +239,7 @@ class SearchVisitor(search_grammarVisitor):
 			(
 				p.Equals
 			)(
-				(
-					p.CardboardRarityExtractor
-					if self._target == PatternTarget.CARDBOARD else
-					p.PrintingRarityExtractor
-				),
+				e.RarityExtractor,
 				RarityParser.parse(value)
 			)
 		)
@@ -309,7 +247,7 @@ class SearchVisitor(search_grammarVisitor):
 	def visitLayoutRestriction(self, ctx: search_grammarParser.LayoutRestrictionContext):
 		value = self.visit(ctx.value())
 
-		if isinstance(value, type) and issubclass(value, p.Extractor):
+		if isinstance(value, type):
 			if not value.extraction_type == str:
 				raise TypeParseException('Mismatched dynamic value type')
 
@@ -317,19 +255,15 @@ class SearchVisitor(search_grammarVisitor):
 			(
 				p.Equals
 			)(
-				(
-					p.CardboardLayoutExtractor
-					if self._target == PatternTarget.CARDBOARD else
-					p.PrintingLayoutExtractor
-				),
-				LayoutParser.parse(value)
+				e.LayoutExtractor,
+				LayoutParser.parse(value),
 			)
 		)
 
 	def visitExpansionRestriction(self, ctx: search_grammarParser.ExpansionRestrictionContext):
 		value = self.visit(ctx.value())
 
-		if isinstance(value, type) and issubclass(value, p.Extractor):
+		if isinstance(value, type):
 			if not value.extraction_type == str:
 				raise TypeParseException('Mismatched dynamic value type')
 
@@ -337,19 +271,15 @@ class SearchVisitor(search_grammarVisitor):
 			(
 				p.Equals
 			)(
-				(
-					p.CardboardExpansionExtractor
-					if self._target == PatternTarget.CARDBOARD else
-					p.PrintingExpansionExtractor
-				),
-				self._expansion_parser.parse(value)
+				e.ExpansionExtractor,
+				self._expansion_parser.parse(value),
 			)
 		)
 
 	def visitBlockRestriction(self, ctx: search_grammarParser.BlockRestrictionContext):
 		value = self.visit(ctx.value())
 
-		if isinstance(value, type) and issubclass(value, p.Extractor):
+		if isinstance(value, type):
 			if not value.extraction_type == str:
 				raise TypeParseException('Mismatched dynamic value type')
 
@@ -357,12 +287,8 @@ class SearchVisitor(search_grammarVisitor):
 			(
 				p.Equals
 			)(
-				(
-					p.CardboardBlockExtractor
-					if self._target == PatternTarget.CARDBOARD else
-					p.PrintingBlockExtractor
-				),
-				self._block_parser.parse(value)
+				e.BlockExtractor,
+				self._block_parser.parse(value),
 			)
 		)
 
@@ -408,36 +334,22 @@ class SearchVisitor(search_grammarVisitor):
 		return p.GreaterThanOrEquals
 
 	def visitDynamicName(self, ctx: search_grammarParser.DynamicNameContext):
-		if self._target == PatternTarget.CARDBOARD:
-			return p.CardboardNameExtractor
-		return p.PrintingNameExtractor
+		return e.NameExtractor
 
 	def visitDynamicOracle(self, ctx: search_grammarParser.DynamicOracleContext):
-		if self._target == PatternTarget.CARDBOARD:
-			return p.CardboardOracleExtractor
-		return p.PrintingOracleExtractor
+		return e.OracleExtractor
 
 	def visitDynamicPower(self, ctx: search_grammarParser.DynamicPowerContext):
-		if self._target == PatternTarget.CARDBOARD:
-			return p.CardboardPowerExtractor
-		return p.PrintingPowerExtractor
+		return e.PowerExtractor
 
 	def visitDynamicToughness(self, ctx: search_grammarParser.DynamicToughnessContext):
-		if self._target == PatternTarget.CARDBOARD:
-			return p.CardboardToughnessExtractor
-		return p.PrintingToughnessExtractor
+		return e.ToughnessExtractor
 
 	def visitDynamicLoyalty(self, ctx: search_grammarParser.DynamicLoyaltyContext):
-		if self._target == PatternTarget.CARDBOARD:
-			return p.CardboardLoyaltyExtractor
-		return p.PrintingFlagsExtractor
+		return e.LoyaltyExtractor
 
 	def visitDynamicArtist(self, ctx: search_grammarParser.DynamicArtistContext):
-		if self._target == PatternTarget.CARDBOARD:
-			return p.CardboardArtistExtractor
-		return p.PrintingArtistExtractor
+		return e.ArtistExtractor
 
 	def visitDynamicCmc(self, ctx: search_grammarParser.DynamicCmcContext):
-		if self._target == PatternTarget.CARDBOARD:
-			return p.CardboardCMCExtractor
-		return p.PrintingCMCExtractor
+		return e.CmcExtractor

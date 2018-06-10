@@ -1,8 +1,6 @@
 import typing as t
 from itertools import chain
 
-from lazy_property import LazyProperty
-
 from orp.database import Model, PrimaryKey, Key
 from orp.relationships import Many
 
@@ -15,7 +13,7 @@ from mtgorp.models.interfaces import Cardboard as _Cardboard
 class OrderedMultiSet(list):
 
 	def add(self, element):
-		self.append(element)
+		super().append(element)
 
 
 class Side(_Side):
@@ -76,6 +74,8 @@ class Cardboard(Model, _Cardboard):
 
 		self._printings = Many(self, '_cardboard') #type: Many[Printing]
 
+		self._cards = None #type: t.Tuple[Card, ...]
+
 	@classmethod
 	def calc_name(cls, names) -> str:
 		return cls._SPLIT_SEPARATOR.join(names)
@@ -96,9 +96,12 @@ class Cardboard(Model, _Cardboard):
 	def back_cards(self) -> Many[Card]:
 		return self._back_cards.cards
 
-	@LazyProperty
+	@property
 	def cards(self) -> 't.Tuple[Card, ...]':
-		return tuple(self.front_cards)+tuple(self.back_cards)
+		if self._cards is None:
+			self._cards = tuple(self.front_cards)+tuple(self.back_cards)
+
+		return self._cards
 
 	@property
 	def layout(self) -> Layout:
@@ -152,3 +155,12 @@ class Cardboard(Model, _Cardboard):
 				block,
 			)
 		)
+
+	@property
+	def original_printing(self) -> 'Printing':
+		return sorted(
+			self._printings,
+			key = lambda printing:
+				printing.expansion.release_date
+		)[0]
+

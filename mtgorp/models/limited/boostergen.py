@@ -16,7 +16,7 @@ from mtgorp.models.interfaces import BoosterMap as _BoosterMap
 from mtgorp.models.interfaces import ExpansionCollection as _ExpansionCollection
 from mtgorp.models.limited.booster import Booster
 
-from mtgorp.tools.search.pattern import PrintingPatternBuilder, Pattern
+from mtgorp.tools.search.pattern import PrintingPatternBuilder, Criteria
 
 from mtgorp.utilities.containers import HashableMultiset
 
@@ -98,12 +98,12 @@ class ExpansionCollection(_ExpansionCollection):
 
 class Option(object):
 
-	def __init__(self, pattern: Pattern, collection_key: str = 'main'):
+	def __init__(self, pattern: Criteria, collection_key: str = 'main'):
 		self._pattern = pattern
 		self._collection_key = collection_key
 
 	@property
-	def pattern(self) -> Pattern:
+	def pattern(self) -> Criteria:
 		return self._pattern
 
 	@property
@@ -155,7 +155,7 @@ PREMIUM = Option(
 	'premium'
 )
 BASIC = Option(
-	PrintingPatternBuilder().types.contains(typeline.BASIC).all(),
+	PrintingPatternBuilder().type_line.contains(typeline.BASIC).all(),
 	'basics'
 )
 DRAFT_MATTERS_COMMON = Option(

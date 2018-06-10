@@ -17,42 +17,6 @@ class search_grammarListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by search_grammarParser#DefaultPattern.
-    def enterDefaultPattern(self, ctx:search_grammarParser.DefaultPatternContext):
-        pass
-
-    # Exit a parse tree produced by search_grammarParser#DefaultPattern.
-    def exitDefaultPattern(self, ctx:search_grammarParser.DefaultPatternContext):
-        pass
-
-
-    # Enter a parse tree produced by search_grammarParser#MatchTypePattern.
-    def enterMatchTypePattern(self, ctx:search_grammarParser.MatchTypePatternContext):
-        pass
-
-    # Exit a parse tree produced by search_grammarParser#MatchTypePattern.
-    def exitMatchTypePattern(self, ctx:search_grammarParser.MatchTypePatternContext):
-        pass
-
-
-    # Enter a parse tree produced by search_grammarParser#CardboardCode.
-    def enterCardboardCode(self, ctx:search_grammarParser.CardboardCodeContext):
-        pass
-
-    # Exit a parse tree produced by search_grammarParser#CardboardCode.
-    def exitCardboardCode(self, ctx:search_grammarParser.CardboardCodeContext):
-        pass
-
-
-    # Enter a parse tree produced by search_grammarParser#PrintingCode.
-    def enterPrintingCode(self, ctx:search_grammarParser.PrintingCodeContext):
-        pass
-
-    # Exit a parse tree produced by search_grammarParser#PrintingCode.
-    def exitPrintingCode(self, ctx:search_grammarParser.PrintingCodeContext):
-        pass
-
-
     # Enter a parse tree produced by search_grammarParser#Not.
     def enterNot(self, ctx:search_grammarParser.NotContext):
         pass

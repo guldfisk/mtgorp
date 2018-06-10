@@ -45,7 +45,7 @@ class Parser(parser.Parser):
 		'timeshifted common': boostergen.KeySlot((boostergen.TIMESHIFTED_COMMON,)),
 		'urza land': boostergen.KeySlot((
 			boostergen.Option(
-				PrintingPatternBuilder().types.contains(typeline.URZAS).all(),
+				PrintingPatternBuilder().type_line.contains(typeline.URZAS).all(),
 			),
 		)),
 		'timeshifted rare': boostergen.KeySlot((boostergen.TIMESHIFTED_RARE,)),

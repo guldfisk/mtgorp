@@ -162,6 +162,11 @@ class Cardboard(ABC):
 	def from_block(self, block: t.Union['Block', str]) -> 'Printing':
 		pass
 
+	@property
+	@abstractmethod
+	def original_printing(self) -> 'Printing':
+		pass
+
 
 class Face(ABC):
 

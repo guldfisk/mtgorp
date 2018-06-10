@@ -4,10 +4,11 @@ from antlr4 import CommonTokenStream, InputStream
 from antlr4.error.ErrorListener import ErrorListener
 
 from mtgorp.db.database import CardDatabase
-from mtgorp.tools.search.pattern import Any, All, Pattern
+from mtgorp.tools.search.pattern import Any, All, Criteria, Pattern
+from mtgorp.tools.search.extraction import ExtractionStrategy, CardboardStrategy
 from mtgorp.tools.parsing.search.gen.search_grammarParser import search_grammarParser
 from mtgorp.tools.parsing.search.gen.search_grammarLexer import search_grammarLexer
-from mtgorp.tools.parsing.search.visitor import SearchVisitor, AllBuilder, AnyBuilder, PatternTarget
+from mtgorp.tools.parsing.search.visitor import SearchVisitor, AllBuilder, AnyBuilder
 from mtgorp.tools.parsing.exceptions import ParseException
 
 
@@ -31,7 +32,7 @@ class SearchParser(object):
 
 
 	@classmethod
-	def _build(cls, parsed: t.Union[AllBuilder, AnyBuilder]) -> Pattern:
+	def _build(cls, parsed: t.Union[AllBuilder, AnyBuilder]) -> Criteria:
 		return (
 			All
 			if isinstance(parsed, AllBuilder) else
@@ -45,7 +46,7 @@ class SearchParser(object):
 			parsed
 		)
 
-	def parse(self, s: str) -> t.Tuple[Pattern, PatternTarget]:
+	def parse_criteria(self, s: str) -> Criteria:
 		parser = search_grammarParser(
 			CommonTokenStream(
 				search_grammarLexer(
@@ -56,6 +57,12 @@ class SearchParser(object):
 
 		parser._listeners = [SearchPatternParseListener()]
 
-		pattern_builder, target = self._visitor.visit(parser.start())
+		return self._build(
+				self._visitor.visit(parser.start())
+			)
 
-		return self._build(pattern_builder), target
+	def parse(self, s: str, strategy: t.Type[ExtractionStrategy] = CardboardStrategy) -> Pattern:
+		return Pattern(
+			self.parse_criteria(s),
+			strategy,
+		)

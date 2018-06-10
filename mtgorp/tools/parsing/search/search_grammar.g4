@@ -2,17 +2,17 @@
 grammar search_grammar;
 
 
-start : pattern EOF;
+start : operation EOF;
 
-pattern :
-    operation #DefaultPattern
-    | match_type operation #MatchTypePattern
-;
-
-match_type :
-    '#' CARDBOARD_CODE #CardboardCode
-    | '#' PRINTING_CODE #PrintingCode
-;
+//pattern :
+//    operation #DefaultPattern
+//    | match_type operation #MatchTypePattern
+//;
+//
+//match_type :
+//    '#' CARDBOARD_CODE #CardboardCode
+//    | '#' PRINTING_CODE #PrintingCode
+//;
 
 operation :
     '!' operation #Not
@@ -25,7 +25,7 @@ operation :
 
 restriction :
     value #NameRestriction
-    | NAME_CODE operator static_value #NameRestriction
+    | NAME_CODE operator value #NameRestriction
     | TYPE_CODE operator value_chain #TypeRestriction
     | MANA_CODE operator static_value #ManaRestriction
     | ORACLE_CODE operator value #OracleRestriction

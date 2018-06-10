@@ -1,7 +1,7 @@
 import typing as t
 
 from mtgorp.models.persistent.printing import Printing
-from mtgorp.tools.search.pattern import Pattern, PrintingPatternBuilder
+from mtgorp.tools.search.pattern import Criteria, PrintingPatternBuilder
 from mtgorp.models.persistent.attributes import typeline
 from mtgorp.utilities.containers import HashableMultiset, Multiset
 from mtgorp.models.collections.serilization.serializeable import Serializeable, model_tree, SerializationException
@@ -81,7 +81,7 @@ class Deck(Serializeable):
 	def _groupify(
 		cls,
 		printings: t.Iterable[Printing],
-		patterns: t.Iterable[Pattern],
+		patterns: t.Iterable[Criteria],
 	) -> t.List[Multiset[Printing]]:
 
 		_printings = list(printings)
@@ -101,13 +101,13 @@ class Deck(Serializeable):
 
 		return out
 
-	_CREATURE = PrintingPatternBuilder().types.contains(typeline.CREATURE).all()
+	_CREATURE = PrintingPatternBuilder().type_line.contains(typeline.CREATURE).all()
 	_NON_CREATURE_NON_LAND = (
 		PrintingPatternBuilder()
-			.types
+			.type_line
 			.contains
 			.no(typeline.CREATURE)
-			.types
+			.type_line
 			.contains
 			.no(typeline.LAND)
 			.all()

@@ -14,26 +14,6 @@ class search_grammarVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by search_grammarParser#DefaultPattern.
-    def visitDefaultPattern(self, ctx:search_grammarParser.DefaultPatternContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by search_grammarParser#MatchTypePattern.
-    def visitMatchTypePattern(self, ctx:search_grammarParser.MatchTypePatternContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by search_grammarParser#CardboardCode.
-    def visitCardboardCode(self, ctx:search_grammarParser.CardboardCodeContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by search_grammarParser#PrintingCode.
-    def visitPrintingCode(self, ctx:search_grammarParser.PrintingCodeContext):
-        return self.visitChildren(ctx)
-
-
     # Visit a parse tree produced by search_grammarParser#Not.
     def visitNot(self, ctx:search_grammarParser.NotContext):
         return self.visitChildren(ctx)
