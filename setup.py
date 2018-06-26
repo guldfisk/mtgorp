@@ -25,5 +25,6 @@ setup(
 		'appdirs',
 		'frozendict',
 		'requests',
+		'antlr4-python3-runtime',
 	]
 )
