@@ -16,7 +16,8 @@ from mtgorp.models.interfaces import BoosterMap as _BoosterMap
 from mtgorp.models.interfaces import ExpansionCollection as _ExpansionCollection
 from mtgorp.models.limited.booster import Booster
 
-from mtgorp.tools.search.pattern import PrintingPatternBuilder, Criteria
+from mtgorp.tools.search.pattern import CriteriaBuilder, Criteria, Pattern
+from mtgorp.tools.search.extraction import PrintingStrategy
 
 from mtgorp.utilities.containers import HashableMultiset
 
@@ -30,23 +31,6 @@ def multiset_choice(ms: BaseMultiset):
 			random.random() * cumulative_distribution[-1]
 		)
 	]
-
-
-# def sample_multiset(ms: BaseMultiset, amount: int = 1):
-# 	values, multiplicities = zip(*ms.items())
-# 	cumulative_distribution = tuple(itertools.accumulate(multiplicities))
-# 	return [
-# 		values[
-# 			bisect.bisect(
-# 				cumulative_distribution,
-# 				index,
-# 			)
-# 		] for index in
-# 		random.sample(
-# 			range(cumulative_distribution[-1]),
-# 			amount,
-# 		)
-# 	 ] #Pretty sure this can select same element twice
 
 
 class GenerateBoosterException(Exception):
@@ -98,12 +82,12 @@ class ExpansionCollection(_ExpansionCollection):
 
 class Option(object):
 
-	def __init__(self, pattern: Criteria, collection_key: str = 'main'):
-		self._pattern = pattern
+	def __init__(self, criteria: Criteria, collection_key: str = 'main'):
+		self._pattern = Pattern(criteria, PrintingStrategy)
 		self._collection_key = collection_key
 
 	@property
-	def pattern(self) -> Criteria:
+	def pattern(self) -> Pattern:
 		return self._pattern
 
 	@property
@@ -121,54 +105,54 @@ class Option(object):
 		)
 
 
-COMMON = Option(PrintingPatternBuilder().rarity.equals(Rarity.COMMON).all())
-UNCOMMON = Option(PrintingPatternBuilder().rarity.equals(Rarity.UNCOMMON).all())
-RARE = Option(PrintingPatternBuilder().rarity.equals(Rarity.RARE).all())
-MYTHIC = Option(PrintingPatternBuilder().rarity.equals(Rarity.MYTHIC).all())
-SPECIAL = Option(PrintingPatternBuilder().rarity.equals(Rarity.SPECIAL).all())
+COMMON = Option(CriteriaBuilder().rarity.equals(Rarity.COMMON).all())
+UNCOMMON = Option(CriteriaBuilder().rarity.equals(Rarity.UNCOMMON).all())
+RARE = Option(CriteriaBuilder().rarity.equals(Rarity.RARE).all())
+MYTHIC = Option(CriteriaBuilder().rarity.equals(Rarity.MYTHIC).all())
+SPECIAL = Option(CriteriaBuilder().rarity.equals(Rarity.SPECIAL).all())
 TIMESHIFTED_COMMON = Option(
-	PrintingPatternBuilder().rarity.equals(Rarity.COMMON).flags.contains(Flag.TIMESHIFTED).all(),
+	CriteriaBuilder().rarity.equals(Rarity.COMMON).flags.contains(Flag.TIMESHIFTED).all(),
 )
 TIMESHIFTED_UNCOMMON = Option(
-	PrintingPatternBuilder().rarity.equals(Rarity.UNCOMMON).flags.contains(Flag.TIMESHIFTED).all(),
+	CriteriaBuilder().rarity.equals(Rarity.UNCOMMON).flags.contains(Flag.TIMESHIFTED).all(),
 )
 TIMESHIFTED_RARE = Option(
-	PrintingPatternBuilder().rarity.equals(Rarity.RARE).flags.contains(Flag.TIMESHIFTED).all(),
+	CriteriaBuilder().rarity.equals(Rarity.RARE).flags.contains(Flag.TIMESHIFTED).all(),
 )
 TIMESHIFTED_MYTHIC = Option(
-	PrintingPatternBuilder().rarity.equals(Rarity.MYTHIC).flags.contains(Flag.TIMESHIFTED).all(),
+	CriteriaBuilder().rarity.equals(Rarity.MYTHIC).flags.contains(Flag.TIMESHIFTED).all(),
 )
 DOUBLEFACED_COMMON = Option(
-	PrintingPatternBuilder().rarity.equals(Rarity.COMMON).layout.equals(Layout.TRANSFORM).all(),
+	CriteriaBuilder().rarity.equals(Rarity.COMMON).layout.equals(Layout.TRANSFORM).all(),
 )
 DOUBLEFACED_UNCOMMON = Option(
-	PrintingPatternBuilder().rarity.equals(Rarity.UNCOMMON).layout.equals(Layout.TRANSFORM).all(),
+	CriteriaBuilder().rarity.equals(Rarity.UNCOMMON).layout.equals(Layout.TRANSFORM).all(),
 )
 DOUBLEFACED_RARE = Option(
-	PrintingPatternBuilder().rarity.equals(Rarity.RARE).layout.equals(Layout.TRANSFORM).all(),
+	CriteriaBuilder().rarity.equals(Rarity.RARE).layout.equals(Layout.TRANSFORM).all(),
 )
 DOUBLEFACED_MYTHIC = Option(
-	PrintingPatternBuilder().rarity.equals(Rarity.MYTHIC).layout.equals(Layout.TRANSFORM).all(),
+	CriteriaBuilder().rarity.equals(Rarity.MYTHIC).layout.equals(Layout.TRANSFORM).all(),
 )
 PREMIUM = Option(
-	PrintingPatternBuilder().all(),
+	CriteriaBuilder().all(),
 	'premium'
 )
 BASIC = Option(
-	PrintingPatternBuilder().type_line.contains(typeline.BASIC).all(),
+	CriteriaBuilder().type_line.contains(typeline.BASIC).all(),
 	'basics'
 )
 DRAFT_MATTERS_COMMON = Option(
-	PrintingPatternBuilder().flags.contains(Flag.DRAFT_MATTERS).rarity.equals(Rarity.COMMON).all(),
+	CriteriaBuilder().flags.contains(Flag.DRAFT_MATTERS).rarity.equals(Rarity.COMMON).all(),
 )
 DRAFT_MATTERS_UNCOMMON = Option(
-	PrintingPatternBuilder().flags.contains(Flag.DRAFT_MATTERS).rarity.equals(Rarity.UNCOMMON).all(),
+	CriteriaBuilder().flags.contains(Flag.DRAFT_MATTERS).rarity.equals(Rarity.UNCOMMON).all(),
 )
 DRAFT_MATTERS_RARE = Option(
-	PrintingPatternBuilder().flags.contains(Flag.DRAFT_MATTERS).rarity.equals(Rarity.RARE).all(),
+	CriteriaBuilder().flags.contains(Flag.DRAFT_MATTERS).rarity.equals(Rarity.RARE).all(),
 )
 DRAFT_MATTERS_MYTHIC = Option(
-	PrintingPatternBuilder().flags.contains(Flag.DRAFT_MATTERS).rarity.equals(Rarity.MYTHIC).all(),
+	CriteriaBuilder().flags.contains(Flag.DRAFT_MATTERS).rarity.equals(Rarity.MYTHIC).all(),
 )
 
 
@@ -319,35 +303,3 @@ class BoosterMap(_BoosterMap):
 		# 		forbidden.add(printing)
 		# return _booster.Booster(printings)
 
-
-def test():
-	from mtgorp.db.load import Loader
-	from mtgorp.models.persistent.attributes.rarities import Rarity
-	db = Loader.load()
-
-	expansion = db.expansions['AKH']
-
-	print(expansion._booster_key)
-
-	daze = db.cardboards['Daze'].from_expansion(db.expansions['MPS_AKH'])
-
-	expansion.generate_booster()
-	print(expansion._booster_map)
-
-	from mtgorp.utilities.misc import Timer
-
-	timer = Timer()
-
-	boosters = [expansion.generate_booster() for i in range(1000)]
-
-	print('boosters done', timer.middle_time())
-
-	print(boosters[-1])
-
-	print(
-		len([booster for booster in boosters if 'MPS_AKH' in [printing.expansion.code for printing in booster]])
-	)
-
-
-if __name__ == '__main__':
-	test()

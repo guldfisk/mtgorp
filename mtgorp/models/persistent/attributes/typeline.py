@@ -185,6 +185,10 @@ UGIN = CardSubType('Ugin', (PLANESWALKER,))
 VENSER = CardSubType('Venser', (PLANESWALKER,))
 VRASKA = CardSubType('Vraska', (PLANESWALKER,))
 XENAGOS = CardSubType('Xenagos', (PLANESWALKER,))
+WILL = CardSubType('Will', (PLANESWALKER,))
+ROWAN = CardSubType('Rowan', (PLANESWALKER,))
+YANGGU = CardSubType('Yanggu', (PLANESWALKER,))
+YANLING = CardSubType('Yanling', (PLANESWALKER,))
 
 ARCANE = CardSubType('Arcane', (INSTANT, SORCERY))
 TRAP = CardSubType('Trap', (INSTANT, SORCERY))
@@ -427,6 +431,7 @@ WURM = CardSubType('Wurm', (CREATURE, TRIBAL))
 YETI = CardSubType('Yeti', (CREATURE, TRIBAL))
 ZOMBIE = CardSubType('Zombie', (CREATURE, TRIBAL))
 ZUBERA = CardSubType('Zubera', (CREATURE, TRIBAL))
+AZRA = CardSubType('Azra', (CREATURE, TRIBAL))
 
 BASIC_LAND_TYPES = (
 	PLAINS,

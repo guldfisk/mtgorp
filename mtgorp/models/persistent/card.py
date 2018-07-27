@@ -18,7 +18,7 @@ class Card(Model, _Card):
 		name: str,
 		type_line: typeline.TypeLine = None,
 		mana_cost: manacosts.ManaCost = None,
-		color: t.AbstractSet[colors.Color] = None,
+		color: t.AbstractSet[colors.Color] = frozenset(),
 		oracle_text: str = None,
 		power_toughness: powertoughness.PowerToughness = None,
 		loyalty: powertoughness.PTValue = None,
@@ -26,9 +26,7 @@ class Card(Model, _Card):
 	):
 		self._type_line = type_line
 		self._mana_cost = mana_cost
-		self._color = (
-			color if isinstance(color, frozenset) else frozenset(color)
-		) if color is not None else frozenset()
+		self._color = color if isinstance(color, frozenset) else frozenset(color)
 		self._oracle_text = oracle_text
 		self._power_toughness = power_toughness
 		self._loyalty = loyalty
@@ -40,15 +38,15 @@ class Card(Model, _Card):
 		return self._name
 
 	@property	
-	def type_line(self) -> 't.Optional[typeline.TypeLine]':
+	def type_line(self) -> t.Optional[typeline.TypeLine]:
 		return self._type_line
 
 	@property
-	def mana_cost(self) -> 't.Optional[manacosts.ManaCost]':
+	def mana_cost(self) -> t.Optional[manacosts.ManaCost]:
 		return self._mana_cost
 
 	@property
-	def color(self) -> 't.Optional[t.AbstractSet[colors.Color]]':
+	def color(self) -> t.AbstractSet[colors.Color]:
 		return self._color
 
 	@property

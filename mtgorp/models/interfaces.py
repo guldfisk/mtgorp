@@ -50,7 +50,7 @@ class Card(ABC):
 
 	@property
 	@abstractmethod
-	def color(self) -> t.Optional[t.AbstractSet[Color]]:
+	def color(self) -> t.AbstractSet[Color]:
 		pass
 
 	@property

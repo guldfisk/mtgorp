@@ -3,7 +3,7 @@ import typing as t
 from mtgorp.db.attributeparse import parser
 from mtgorp.models.limited import boostergen
 from mtgorp.models.persistent.attributes import typeline
-from mtgorp.tools.search.pattern import PrintingPatternBuilder
+from mtgorp.tools.search.pattern import CriteriaBuilder
 
 
 class Parser(parser.Parser):
@@ -45,7 +45,7 @@ class Parser(parser.Parser):
 		'timeshifted common': boostergen.KeySlot((boostergen.TIMESHIFTED_COMMON,)),
 		'urza land': boostergen.KeySlot((
 			boostergen.Option(
-				PrintingPatternBuilder().type_line.contains(typeline.URZAS).all(),
+				CriteriaBuilder().type_line.contains(typeline.URZAS).all(),
 			),
 		)),
 		'timeshifted rare': boostergen.KeySlot((boostergen.TIMESHIFTED_RARE,)),

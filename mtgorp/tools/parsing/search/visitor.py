@@ -72,7 +72,7 @@ class SearchVisitor(search_grammarVisitor):
 	def visitNameRestriction(self, ctx: search_grammarParser.NameRestrictionContext):
 		value = self.visit(ctx.value())
 
-		if not isinstance(value, str) and not value.extraction_type == str:
+		if not isinstance(value, str) and not value._extraction_strategy == str:
 			raise TypeParseException('Mismatched dynamic value type')
 		else:
 			value = value.lower()
@@ -204,7 +204,7 @@ class SearchVisitor(search_grammarVisitor):
 	def visitCmcRestriction(self, ctx: search_grammarParser.CmcRestrictionContext):
 		if ctx.UNSIGNED_INTEGER() is None:
 			value = self.visit(ctx.dynamic_value())
-			if not value.extraction_type in (int, PTValue):
+			if not value._extraction_strategy in (int, PTValue):
 				raise TypeParseException('Mismatched dynamic value type')
 		else:
 			value = int(str(ctx.UNSIGNED_INTEGER()))

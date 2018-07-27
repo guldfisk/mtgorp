@@ -2,7 +2,7 @@ import re
 
 import mtgorp.db.attributeparse.parser as parser
 
-from mtgorp.models.persistent.attributes.typeline import CardType, TypeLine, CardSubType, ALL_TYPES
+from mtgorp.models.persistent.attributes.typeline import TypeLine, ALL_TYPES
 from mtgorp.db.attributeparse.exceptions import AttributeParseException
 
 
@@ -26,5 +26,5 @@ class Parser(parser.Parser):
 					Parser.type_matcher.finditer(s)
 				)
 			)
-		except KeyError:
-			raise CardTypeParseException()
+		except KeyError as e:
+			raise CardTypeParseException(e)

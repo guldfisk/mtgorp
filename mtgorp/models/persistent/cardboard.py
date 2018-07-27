@@ -2,7 +2,7 @@ import typing as t
 from itertools import chain
 
 from orp.database import Model, PrimaryKey, Key
-from orp.relationships import Many
+from orp.relationships import Many, ListMany
 
 from mtgorp.models.persistent.attributes.layout import Layout
 from mtgorp.models.interfaces import Card, Expansion, Printing, Block
@@ -10,20 +10,13 @@ from mtgorp.models.interfaces import Side as _Side
 from mtgorp.models.interfaces import Cardboard as _Cardboard
 
 
-class OrderedMultiSet(list):
-
-	def add(self, element):
-		super().append(element)
-
-
 class Side(_Side):
 
 	def __init__(self, owner: 'Cardboard'):
 		self._owner = owner
-		self._cards = Many(
+		self._cards = ListMany(
 			self,
 			'_sides',
-			container_type = OrderedMultiSet,
 		)
 
 	@property
@@ -31,7 +24,7 @@ class Side(_Side):
 		return self._owner
 
 	@property
-	def cards(self) -> Many[Card]:
+	def cards(self) -> ListMany[Card]:
 		return self._cards
 
 

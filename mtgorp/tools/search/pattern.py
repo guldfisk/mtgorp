@@ -1,6 +1,6 @@
 import typing as t
 
-from abc import ABCMeta, abstractmethod
+from abc import ABCMeta, abstractmethod, ABC
 
 from mtgorp.models.interfaces import Cardboard, Printing, Expansion, Block
 
@@ -11,6 +11,9 @@ from mtgorp.models.persistent.attributes.typeline import TypeLine
 from mtgorp.models.persistent.attributes.manacosts import ManaCost
 from mtgorp.models.persistent.attributes.powertoughness import PTValue
 from mtgorp.tools.search import extraction as e
+
+
+T = t.TypeVar('T')
 
 searchable = t.Union[Cardboard, Printing]
 
@@ -493,16 +496,16 @@ class Not(Matchable):
 		)
 	
 	
-class Pattern(object):
+class Pattern(t.Generic[T]):
 	
-	def __init__(self, matcher: Matchable, strategy: t.Type[e.ExtractionStrategy]):
+	def __init__(self, matcher: Matchable, strategy: t.Type[e.ExtractionStrategy[T]]):
 		self._matcher = matcher
 		self._strategy = strategy
 		
-	def match(self, model: searchable) -> bool:
+	def match(self, model: T) -> bool:
 		return self._matcher.match(model, self._strategy)
 
-	def matches(self, models: t.Iterable[searchable]) -> t.Iterable[searchable]:
+	def matches(self, models: t.Iterable[T]) -> t.Iterable[T]:
 		return (
 			model
 			for model in
@@ -531,21 +534,22 @@ class _NotDescriptor(object):
 		return instance
 
 
-class _CheckerBuilder(object):
+class _CheckerBuilder(t.Generic[T]):
 
-	def __init__(self, owner: '_ExtractorBuilder', checker: t.Type[AttributeMatch]):
+	def __init__(self, owner: '_ExtractorBuilder[T]', checker: t.Type[AttributeMatch]):
 		self._owner = owner
 		self._checker = checker
 		self._negative = False
 
-	def __call__(self, value):
+	def __call__(self, value) -> 'Builder[T]':
 		if self._negative:
 			self._owner.owner.add(Not(self._checker(self._owner.extractor, value)))
 		else:
 			self._owner.owner.add(self._checker(self._owner.extractor, value))
+
 		return self._owner.owner
 
-	no = _NotDescriptor()
+	no = _NotDescriptor() #type: _CheckerBuilder[T]
 
 
 class _CheckerDescriptor(object):
@@ -559,270 +563,127 @@ class _CheckerDescriptor(object):
 		return _CheckerBuilder(instance, self.checker)
 
 
-class _ExtractorBuilder(object):
+class _ExtractorBuilder(t.Generic[T]):
 
-	def __init__(self, owner: 'PatternBuilder', extractor: t.Type[e.Extractor]):
+	def __init__(self, owner: 'Builder[T]', extractor: t.Type[e.Extractor]):
 		self.owner = owner
 		self.extractor = extractor
 
-	equals = _CheckerDescriptor(Equals) #type: _CheckerBuilder
-	greater_than = _CheckerDescriptor(GreaterThan) #type: _CheckerBuilder
-	greater_than_or_equals = _CheckerDescriptor(GreaterThanOrEquals) #type: _CheckerBuilder
-	less_than = _CheckerDescriptor(LessThan) #type: _CheckerBuilder
-	less_than_or_equals = _CheckerDescriptor(LessThanOrEquals) #type: _CheckerBuilder
-	contains = _CheckerDescriptor(Contains) #type: _CheckerBuilder
-	contained_in = _CheckerDescriptor(ContainedIn) #type: _CheckerBuilder
+	equals = _CheckerDescriptor(Equals) #type: _CheckerBuilder[T]
+	greater_than = _CheckerDescriptor(GreaterThan) #type: _CheckerBuilder[T]
+	greater_than_or_equals = _CheckerDescriptor(GreaterThanOrEquals) #type: _CheckerBuilder[T]
+	less_than = _CheckerDescriptor(LessThan) #type: _CheckerBuilder[T]
+	less_than_or_equals = _CheckerDescriptor(LessThanOrEquals) #type: _CheckerBuilder[T]
+	contains = _CheckerDescriptor(Contains) #type: _CheckerBuilder[T]
+	contained_in = _CheckerDescriptor(ContainedIn) #type: _CheckerBuilder[T]
 
 
-class PatternBuilder(object, metaclass=ABCMeta):
+class Builder(ABC, t.Generic[T]):
 
 	def __init__(self):
 		self._set = set()
 
-	def add(self, checkable: Matchable) -> 'PatternBuilder':
+	def add(self, checkable: Matchable) -> 'Builder[T]':
 		self._set.add(checkable)
 		return self
 
 	@property
-	@abstractmethod
-	def name(self) -> _ExtractorBuilder:
-		pass
-
-	@property
-	@abstractmethod
-	def layout(self) -> _ExtractorBuilder:
-		pass
-
-	@property
-	@abstractmethod
-	def cmc(self) -> _ExtractorBuilder:
-		pass
-
-	@property
-	@abstractmethod
-	def rarity(self) -> _ExtractorBuilder:
-		pass
-
-	@property
-	@abstractmethod
-	def flags(self) -> _ExtractorBuilder:
-		pass
-
-	@property
-	@abstractmethod
-	def type_line(self) -> _ExtractorBuilder:
-		pass
-
-	@property
-	@abstractmethod
-	def mana_cost(self) -> _ExtractorBuilder:
-		pass
-
-	@property
-	@abstractmethod
-	def color(self) -> _ExtractorBuilder:
-		pass
-
-	@property
-	@abstractmethod
-	def oracle(self) -> _ExtractorBuilder:
-		pass
-
-	@property
-	@abstractmethod
-	def flavor(self) -> _ExtractorBuilder:
-		pass
-
-	@property
-	@abstractmethod
-	def power(self) -> _ExtractorBuilder:
-		pass
-
-	@property
-	@abstractmethod
-	def toughness(self) -> _ExtractorBuilder:
-		pass
-
-	@property
-	@abstractmethod
-	def loyalty(self) -> _ExtractorBuilder:
-		pass
-
-	@property
-	@abstractmethod
-	def artist(self) -> _ExtractorBuilder:
-		pass
-
-	@property
-	@abstractmethod
-	def expansion(self) -> _ExtractorBuilder:
-		pass
-
-	@property
-	@abstractmethod
-	def block(self) -> _ExtractorBuilder:
-		pass
-
-	@abstractmethod
-	def all(self) -> Pattern:
-		pass
-
-	@abstractmethod
-	def any(self) -> Pattern:
-		pass
-
-
-class PrintingPatternBuilder(PatternBuilder):
-
-	def add(self, checkable: Matchable) -> 'PrintingPatternBuilder':
-		self._set.add(checkable)
-		return self
-
-	@property
-	def name(self) -> _ExtractorBuilder:
+	def name(self) -> _ExtractorBuilder[T]:
 		return _ExtractorBuilder(self, e.NameExtractor)
 
 	@property
-	def oracle(self) -> _ExtractorBuilder:
+	def oracle(self) -> _ExtractorBuilder[T]:
 		return _ExtractorBuilder(self, e.OracleExtractor)
 
 	@property
-	def flavor(self) -> _ExtractorBuilder:
+	def flavor(self) -> _ExtractorBuilder[T]:
 		return _ExtractorBuilder(self, e.FlavorExtractor)
 
 	@property
-	def power(self) -> _ExtractorBuilder:
+	def power(self) -> _ExtractorBuilder[T]:
 		return _ExtractorBuilder(self, e.PowerExtractor)
 
 	@property
-	def toughness(self) -> _ExtractorBuilder:
+	def toughness(self) -> _ExtractorBuilder[T]:
 		return _ExtractorBuilder(self, e.ToughnessExtractor)
 
 	@property
-	def loyalty(self) -> _ExtractorBuilder:
+	def loyalty(self) -> _ExtractorBuilder[T]:
 		return _ExtractorBuilder(self, e.LoyaltyExtractor)
 
 	@property
-	def artist(self) -> _ExtractorBuilder:
+	def artist(self) -> _ExtractorBuilder[T]:
 		return _ExtractorBuilder(self, e.ArtistExtractor)
 
 	@property
-	def layout(self) -> _ExtractorBuilder:
+	def layout(self) -> _ExtractorBuilder[T]:
 		return _ExtractorBuilder(self, e.LayoutExtractor)
 
 	@property
-	def flags(self) -> _ExtractorBuilder:
+	def flags(self) -> _ExtractorBuilder[T]:
 		return _ExtractorBuilder(self, e.FlagsExtractor)
 
 	@property
-	def type_line(self) -> _ExtractorBuilder:
+	def type_line(self) -> _ExtractorBuilder[T]:
 		return _ExtractorBuilder(self, e.TypeLineExtractor)
 
 	@property
-	def rarity(self) -> _ExtractorBuilder:
+	def rarity(self) -> _ExtractorBuilder[T]:
 		return _ExtractorBuilder(self, e.RarityExtractor)
 
 	@property
-	def cmc(self) -> _ExtractorBuilder:
+	def cmc(self) -> _ExtractorBuilder[T]:
 		return _ExtractorBuilder(self, e.CmcExtractor)
 
 	@property
-	def mana_cost(self) -> _ExtractorBuilder:
+	def mana_cost(self) -> _ExtractorBuilder[T]:
 		return _ExtractorBuilder(self, e.ManaCostExtractor)
 
 	@property
-	def expansion(self) -> _ExtractorBuilder:
+	def expansion(self) -> _ExtractorBuilder[T]:
 		return _ExtractorBuilder(self, e.ExpansionExtractor)
 
 	@property
-	def block(self) -> _ExtractorBuilder:
+	def block(self) -> _ExtractorBuilder[T]:
 		return _ExtractorBuilder(self, e.BlockExtractor)
 
 	@property
-	def color(self) -> _ExtractorBuilder:
+	def color(self) -> _ExtractorBuilder[T]:
 		return _ExtractorBuilder(self, e.ColorExtractor)
 
-	def all(self) -> Pattern:
+	@abstractmethod
+	def all(self) -> T:
+		pass
+
+	@abstractmethod
+	def any(self) -> T:
+		pass
+
+
+class CriteriaBuilder(Builder[Criteria]):
+
+	def all(self) -> Criteria:
+		return All(self._set)
+
+	def any(self) -> Criteria:
+		return Any(self._set)
+
+
+class PrintingPatternBuilder(Builder[Pattern[Printing]]):
+
+	def all(self) -> Pattern[Printing]:
 		return Pattern(All(self._set), e.PrintingStrategy)
 
-	def any(self) -> Pattern:
+	def any(self) -> Pattern[Printing]:
 		return Pattern(All(self._set), e.PrintingStrategy)
 
 
-class CardboardPatternBuilder(PatternBuilder):
+class CardboardPatternBuilder(Builder[Pattern[Cardboard]]):
 
-	def add(self, checkable: Matchable) -> 'CardboardPatternBuilder':
-		self._set.add(checkable)
-		return self
-
-	@property
-	def name(self) -> _ExtractorBuilder:
-		return _ExtractorBuilder(self, e.NameExtractor)
-
-	@property
-	def layout(self) -> _ExtractorBuilder:
-		return _ExtractorBuilder(self, e.LayoutExtractor)
-
-	@property
-	def cmc(self) -> _ExtractorBuilder:
-		return _ExtractorBuilder(self, e.CmcExtractor)
-
-	@property
-	def rarity(self) -> _ExtractorBuilder:
-		return _ExtractorBuilder(self, e.RarityExtractor)
-
-	@property
-	def flags(self) -> _ExtractorBuilder:
-		return _ExtractorBuilder(self, e.FlagsExtractor)
-
-	@property
-	def type_line(self) -> _ExtractorBuilder:
-		return _ExtractorBuilder(self, e.TypeLineExtractor)
-
-	@property
-	def mana_cost(self) -> _ExtractorBuilder:
-		return _ExtractorBuilder(self, e.ManaCostExtractor)
-
-	@property
-	def oracle(self) -> _ExtractorBuilder:
-		return _ExtractorBuilder(self, e.OracleExtractor)
-
-	@property
-	def flavor(self) -> _ExtractorBuilder:
-		return _ExtractorBuilder(self, e.FlagsExtractor)
-
-	@property
-	def power(self) -> _ExtractorBuilder:
-		return _ExtractorBuilder(self, e.PowerExtractor)
-
-	@property
-	def toughness(self) -> _ExtractorBuilder:
-		return _ExtractorBuilder(self, e.ToughnessExtractor)
-
-	@property
-	def loyalty(self) -> _ExtractorBuilder:
-		return _ExtractorBuilder(self, e.LoyaltyExtractor)
-
-	@property
-	def artist(self) -> _ExtractorBuilder:
-		return _ExtractorBuilder(self, e.ArtistExtractor)
-
-	@property
-	def expansion(self) -> _ExtractorBuilder:
-		return _ExtractorBuilder(self, e.ExpansionExtractor)
-
-	@property
-	def block(self) -> _ExtractorBuilder:
-		return _ExtractorBuilder(self, e.BlockExtractor)
-
-	@property
-	def color(self) -> _ExtractorBuilder:
-		return _ExtractorBuilder(self, e.ColorExtractor)
-
-	def all(self) -> Pattern:
+	def all(self) -> Pattern[Cardboard]:
 		return Pattern(All(self._set), e.CardboardStrategy)
 
-	def any(self) -> Pattern:
+	def any(self) -> Pattern[Cardboard]:
 		return Pattern(Any(self._set), e.CardboardStrategy)
 
 
@@ -831,6 +692,7 @@ def test():
 	from mtgorp.db.load import Loader
 
 	from mtgorp.models.persistent.attributes.flags import Flag
+	from mtgorp.models.persistent.attributes import typeline
 	from mtgorp.models.persistent.attributes.rarities import Rarity
 	from mtgorp.models.persistent.attributes import manacosts
 
@@ -846,7 +708,11 @@ def test():
 	# 	tuple(another_pattern.matches(db.printings.values()))
 	# )
 
-	pattern = CardboardPatternBuilder().expansion.equals(db.expansions['AKH']).all()
+	# pattern = CardboardPatternBuilder().expansion.equals(db.expansions['AKH']).all()
+
+	criteria = CriteriaBuilder().type_line.contains.no()
+
+	pattern = Pattern(criteria, e.CardboardStrategy)
 
 	# third_pattern = All(
 	# 	{
