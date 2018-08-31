@@ -3,7 +3,7 @@ import typing as t
 from mtgorp.models.persistent.printing import Printing
 from mtgorp.models.collections.deck import Deck
 from mtgorp.utilities.containers import HashableMultiset
-from mtgorp.models.collections.serilization.serializeable import Serializeable, SerializationException, model_tree
+from mtgorp.models.serilization.serializeable import Serializeable, serialization_model, Inflator
 
 
 class Pool(Serializeable):
@@ -46,19 +46,19 @@ class Pool(Serializeable):
 	def __repr__(self) -> str:
 		return f'{self.__class__.__name__}({len(self._printings)}, {len(self._decks)})'
 
-	def to_model_tree(self) -> model_tree:
+	def serialize(self) -> serialization_model:
 		return {
 			'printings': self._printings,
-			'decks': (deck.to_model_tree() for deck in self._decks),
+			'decks': self._decks,
 		}
 
 	@classmethod
-	def from_model_tree(cls, tree: model_tree) -> 'Pool':
+	def deserialize(cls, value: serialization_model, inflator: Inflator) -> 'Pool':
 		return Pool(
-			tree['printings'],
+			inflator.inflate_all(Printing, value['printings']),
 			(
-				Deck.from_model_tree(_tree)
-				for _tree in
-				tree.get('decks', ())
-			)
+				Deck.deserialize(_value, inflator)
+				for _value in
+				value.get('decks', ())
+			),
 		)

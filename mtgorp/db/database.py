@@ -1,11 +1,16 @@
 import typing as t
 
-from orp.database import Table
+from orp.database import Table, Database
 
-from mtgorp.models.interfaces import Card, Cardboard, Printing, Artist, Block, Expansion
+from mtgorp.models.persistent.card import Card
+from mtgorp.models.persistent.cardboard import Cardboard
+from mtgorp.models.persistent.printing import Printing
+from mtgorp.models.persistent.artist import Artist
+from mtgorp.models.persistent.block import Block
+from mtgorp.models.persistent.expansion import Expansion
 
 
-class CardDatabase(object):
+class CardDatabase(Database):
 
 	def __init__(
 		self,
@@ -16,12 +21,22 @@ class CardDatabase(object):
 		blocks: Table,
 		expansions: Table,
 	):
-		self._cards = cards
-		self._cardboards = cardboards
-		self._printings = printings
-		self._artists = artists
-		self._blocks = blocks
-		self._expansions = expansions
+		super().__init__(
+			{
+				Card: cards,
+				Cardboard: cardboards,
+				Printing: printings,
+				Artist: artists,
+				Block: blocks,
+				Expansion: expansions,
+			}
+		)
+		self._cards = self._tables[Card]
+		self._cardboards = self._tables[Cardboard]
+		self._printings = self._tables[Printing]
+		self._artists = self._tables[Artist]
+		self._blocks = self._tables[Block]
+		self._expansions = self._tables[Expansion]
 
 	@property
 	def cards(self) -> t.Dict[str, Card]:

@@ -18,7 +18,7 @@ class Booster(_Booster):
 
 	@property
 	def sorted_printings(self) -> t.List[Printing]:
-		return sorted(self._printings, key=lambda p: p.rarity.value, reverse=True)
+		return sorted(self._printings, key=lambda p: p.rarity._evaluate_wish, reverse=True)
 
 	@property
 	def expansion(self):

@@ -4,7 +4,7 @@ from mtgorp.models.persistent.printing import Printing
 from mtgorp.tools.search.pattern import Criteria, PrintingPatternBuilder
 from mtgorp.models.persistent.attributes import typeline
 from mtgorp.utilities.containers import HashableMultiset, Multiset
-from mtgorp.models.collections.serilization.serializeable import Serializeable, model_tree, SerializationException
+from mtgorp.models.serilization.serializeable import Serializeable, serialization_model, Inflator
 
 
 class Deck(Serializeable):
@@ -54,82 +54,79 @@ class Deck(Serializeable):
 	def __repr__(self) -> str:
 		return f'{self.__class__.__name__}({len(self._maindeck)}, {len(self._sideboard)})'
 
-	def to_model_tree(self) -> model_tree:
+	def serialize(self) -> serialization_model:
 		return {
-			'maindeck': self._maindeck,
-			'sideboard': self._sideboard,
+			'maindeck': list(self._maindeck),
+			'sideboard': list(self._sideboard),
 		}
 
 	@classmethod
-	def from_model_tree(cls, tree: model_tree) -> 'Deck':
+	def deserialize(cls, value: serialization_model, inflator: Inflator) -> 'Deck':
 		return Deck(
-			tree['maindeck'],
-			tree.get('sideboard', None),
+			inflator.inflate_all(Printing, value['maindeck']),
+			inflator.inflate_all(Printing, value.get('sideboard', ())),
 		)
 
-	# def to_xml(self) -> str:
-	# 	deck = ElementTree.Element('deck')
-	# 	maindeck = ElementTree.SubElement(deck, 'maindeck')
-	# 	for printing in self._maindeck:
-	# 		ElementTree.SubElement(maindeck, str(printing.id))
-	# 	sideboard = ElementTree.SubElement(deck, 'sideboard')
-	# 	for printing in self._sideboard:
-	# 		ElementTree.SubElement(sideboard, str(printing.id))
-	# 	return ElementTree.tostring(deck)
-	
-	@classmethod
-	def _groupify(
-		cls,
-		printings: t.Iterable[Printing],
-		patterns: t.Iterable[Criteria],
-	) -> t.List[Multiset[Printing]]:
+# @classmethod
+	# def deserialize(cls, tree: serialization_model) -> 'Deck':
+	# 	return Deck(
+	# 		tree['maindeck'],
+	# 		tree.get('sideboard', None),
+	# 	)
 
-		_printings = list(printings)
-		out = []
-
-		for pattern in patterns:
-			matches = Multiset()
-			i = 0
-			while i <len(_printings):
-				if pattern.match(_printings[i]):
-					matches.add(_printings.pop(i))
-				else:
-					i += 1
-			out.append(matches)
-
-		out.append(Multiset(_printings))
-
-		return out
-
-	_CREATURE = PrintingPatternBuilder().type_line.contains(typeline.CREATURE).all()
-	_NON_CREATURE_NON_LAND = (
-		PrintingPatternBuilder()
-			.type_line
-			.contains
-			.no(typeline.CREATURE)
-			.type_line
-			.contains
-			.no(typeline.LAND)
-			.all()
-	)
-
-	@classmethod
-	def named_list(cls, printings: Multiset[Printing]) -> str:
-		return '\n'.join(
-			f'{multiplicity}x [{printing.expansion.code}] {printing.cardboard.name}'
-			for printing, multiplicity in
-			printings.items()
-		)
-
-	def to_list(self) -> str:
-		return '\n\n'.join(
-			self.named_list(group)
-			for group in
-			self._groupify(
-				self.maindeck,
-				(
-					self._CREATURE,
-					self._NON_CREATURE_NON_LAND,
-				)
-			)
-		)
+	# @classmethod
+	# def _groupify(
+	# 	cls,
+	# 	printings: t.Iterable[Printing],
+	# 	patterns: t.Iterable[Criteria],
+	# ) -> t.List[Multiset[Printing]]:
+	#
+	# 	_printings = list(printings)
+	# 	out = []
+	#
+	# 	for pattern in patterns:
+	# 		matches = Multiset()
+	# 		i = 0
+	# 		while i <len(_printings):
+	# 			if pattern.match(_printings[i]):
+	# 				matches.add(_printings.pop(i))
+	# 			else:
+	# 				i += 1
+	# 		out.append(matches)
+	#
+	# 	out.append(Multiset(_printings))
+	#
+	# 	return out
+	#
+	# _CREATURE = PrintingPatternBuilder().type_line.contains(typeline.CREATURE).all()
+	# _NON_CREATURE_NON_LAND = (
+	# 	PrintingPatternBuilder()
+	# 		.type_line
+	# 		.contains
+	# 		.no(typeline.CREATURE)
+	# 		.type_line
+	# 		.contains
+	# 		.no(typeline.LAND)
+	# 		.all()
+	# )
+	#
+	# @classmethod
+	# def named_list(cls, printings: Multiset[Printing]) -> str:
+	# 	return '\n'.join(
+	# 		f'{multiplicity}x [{printing.expansion.code}] {printing.cardboard.name}'
+	# 		for printing, multiplicity in
+	# 		printings.items()
+	# 	)
+	#
+	# def to_list(self) -> str:
+	# 	return '\n\n'.join(
+	# 		self.named_list(group)
+	# 		for group in
+	# 		self._groupify(
+	# 			self.maindeck,
+	# 			(
+	# 				self._CREATURE,
+	# 				self._NON_CREATURE_NON_LAND,
+	# 			)
+	# 		)
+	# 	)

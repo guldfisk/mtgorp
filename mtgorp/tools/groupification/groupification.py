@@ -1,15 +1,14 @@
 
 import typing as t
 
-from abc import abstractmethod, ABCMeta, ABC
+from abc import abstractmethod, ABC
 
 from mtgorp.models.persistent.cardboard import Cardboard
 from mtgorp.models.persistent.printing import Printing
 from mtgorp.models.persistent.attributes import typeline
-from mtgorp.tools.search.pattern import Pattern, Criteria, CriteriaBuilder
+from mtgorp.tools.search.pattern import Criteria, CriteriaBuilder
 from mtgorp.tools.search.extraction import ExtractionStrategy, CardboardStrategy, PrintingStrategy
 from mtgorp.utilities.containers import Multiset
-
 
 
 T = t.TypeVar('T')
@@ -65,7 +64,7 @@ class Groupifyer(ABC, t.Generic[T]):
 	def _group_type(self) -> t.Type['Group[T]']:
 		pass
 
-	def groupify(self, items: Multiset[T]) -> 'Grouping[T]':
+	def groupify(self, items: t.Iterable[T]) -> 'Grouping[T]':
 
 		items = Multiset(items)
 
@@ -75,8 +74,7 @@ class Groupifyer(ABC, t.Generic[T]):
 			matches = Multiset(category.criteria.matches(items, self._extraction_strategy))
 			categories.append(self._group_type()(category.name, matches))
 
-			for match in matches:
-				items.remove(match)
+			items -= matches
 
 		if items and self._include_others:
 			categories.append(self._group_type()('Others', items))
@@ -120,7 +118,7 @@ class Grouping(t.Generic[T]):
 		self._groups = groups
 
 	def __str__(self) -> str:
-		return '\n\n'.join(
+		return f'{self._name}: {len(self)}\n\n'+'\n\n'.join(
 			group.__str__()
 			for group in
 			self._groups
@@ -128,7 +126,6 @@ class Grouping(t.Generic[T]):
 
 	def __len__(self) -> int:
 		return sum(len(group) for group in self._groups)
-
 
 
 class CardboardGroup(Group[Cardboard]):
@@ -192,6 +189,7 @@ LANDS_CATEGORY = Category(
 )
 
 STANDARD_PRINTING_GROUPIFYER = PrintingGroupifyer(
+	'Deck',
 	(
 		CREATURE_CATEGORY,
 		INSTANT_SORCERY_CATEGORY,
