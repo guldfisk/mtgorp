@@ -57,11 +57,11 @@ class Strategy(Inflator):
 
 	@classmethod
 	@abstractmethod
-	def _serialize(cls, model: compacted_model) -> str:
+	def _serialize(cls, model: compacted_model) -> t.AnyStr:
 		pass
 
 	@classmethod
-	def serialize(cls, serializeable: Serializeable) -> str:
+	def serialize(cls, serializeable: Serializeable) -> t.AnyStr:
 		return cls._serialize(
 			cls._to_compacted_model(
 				serializeable.serialize()
@@ -69,10 +69,10 @@ class Strategy(Inflator):
 		)
 
 	@abstractmethod
-	def _deserialize(self, s: str) -> compacted_model:
+	def _deserialize(self, s: t.AnyStr) -> compacted_model:
 		pass
 
-	def deserialize(self, cls: t.Type[S], s: str) -> S:
+	def deserialize(self, cls: t.Type[S], s: t.AnyStr) -> S:
 		try:
 			return cls.deserialize(
 				self._deserialize(s),

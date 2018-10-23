@@ -1,16 +1,16 @@
 import typing as t
 
-import json
+import pickle
 
 from mtgorp.models.serilization.serializeable import compacted_model
 from mtgorp.models.serilization.strategies.strategy import Strategy
 
 
-class JsonId(Strategy):
+class PickleStrategy(Strategy):
 
 	@classmethod
 	def _serialize(cls, model: compacted_model) -> t.AnyStr:
-		return json.dumps(model)
+		return pickle.dumps(model)
 
 	def _deserialize(self, s: t.AnyStr) -> compacted_model:
-		return json.loads(s)
+		return pickle.loads(s)
