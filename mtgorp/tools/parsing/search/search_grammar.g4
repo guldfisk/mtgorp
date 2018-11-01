@@ -4,15 +4,6 @@ grammar search_grammar;
 
 start : operation EOF;
 
-//pattern :
-//    operation #DefaultPattern
-//    | match_type operation #MatchTypePattern
-//;
-//
-//match_type :
-//    '#' CARDBOARD_CODE #CardboardCode
-//    | '#' PRINTING_CODE #PrintingCode
-//;
 
 operation :
     '!' operation #Not
@@ -104,6 +95,6 @@ PRINTING_CODE : 'pr'|'PR'|'printing'|'PRINTING';
 UNSIGNED_INTEGER : [0-9]+;
 
 QUOTED_VALUE : '"'~('"')*'"';
-VALUE : [a-zA-Z0-9\-',:{}/*]+;
+VALUE : [a-zA-Z0-9\-',:{}/*+]+;
 
 WHITESPACE : [ \n\t\r] -> skip;
