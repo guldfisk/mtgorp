@@ -30,7 +30,6 @@ class SearchParser(object):
 	def __init__(self, db: CardDatabase):
 		self._visitor = SearchVisitor(db)
 
-
 	@classmethod
 	def _build(cls, parsed: t.Union[AllBuilder, AnyBuilder]) -> Criteria:
 		return (
@@ -58,8 +57,8 @@ class SearchParser(object):
 		parser._listeners = [SearchPatternParseListener()]
 
 		return self._build(
-				self._visitor.visit(parser.start())
-			)
+			self._visitor.visit(parser.start())
+		)
 
 	def parse(self, s: str, strategy: t.Type[ExtractionStrategy] = CardboardStrategy) -> Pattern:
 		return Pattern(

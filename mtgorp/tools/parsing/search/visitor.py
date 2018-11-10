@@ -1,17 +1,15 @@
-from enum import Enum
-
 from mtgorp.db.database import CardDatabase
 from mtgorp.models.persistent.attributes.powertoughness import PTValue
 from mtgorp.tools.search import pattern as p
 from mtgorp.tools.search import extraction as e
 from mtgorp.tools.parsing.manacost.parse import ManaCostParser
-from mtgorp.tools.parsing.search.attributeparse.typeline import TypeLineParser
-from mtgorp.tools.parsing.search.attributeparse.ptvalue import PTValueParser
-from mtgorp.tools.parsing.search.attributeparse.flags import FlagParser
-from mtgorp.tools.parsing.search.attributeparse.rarity import RarityParser
-from mtgorp.tools.parsing.search.attributeparse.layout import LayoutParser
-from mtgorp.tools.parsing.search.attributeparse.expansion import ExpansionParser
-from mtgorp.tools.parsing.search.attributeparse.block import BlockParser
+from mtgorp.tools.parsing.typeline.parse import TypeLineParser
+from mtgorp.tools.parsing.ptvalue.parse import PTValueParser
+from mtgorp.tools.parsing.flags.parse import FlagParser
+from mtgorp.tools.parsing.rarity.parse import RarityParser
+from mtgorp.tools.parsing.layout.parse import LayoutParser
+from mtgorp.tools.parsing.expansion.parse import ExpansionParser
+from mtgorp.tools.parsing.block.parse import BlockParser
 
 from mtgorp.tools.parsing.search.gen.search_grammarParser import search_grammarParser
 from mtgorp.tools.parsing.search.gen.search_grammarVisitor import search_grammarVisitor

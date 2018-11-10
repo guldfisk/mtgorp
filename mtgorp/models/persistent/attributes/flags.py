@@ -2,12 +2,15 @@ import typing as t
 
 from enum import Enum
 
+from functools import total_ordering
+
 
 class Flag(Enum):
 	TIMESHIFTED = 'timeshifted'
 	DRAFT_MATTERS = 'draft_matters'
 
 
+@total_ordering
 class Flags(object):
 
 	def __init__(self, flags: t.Optional[t.Iterable[Flag]] = None):
@@ -34,24 +37,6 @@ class Flags(object):
 		return (
 			isinstance(other, self.__class__)
 			and self._flags < other._flags
-		)
-
-	def __le__(self, other):
-		return (
-			isinstance(other, self.__class__)
-			and self._flags <= other._flags
-		)
-
-	def __gt__(self, other):
-		return (
-			isinstance(other, self.__class__)
-			and self._flags > other._flags
-		)
-
-	def __ge__(self, other):
-		return (
-			isinstance(other, self.__class__)
-			and self._flags >= other._flags
 		)
 
 	def __repr__(self):

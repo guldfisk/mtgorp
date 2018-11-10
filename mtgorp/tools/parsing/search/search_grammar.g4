@@ -95,6 +95,6 @@ PRINTING_CODE : 'pr'|'PR'|'printing'|'PRINTING';
 UNSIGNED_INTEGER : [0-9]+;
 
 QUOTED_VALUE : '"'~('"')*'"';
-VALUE : [a-zA-Z0-9\-',:{}/*+]+;
+VALUE : [a-zA-Z0-9\-',:{}/*+!âáéàíúöû]+;
 
 WHITESPACE : [ \n\t\r] -> skip;
