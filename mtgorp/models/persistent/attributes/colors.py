@@ -26,12 +26,15 @@ class Color(Enum):
 		obj._position = position
 		return obj
 
+
 AMOUNT_COLORS = 5
+
 
 def color_set_sort_value(color_set: t.AbstractSet[Color]) -> int:
 	return (
 		sum(1 << c.position for c in color_set)
 	)
+
 
 def color_set_sort_value_len_first(color_set: t.AbstractSet[Color]) -> int:
 	return (
