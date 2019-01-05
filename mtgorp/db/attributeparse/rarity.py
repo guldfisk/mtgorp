@@ -10,12 +10,15 @@ class RarityParseException(AttributeParseException):
 
 class Parser(parser.Parser):
 	_RARITY_MAP = {
-		'Common': Rarity.COMMON,
-		'Uncommon': Rarity.UNCOMMON,
-		'Rare': Rarity.RARE,
-		'Mythic Rare': Rarity.MYTHIC,
-		'Basic Land': Rarity.LAND,
-		'Special': Rarity.SPECIAL,
+		'common': Rarity.COMMON,
+		'timeshifted common': Rarity.COMMON,
+		'uncommon': Rarity.UNCOMMON,
+		'timeshifted uncommon': Rarity.UNCOMMON,
+		'rare': Rarity.RARE,
+		'timeshifted rare': Rarity.RARE,
+		'mythic': Rarity.MYTHIC,
+		'basic Land': Rarity.LAND,
+		'special': Rarity.SPECIAL,
 	}
 	
 	@staticmethod

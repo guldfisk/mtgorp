@@ -9,10 +9,10 @@ class LayoutParseException(AttributeParseException):
 
 
 class Parser(parser.Parser):
-	LAYOUT_MAP = {
+	_LAYOUT_MAP = {
 		'normal': Layout.STANDARD,
 		'leveler': Layout.STANDARD,
-		'double-faced': Layout.TRANSFORM,
+		'transform': Layout.TRANSFORM,
 		'flip': Layout.FLIP,
 		'meld': Layout.MELD,
 		'split': Layout.SPLIT,
@@ -20,11 +20,12 @@ class Parser(parser.Parser):
 		'sage': Layout.SAGA,
 	}
 
-	@staticmethod
-	def parse(s: str) -> Layout:
+	@classmethod
+	def parse(cls, s: str) -> Layout:
 		try:
-			return Parser.LAYOUT_MAP[
+			return cls._LAYOUT_MAP[
 				s
 			]
-		except:
-			raise LayoutParseException()
+		
+		except KeyError:
+			raise LayoutParseException(f'Invalid layout "{s}"')

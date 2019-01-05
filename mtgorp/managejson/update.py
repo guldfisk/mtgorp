@@ -34,18 +34,24 @@ def delete_content(f):
 
 def check_and_update():
 	last_updates = check_rss(MTG_JSON_RSS_URL)
+	
 	if not last_updates:
 		return False
+	
 	if not os.path.exists(paths.JSON_PATH):
 		os.makedirs(paths.JSON_PATH)
+	
 	open(os.path.join(paths.JSON_PATH, 'lastupdtd.txt'), 'a').close()
+	
 	with open(os.path.join(paths.JSON_PATH, 'lastupdtd.txt'), 'r+') as f:
 		value = f.read()
+		
 		if last_updates!=value:
 			update()
 			delete_content(f)
 			f.write(last_updates)
 			return True
+		
 		return False
 
 

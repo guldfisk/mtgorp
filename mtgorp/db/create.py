@@ -36,8 +36,8 @@ class _CardParser(object):
 	def parse(cls, raw_card):
 		try:
 			name = raw_card['name']
-		except KeyError as e:
-			raise AttributeParseException(e)
+		except KeyError:
+			raise AttributeParseException("Cardboard has no name")
 
 		power, toughness = raw_card.get('power', None), raw_card.get('toughness', None)
 
@@ -106,10 +106,10 @@ class _CardboardParser(object):
 						(raw_card['names'][-1],),
 					)
 
-			raise AttributeParseException('Unknown layout')
+			raise AttributeParseException(f'"{name}" is not front side of layout')
 
 		except KeyError as e:
-			raise AttributeParseException(e)
+			raise AttributeParseException(f'Invalid cardboard names "{e}"')
 
 	@classmethod
 	def parse(cls, raw_card, cards: Table):
@@ -122,8 +122,8 @@ class _CardboardParser(object):
 				layout = layout.Parser.parse(raw_card['layout']),
 			)
 
-		except KeyError as e:
-			raise AttributeParseException(e)
+		except KeyError:
+			raise AttributeParseException('Cardboard has no layout')
 
 
 class _ArtistParser(object):
@@ -199,7 +199,7 @@ class _PrintingParser(object):
 			)
 
 			return Printing(
-				id = raw_printing['multiverseid'],
+				id = raw_printing['multiverseId'],
 				expansion = expansion,
 				collector_number = (
 					-1
@@ -224,7 +224,7 @@ class _PrintingParser(object):
 			)
 
 		except KeyError as e:
-			raise AttributeParseException(e)
+			raise AttributeParseException(f'Key error in printing parse: "{e}"')
 
 
 class _BlockParser(object):
@@ -246,7 +246,7 @@ class _ExpansionParser(object):
 	def parse(cls, raw_expansion, cardboards: Table, printings: Table, artists: Table, blocks: Table):
 		try:
 			name = raw_expansion['name']
-			code = raw_expansion['code']
+			code = raw_expansion['code'].upper()
 			if code == 'NMS':
 				code = 'NEM'
 			release_date = datetime.datetime.strptime(
@@ -274,6 +274,8 @@ class _ExpansionParser(object):
 					()
 				),
 			)
+
+
 			for raw_printing in raw_expansion['cards']:
 				try:
 					printings.insert(
@@ -290,14 +292,16 @@ class _ExpansionParser(object):
 
 			return expansion
 
-		except KeyError as e:
-			raise AttributeParseException(e)
+		except KeyError:
+			raise AttributeParseException('Key error in expansion parse: "{e}"')
 
 	@classmethod
 	def post_parse(cls, expansions: t.Dict[str, Expansion]):
 		information = BoosterInformation.information()
 		for expansion in expansions.values():
-			if expansion.code in information and 'booster_expansion_collection' in information[expansion.code]:
+			#todo find out how promo subsets was renamed and adjust limited data json
+			# if expansion.code in information and 'booster_expansion_collection' in information[expansion.code]:
+			if False:
 				values = information[expansion.code]['booster_expansion_collection']
 				expansion._booster_expansion_collection = ExpansionCollection(
 					main = expansion,
@@ -381,6 +385,7 @@ class DatabaseCreator(object):
 			raw_cards = json.load(f)
 		with open(all_sets_path, 'r', encoding='UTF-8') as f:
 			raw_expansions = json.load(f)
+		
 		cards = cls.create_card_table(raw_cards)
 		cardboards = cls.create_cardboard_table(raw_cards, cards)
 		artists = Table()
@@ -393,6 +398,7 @@ class DatabaseCreator(object):
 			artists = artists,
 			blocks = blocks,
 		)
+
 		return CardDatabase(
 			cards = cards,
 			cardboards = cardboards,

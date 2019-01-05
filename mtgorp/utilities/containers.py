@@ -7,9 +7,15 @@ T = t.TypeVar('T')
 
 
 class HashableMultiset(FrozenMultiset, t.Generic[T]):
-	
+	_hash = None #type: int
+
+	def __init__(self, iterable=None):
+		super().__init__(iterable)
+
 	def __hash__(self):
-		return hash(frozenset(self._elements.items()))
+		if hasattr(self, '_hash') or self._hash is None:
+			self._hash = hash(frozenset(self._elements.items()))
+		return self._hash
 
 	def __iter__(self) -> t.Iterator[T]:
 		return super().__iter__()
