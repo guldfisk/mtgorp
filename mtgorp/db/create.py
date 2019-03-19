@@ -75,7 +75,7 @@ class _CardboardParser(object):
 			name = raw_card['name']
 			raw_card_layout = layout.Parser.parse(raw_card['layout'])
 
-			if raw_card_layout == Layout.STANDARD:
+			if raw_card_layout == Layout.STANDARD or raw_card_layout == Layout.SAGA:
 				return (
 					(name,),
 					(),
