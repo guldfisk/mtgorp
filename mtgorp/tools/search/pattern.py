@@ -1,15 +1,7 @@
 import typing as t
-
 from abc import ABCMeta, abstractmethod, ABC
 
-from mtgorp.models.interfaces import Cardboard, Printing, Expansion, Block
-
-from mtgorp.models.persistent.attributes.layout import Layout
-from mtgorp.models.persistent.attributes.rarities import Rarity
-from mtgorp.models.persistent.attributes.flags import Flags
-from mtgorp.models.persistent.attributes.typeline import TypeLine
-from mtgorp.models.persistent.attributes.manacosts import ManaCost
-from mtgorp.models.persistent.attributes.powertoughness import PTValue
+from mtgorp.models.interfaces import Cardboard, Printing
 from mtgorp.tools.search import extraction as e
 
 
@@ -398,11 +390,6 @@ def test():
 
 	from mtgorp.db.load import Loader
 
-	from mtgorp.models.persistent.attributes.flags import Flag
-	from mtgorp.models.persistent.attributes import typeline
-	from mtgorp.models.persistent.attributes.rarities import Rarity
-	from mtgorp.models.persistent.attributes import manacosts
-
 	db = Loader.load()
 
 	# pattern = PrintingPatternBuilder().flags.contains(Flag.DRAFT_MATTERS).all()
@@ -417,7 +404,7 @@ def test():
 
 	# pattern = CardboardPatternBuilder().expansion.equals(db.expansions['AKH']).all()
 
-	criteria = CriteriaBuilder().type_line.contains.no()
+	criteria = CriteriaBuilder().type_line.contains()
 
 	pattern = Pattern(criteria, e.CardboardStrategy)
 

@@ -115,15 +115,34 @@ class Cardboard(Model, _Cardboard):
 	def printing(self) -> Printing:
 		return self.printings.__iter__().__next__()
 
-	def from_expansion(self, expansion: t.Union[Expansion, str]) -> Printing:
-		if isinstance(expansion, Expansion):
-			for printing in self.printings:
-				if printing.expansion == expansion:
-					return printing
+	def from_expansion(self, expansion: t.Union[Expansion, str], allow_volatile: t.Optional[bool] = False) -> Printing:
+		if allow_volatile:
+			if isinstance(expansion, Expansion):
+				for printing in self.printings:
+					if printing.expansion == expansion:
+						return printing
+			else:
+				for printing in self.printings:
+					if printing.expansion.code == expansion:
+						return printing
 		else:
-			for printing in self.printings:
-				if printing.expansion.code == expansion:
-					return printing
+			options = []
+			if isinstance(expansion, Expansion):
+				for printing in self.printings:
+					if printing.expansion == expansion:
+						options.append(printing)
+			else:
+				for printing in self.printings:
+					if printing.expansion.code == expansion:
+						options.append(printing)
+
+			if len(options) > 1:
+				raise RuntimeError(
+					f'{self} printed multiple times in {expansion}'
+				)
+
+			if options:
+				return options[0]
 
 		raise KeyError(
 			'{} not printed in {}'.format(

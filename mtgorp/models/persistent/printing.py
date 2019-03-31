@@ -10,6 +10,7 @@ from mtgorp.models.interfaces import Artist, Cardboard, Expansion
 from mtgorp.models.interfaces import Face as _Face
 from mtgorp.models.interfaces import Printing as _Printing
 
+
 class Face(_Face):
 
 	def __init__(
