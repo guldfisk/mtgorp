@@ -82,6 +82,10 @@ class Cardboard(Model, _Cardboard):
 		return self._printings
 
 	@property
+	def expansions(self) -> t.Iterable[Expansion]:
+		return (printing.expansion for printing in self._printings)
+
+	@property
 	def front_cards(self) -> Many[Card]:
 		return self._front_cards.cards
 

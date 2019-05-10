@@ -9,3 +9,4 @@ mtgorp/db/test.py
 /mtgorp/tools/selectRandom.py
 /mtgorp/tools/search/oldsearch.py
 /mtgorp/utilities/misc.py
+/test.py

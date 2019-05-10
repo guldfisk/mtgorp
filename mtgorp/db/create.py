@@ -164,7 +164,7 @@ class _PrintingParser(object):
 			if cardboard.back_card is not None:
 				raw_back_printing = cls._find_printing_from_name(cardboard.back_card.name, raw_printings)
 				back_artist = _ArtistParser.parse(raw_back_printing.get('artist', None), artists)
-				back_flavor = raw_back_printing.get('flavor', None)
+				back_flavor = raw_back_printing.get('flavorText', None)
 			else:
 				back_artist = None
 				back_flavor = None
@@ -215,7 +215,7 @@ class _PrintingParser(object):
 				),
 				cardboard = cardboard,
 				front_artist = _ArtistParser.parse(raw_printing.get('artist', None), artists),
-				front_flavor = raw_printing.get('flavor', None),
+				front_flavor = raw_printing.get('flavorText', None),
 				back_artist = back_artist,
 				back_flavor = back_flavor,
 				rarity = rarity.Parser.parse(raw_printing['rarity']) if 'rarity' in raw_printing else None,
