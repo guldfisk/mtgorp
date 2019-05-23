@@ -18,7 +18,8 @@ restriction :
     value #NameRestriction
     | NAME_CODE operator value #NameRestriction
     | TYPE_CODE operator value_chain #TypeRestriction
-    | MANA_CODE operator static_value #ManaRestriction
+    | MANA_CODE operator value #ManaRestriction
+    | COLOR_CODE operator value #ColorRestriction
     | ORACLE_CODE operator value #OracleRestriction
     | POWER_CODE operator value #PowerRestriction
     | TOUGHNESS_CODE operator value #ToughnessRestriction
@@ -49,7 +50,6 @@ static_value :
     | UNSIGNED_INTEGER #UnsignedIntegerValue
 ;
 
-
 operator :
     ';' #IncludesOperator
     | '=' #EqualsOperator
@@ -76,6 +76,7 @@ DYNAMIC_VALUE : '@';
 NAME_CODE : [nN]|'name'|'NAME';
 TYPE_CODE : [tT]|'type'|'type';
 MANA_CODE : [mM]|'manacost'|'MANACOST';
+COLOR_CODE : 'color'|'COLOR';
 ORACLE_CODE : [oO]|'oracle'|'ORACLE';
 POWER_CODE : 'power'|'POWER'|'po'|'PO';
 TOUGHNESS_CODE : [gG]|'toughness'|'TOUGHNESS'|'to'|'TO';

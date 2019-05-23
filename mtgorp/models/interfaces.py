@@ -12,7 +12,7 @@ from mtgorp.models.persistent.attributes.colors import Color
 from mtgorp.models.persistent.attributes.powertoughness import PTValue, PowerToughness
 from mtgorp.models.persistent.attributes.layout import Layout
 from mtgorp.models.persistent.attributes.rarities import Rarity
-from mtgorp.models.persistent.attributes.flags import Flag, Flags
+from mtgorp.models.persistent.attributes.flags import Flags
 from mtgorp.models.persistent.attributes.borders import Border
 
 from mtgorp.utilities.containers import HashableMultiset

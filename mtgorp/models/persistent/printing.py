@@ -53,6 +53,7 @@ class Printing(Model, _Printing):
 	):
 		self._expansion = One(self, 'printings', expansion)
 		self._cardboard = One(self, 'printings', cardboard)
+
 		self._collector_number = collector_number
 		self._front_face = Face(
 			self,

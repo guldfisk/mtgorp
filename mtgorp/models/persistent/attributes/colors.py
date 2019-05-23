@@ -14,6 +14,10 @@ class Color(Enum):
 		return '{{{}}}'.format(self._value)
 
 	@property
+	def letter_code(self):
+		return self._value
+
+	@property
 	def position(self) -> int:
 		return self._position
 
@@ -22,7 +26,7 @@ class Color(Enum):
 	
 	def __new__(cls, code, position):
 		obj = object.__new__(cls)
-		obj._value_ = code
+		obj._value = code
 		obj._position = position
 		return obj
 

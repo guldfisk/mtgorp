@@ -57,6 +57,11 @@ class ExtractionStrategy(t.Generic[T], metaclass = ABCMeta):
 
 	@classmethod
 	@abstractmethod
+	def extract_color(cls, extractable: T) -> t.Iterable[t.AbstractSet[Color]]:
+		pass
+
+	@classmethod
+	@abstractmethod
 	def extract_colors(cls, extractable: T) -> t.Iterable[t.AbstractSet[Color]]:
 		pass
 
@@ -165,6 +170,14 @@ class ManaCostExtractor(Extractor[ManaCost]):
 		return strategy.extract_mana_cost(extractable)
 
 
+class ColorExtractor(Extractor[Color]):
+	extraction_type = Color
+
+	@classmethod
+	def extract(cls, extractable: t.Any, strategy: t.Type[ExtractionStrategy]) -> t.Iterable[t.AbstractSet]:
+		return strategy.extract_color(extractable)
+
+
 class ColorExtractor(Extractor[t.AbstractSet[Color]]):
 	extraction_type = t.AbstractSet[Color]
 
@@ -267,6 +280,10 @@ class CardboardStrategy(ExtractionStrategy[Cardboard]):
 		return (card.mana_cost for card in cardboard.cards)
 
 	@classmethod
+	def extract_color(cls, cardboard: Cardboard) -> t.Iterable[t.AbstractSet[Color]]:
+		return (card.color for card in cardboard.cards)
+
+	@classmethod
 	def extract_colors(cls, cardboard: Cardboard) -> t.Iterable[t.AbstractSet[Color]]:
 		return (card.color for card in cardboard.cards)
 
@@ -358,6 +375,10 @@ class PrintingStrategy(ExtractionStrategy):
 	@classmethod
 	def extract_mana_cost(cls, printing: Printing) -> t.Iterable[ManaCost]:
 		return (card.mana_cost for card in printing.cardboard.cards)
+
+	@classmethod
+	def extract_color(cls, printing: Printing) -> t.Iterable[t.AbstractSet[Color]]:
+		return (card.color for card in printing.cardboard.cards)
 
 	@classmethod
 	def extract_colors(cls, printing: Printing) -> t.Iterable[t.AbstractSet[Color]]:

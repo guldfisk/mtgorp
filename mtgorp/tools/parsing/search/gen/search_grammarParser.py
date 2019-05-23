@@ -7,61 +7,63 @@ import sys
 
 def serializedATN():
     with StringIO() as buf:
-        buf.write("\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3#")
-        buf.write("\u0094\4\2\t\2\4\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7")
+        buf.write("\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3$")
+        buf.write("\u0098\4\2\t\2\4\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7")
         buf.write("\4\b\t\b\4\t\t\t\3\2\3\2\3\2\3\3\3\3\3\3\3\3\3\3\3\3\3")
         buf.write("\3\3\3\5\3\36\n\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\7\3")
         buf.write("(\n\3\f\3\16\3+\13\3\3\4\3\4\3\4\3\4\3\4\3\4\3\4\3\4\3")
         buf.write("\4\3\4\3\4\3\4\3\4\3\4\3\4\3\4\3\4\3\4\3\4\3\4\3\4\3\4")
         buf.write("\3\4\3\4\3\4\3\4\3\4\3\4\3\4\3\4\3\4\3\4\3\4\3\4\3\4\3")
         buf.write("\4\3\4\3\4\3\4\3\4\3\4\3\4\3\4\3\4\3\4\3\4\3\4\3\4\3\4")
-        buf.write("\3\4\3\4\3\4\3\4\3\4\3\4\3\4\3\4\5\4f\n\4\3\5\3\5\3\5")
-        buf.write("\3\5\3\5\7\5m\n\5\f\5\16\5p\13\5\3\6\3\6\5\6t\n\6\3\7")
-        buf.write("\3\7\3\7\5\7y\n\7\3\b\3\b\3\b\3\b\3\b\3\b\5\b\u0081\n")
-        buf.write("\b\3\t\3\t\3\t\3\t\3\t\3\t\3\t\3\t\3\t\3\t\3\t\3\t\3\t")
-        buf.write("\3\t\3\t\5\t\u0092\n\t\3\t\2\4\4\b\n\2\4\6\b\n\f\16\20")
-        buf.write("\2\2\2\u00af\2\22\3\2\2\2\4\35\3\2\2\2\6e\3\2\2\2\bg\3")
-        buf.write("\2\2\2\ns\3\2\2\2\fx\3\2\2\2\16\u0080\3\2\2\2\20\u0091")
-        buf.write("\3\2\2\2\22\23\5\4\3\2\23\24\7\2\2\3\24\3\3\2\2\2\25\26")
-        buf.write("\b\3\1\2\26\27\7\3\2\2\27\36\5\4\3\b\30\31\7\4\2\2\31")
-        buf.write("\32\5\4\3\2\32\33\7\5\2\2\33\36\3\2\2\2\34\36\5\6\4\2")
-        buf.write("\35\25\3\2\2\2\35\30\3\2\2\2\35\34\3\2\2\2\36)\3\2\2\2")
-        buf.write("\37 \f\5\2\2 (\5\4\3\6!\"\f\4\2\2\"#\7\6\2\2#(\5\4\3\5")
-        buf.write("$%\f\3\2\2%&\7\7\2\2&(\5\4\3\4\'\37\3\2\2\2\'!\3\2\2\2")
-        buf.write("\'$\3\2\2\2(+\3\2\2\2)\'\3\2\2\2)*\3\2\2\2*\5\3\2\2\2")
-        buf.write("+)\3\2\2\2,f\5\n\6\2-.\7\17\2\2./\5\16\b\2/\60\5\n\6\2")
-        buf.write("\60f\3\2\2\2\61\62\7\20\2\2\62\63\5\16\b\2\63\64\5\b\5")
-        buf.write("\2\64f\3\2\2\2\65\66\7\21\2\2\66\67\5\16\b\2\678\5\f\7")
-        buf.write("\28f\3\2\2\29:\7\22\2\2:;\5\16\b\2;<\5\n\6\2<f\3\2\2\2")
-        buf.write("=>\7\23\2\2>?\5\16\b\2?@\5\n\6\2@f\3\2\2\2AB\7\24\2\2")
-        buf.write("BC\5\16\b\2CD\5\n\6\2Df\3\2\2\2EF\7\25\2\2FG\5\16\b\2")
-        buf.write("GH\5\n\6\2Hf\3\2\2\2IJ\7\26\2\2JK\5\16\b\2KL\5\n\6\2L")
-        buf.write("f\3\2\2\2MN\7\27\2\2NO\5\16\b\2OP\7 \2\2Pf\3\2\2\2QR\7")
-        buf.write("\27\2\2RS\5\16\b\2ST\5\20\t\2Tf\3\2\2\2UV\7\30\2\2VW\7")
-        buf.write("\b\2\2Wf\5\n\6\2XY\7\31\2\2YZ\7\b\2\2Zf\5\n\6\2[\\\7\32")
-        buf.write("\2\2\\]\5\16\b\2]^\5\b\5\2^f\3\2\2\2_`\7\34\2\2`a\7\b")
-        buf.write("\2\2af\5\n\6\2bc\7\35\2\2cd\7\b\2\2df\5\n\6\2e,\3\2\2")
-        buf.write("\2e-\3\2\2\2e\61\3\2\2\2e\65\3\2\2\2e9\3\2\2\2e=\3\2\2")
-        buf.write("\2eA\3\2\2\2eE\3\2\2\2eI\3\2\2\2eM\3\2\2\2eQ\3\2\2\2e")
-        buf.write("U\3\2\2\2eX\3\2\2\2e[\3\2\2\2e_\3\2\2\2eb\3\2\2\2f\7\3")
-        buf.write("\2\2\2gh\b\5\1\2hi\5\f\7\2in\3\2\2\2jk\f\3\2\2km\5\n\6")
-        buf.write("\2lj\3\2\2\2mp\3\2\2\2nl\3\2\2\2no\3\2\2\2o\t\3\2\2\2")
-        buf.write("pn\3\2\2\2qt\5\f\7\2rt\5\20\t\2sq\3\2\2\2sr\3\2\2\2t\13")
-        buf.write("\3\2\2\2uy\7\"\2\2vy\7!\2\2wy\7 \2\2xu\3\2\2\2xv\3\2\2")
-        buf.write("\2xw\3\2\2\2y\r\3\2\2\2z\u0081\7\t\2\2{\u0081\7\b\2\2")
-        buf.write("|\u0081\7\n\2\2}\u0081\7\13\2\2~\u0081\7\f\2\2\177\u0081")
-        buf.write("\7\r\2\2\u0080z\3\2\2\2\u0080{\3\2\2\2\u0080|\3\2\2\2")
-        buf.write("\u0080}\3\2\2\2\u0080~\3\2\2\2\u0080\177\3\2\2\2\u0081")
-        buf.write("\17\3\2\2\2\u0082\u0092\7\16\2\2\u0083\u0084\7\16\2\2")
-        buf.write("\u0084\u0092\7\17\2\2\u0085\u0086\7\16\2\2\u0086\u0092")
-        buf.write("\7\22\2\2\u0087\u0088\7\16\2\2\u0088\u0092\7\23\2\2\u0089")
-        buf.write("\u008a\7\16\2\2\u008a\u0092\7\24\2\2\u008b\u008c\7\16")
-        buf.write("\2\2\u008c\u0092\7\25\2\2\u008d\u008e\7\16\2\2\u008e\u0092")
-        buf.write("\7\26\2\2\u008f\u0090\7\16\2\2\u0090\u0092\7\27\2\2\u0091")
-        buf.write("\u0082\3\2\2\2\u0091\u0083\3\2\2\2\u0091\u0085\3\2\2\2")
-        buf.write("\u0091\u0087\3\2\2\2\u0091\u0089\3\2\2\2\u0091\u008b\3")
-        buf.write("\2\2\2\u0091\u008d\3\2\2\2\u0091\u008f\3\2\2\2\u0092\21")
-        buf.write("\3\2\2\2\13\35\')ensx\u0080\u0091")
+        buf.write("\3\4\3\4\3\4\3\4\3\4\3\4\3\4\3\4\3\4\3\4\3\4\3\4\5\4j")
+        buf.write("\n\4\3\5\3\5\3\5\3\5\3\5\7\5q\n\5\f\5\16\5t\13\5\3\6\3")
+        buf.write("\6\5\6x\n\6\3\7\3\7\3\7\5\7}\n\7\3\b\3\b\3\b\3\b\3\b\3")
+        buf.write("\b\5\b\u0085\n\b\3\t\3\t\3\t\3\t\3\t\3\t\3\t\3\t\3\t\3")
+        buf.write("\t\3\t\3\t\3\t\3\t\3\t\5\t\u0096\n\t\3\t\2\4\4\b\n\2\4")
+        buf.write("\6\b\n\f\16\20\2\2\2\u00b4\2\22\3\2\2\2\4\35\3\2\2\2\6")
+        buf.write("i\3\2\2\2\bk\3\2\2\2\nw\3\2\2\2\f|\3\2\2\2\16\u0084\3")
+        buf.write("\2\2\2\20\u0095\3\2\2\2\22\23\5\4\3\2\23\24\7\2\2\3\24")
+        buf.write("\3\3\2\2\2\25\26\b\3\1\2\26\27\7\3\2\2\27\36\5\4\3\b\30")
+        buf.write("\31\7\4\2\2\31\32\5\4\3\2\32\33\7\5\2\2\33\36\3\2\2\2")
+        buf.write("\34\36\5\6\4\2\35\25\3\2\2\2\35\30\3\2\2\2\35\34\3\2\2")
+        buf.write("\2\36)\3\2\2\2\37 \f\5\2\2 (\5\4\3\6!\"\f\4\2\2\"#\7\6")
+        buf.write("\2\2#(\5\4\3\5$%\f\3\2\2%&\7\7\2\2&(\5\4\3\4\'\37\3\2")
+        buf.write("\2\2\'!\3\2\2\2\'$\3\2\2\2(+\3\2\2\2)\'\3\2\2\2)*\3\2")
+        buf.write("\2\2*\5\3\2\2\2+)\3\2\2\2,j\5\n\6\2-.\7\17\2\2./\5\16")
+        buf.write("\b\2/\60\5\n\6\2\60j\3\2\2\2\61\62\7\20\2\2\62\63\5\16")
+        buf.write("\b\2\63\64\5\b\5\2\64j\3\2\2\2\65\66\7\21\2\2\66\67\5")
+        buf.write("\16\b\2\678\5\n\6\28j\3\2\2\29:\7\22\2\2:;\5\16\b\2;<")
+        buf.write("\5\n\6\2<j\3\2\2\2=>\7\23\2\2>?\5\16\b\2?@\5\n\6\2@j\3")
+        buf.write("\2\2\2AB\7\24\2\2BC\5\16\b\2CD\5\n\6\2Dj\3\2\2\2EF\7\25")
+        buf.write("\2\2FG\5\16\b\2GH\5\n\6\2Hj\3\2\2\2IJ\7\26\2\2JK\5\16")
+        buf.write("\b\2KL\5\n\6\2Lj\3\2\2\2MN\7\27\2\2NO\5\16\b\2OP\5\n\6")
+        buf.write("\2Pj\3\2\2\2QR\7\30\2\2RS\5\16\b\2ST\7!\2\2Tj\3\2\2\2")
+        buf.write("UV\7\30\2\2VW\5\16\b\2WX\5\20\t\2Xj\3\2\2\2YZ\7\31\2\2")
+        buf.write("Z[\7\b\2\2[j\5\n\6\2\\]\7\32\2\2]^\7\b\2\2^j\5\n\6\2_")
+        buf.write("`\7\33\2\2`a\5\16\b\2ab\5\b\5\2bj\3\2\2\2cd\7\35\2\2d")
+        buf.write("e\7\b\2\2ej\5\n\6\2fg\7\36\2\2gh\7\b\2\2hj\5\n\6\2i,\3")
+        buf.write("\2\2\2i-\3\2\2\2i\61\3\2\2\2i\65\3\2\2\2i9\3\2\2\2i=\3")
+        buf.write("\2\2\2iA\3\2\2\2iE\3\2\2\2iI\3\2\2\2iM\3\2\2\2iQ\3\2\2")
+        buf.write("\2iU\3\2\2\2iY\3\2\2\2i\\\3\2\2\2i_\3\2\2\2ic\3\2\2\2")
+        buf.write("if\3\2\2\2j\7\3\2\2\2kl\b\5\1\2lm\5\f\7\2mr\3\2\2\2no")
+        buf.write("\f\3\2\2oq\5\n\6\2pn\3\2\2\2qt\3\2\2\2rp\3\2\2\2rs\3\2")
+        buf.write("\2\2s\t\3\2\2\2tr\3\2\2\2ux\5\f\7\2vx\5\20\t\2wu\3\2\2")
+        buf.write("\2wv\3\2\2\2x\13\3\2\2\2y}\7#\2\2z}\7\"\2\2{}\7!\2\2|")
+        buf.write("y\3\2\2\2|z\3\2\2\2|{\3\2\2\2}\r\3\2\2\2~\u0085\7\t\2")
+        buf.write("\2\177\u0085\7\b\2\2\u0080\u0085\7\n\2\2\u0081\u0085\7")
+        buf.write("\13\2\2\u0082\u0085\7\f\2\2\u0083\u0085\7\r\2\2\u0084")
+        buf.write("~\3\2\2\2\u0084\177\3\2\2\2\u0084\u0080\3\2\2\2\u0084")
+        buf.write("\u0081\3\2\2\2\u0084\u0082\3\2\2\2\u0084\u0083\3\2\2\2")
+        buf.write("\u0085\17\3\2\2\2\u0086\u0096\7\16\2\2\u0087\u0088\7\16")
+        buf.write("\2\2\u0088\u0096\7\17\2\2\u0089\u008a\7\16\2\2\u008a\u0096")
+        buf.write("\7\23\2\2\u008b\u008c\7\16\2\2\u008c\u0096\7\24\2\2\u008d")
+        buf.write("\u008e\7\16\2\2\u008e\u0096\7\25\2\2\u008f\u0090\7\16")
+        buf.write("\2\2\u0090\u0096\7\26\2\2\u0091\u0092\7\16\2\2\u0092\u0096")
+        buf.write("\7\27\2\2\u0093\u0094\7\16\2\2\u0094\u0096\7\30\2\2\u0095")
+        buf.write("\u0086\3\2\2\2\u0095\u0087\3\2\2\2\u0095\u0089\3\2\2\2")
+        buf.write("\u0095\u008b\3\2\2\2\u0095\u008d\3\2\2\2\u0095\u008f\3")
+        buf.write("\2\2\2\u0095\u0091\3\2\2\2\u0095\u0093\3\2\2\2\u0096\21")
+        buf.write("\3\2\2\2\13\35\')irw|\u0084\u0095")
         return buf.getvalue()
 
 
@@ -82,10 +84,10 @@ class search_grammarParser ( Parser ):
                       "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
                       "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
                       "DYNAMIC_VALUE", "NAME_CODE", "TYPE_CODE", "MANA_CODE", 
-                      "ORACLE_CODE", "POWER_CODE", "TOUGHNESS_CODE", "LOYALTY_CODE", 
-                      "ARTIST_CODE", "CMC_CODE", "RARITY_CODE", "LAYOUT_CODE", 
-                      "FLAGS_CODE", "FLAVOR_CODE", "EXPANSION_CODE", "BLOCK_CODE", 
-                      "CARDBOARD_CODE", "PRINTING_CODE", "UNSIGNED_INTEGER", 
+                      "COLOR_CODE", "ORACLE_CODE", "POWER_CODE", "TOUGHNESS_CODE", 
+                      "LOYALTY_CODE", "ARTIST_CODE", "CMC_CODE", "RARITY_CODE", 
+                      "LAYOUT_CODE", "FLAGS_CODE", "FLAVOR_CODE", "EXPANSION_CODE", 
+                      "BLOCK_CODE", "CARDBOARD_CODE", "PRINTING_CODE", "UNSIGNED_INTEGER", 
                       "QUOTED_VALUE", "VALUE", "WHITESPACE" ]
 
     RULE_start = 0
@@ -116,24 +118,25 @@ class search_grammarParser ( Parser ):
     NAME_CODE=13
     TYPE_CODE=14
     MANA_CODE=15
-    ORACLE_CODE=16
-    POWER_CODE=17
-    TOUGHNESS_CODE=18
-    LOYALTY_CODE=19
-    ARTIST_CODE=20
-    CMC_CODE=21
-    RARITY_CODE=22
-    LAYOUT_CODE=23
-    FLAGS_CODE=24
-    FLAVOR_CODE=25
-    EXPANSION_CODE=26
-    BLOCK_CODE=27
-    CARDBOARD_CODE=28
-    PRINTING_CODE=29
-    UNSIGNED_INTEGER=30
-    QUOTED_VALUE=31
-    VALUE=32
-    WHITESPACE=33
+    COLOR_CODE=16
+    ORACLE_CODE=17
+    POWER_CODE=18
+    TOUGHNESS_CODE=19
+    LOYALTY_CODE=20
+    ARTIST_CODE=21
+    CMC_CODE=22
+    RARITY_CODE=23
+    LAYOUT_CODE=24
+    FLAGS_CODE=25
+    FLAVOR_CODE=26
+    EXPANSION_CODE=27
+    BLOCK_CODE=28
+    CARDBOARD_CODE=29
+    PRINTING_CODE=30
+    UNSIGNED_INTEGER=31
+    QUOTED_VALUE=32
+    VALUE=33
+    WHITESPACE=34
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
@@ -374,7 +377,7 @@ class search_grammarParser ( Parser ):
                 self.state = 24
                 self.match(search_grammarParser.T__2)
                 pass
-            elif token in [search_grammarParser.DYNAMIC_VALUE, search_grammarParser.NAME_CODE, search_grammarParser.TYPE_CODE, search_grammarParser.MANA_CODE, search_grammarParser.ORACLE_CODE, search_grammarParser.POWER_CODE, search_grammarParser.TOUGHNESS_CODE, search_grammarParser.LOYALTY_CODE, search_grammarParser.ARTIST_CODE, search_grammarParser.CMC_CODE, search_grammarParser.RARITY_CODE, search_grammarParser.LAYOUT_CODE, search_grammarParser.FLAGS_CODE, search_grammarParser.EXPANSION_CODE, search_grammarParser.BLOCK_CODE, search_grammarParser.UNSIGNED_INTEGER, search_grammarParser.QUOTED_VALUE, search_grammarParser.VALUE]:
+            elif token in [search_grammarParser.DYNAMIC_VALUE, search_grammarParser.NAME_CODE, search_grammarParser.TYPE_CODE, search_grammarParser.MANA_CODE, search_grammarParser.COLOR_CODE, search_grammarParser.ORACLE_CODE, search_grammarParser.POWER_CODE, search_grammarParser.TOUGHNESS_CODE, search_grammarParser.LOYALTY_CODE, search_grammarParser.ARTIST_CODE, search_grammarParser.CMC_CODE, search_grammarParser.RARITY_CODE, search_grammarParser.LAYOUT_CODE, search_grammarParser.FLAGS_CODE, search_grammarParser.EXPANSION_CODE, search_grammarParser.BLOCK_CODE, search_grammarParser.UNSIGNED_INTEGER, search_grammarParser.QUOTED_VALUE, search_grammarParser.VALUE]:
                 localctx = search_grammarParser.RestrictionOperationContext(self, localctx)
                 self._ctx = localctx
                 _prevctx = localctx
@@ -519,6 +522,36 @@ class search_grammarParser ( Parser ):
                 return visitor.visitChildren(self)
 
 
+    class ColorRestrictionContext(RestrictionContext):
+
+        def __init__(self, parser, ctx:ParserRuleContext): # actually a search_grammarParser.RestrictionContext
+            super().__init__(parser)
+            self.copyFrom(ctx)
+
+        def COLOR_CODE(self):
+            return self.getToken(search_grammarParser.COLOR_CODE, 0)
+        def operator(self):
+            return self.getTypedRuleContext(search_grammarParser.OperatorContext,0)
+
+        def value(self):
+            return self.getTypedRuleContext(search_grammarParser.ValueContext,0)
+
+
+        def enterRule(self, listener:ParseTreeListener):
+            if hasattr( listener, "enterColorRestriction" ):
+                listener.enterColorRestriction(self)
+
+        def exitRule(self, listener:ParseTreeListener):
+            if hasattr( listener, "exitColorRestriction" ):
+                listener.exitColorRestriction(self)
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitColorRestriction" ):
+                return visitor.visitColorRestriction(self)
+            else:
+                return visitor.visitChildren(self)
+
+
     class ManaRestrictionContext(RestrictionContext):
 
         def __init__(self, parser, ctx:ParserRuleContext): # actually a search_grammarParser.RestrictionContext
@@ -530,8 +563,8 @@ class search_grammarParser ( Parser ):
         def operator(self):
             return self.getTypedRuleContext(search_grammarParser.OperatorContext,0)
 
-        def static_value(self):
-            return self.getTypedRuleContext(search_grammarParser.Static_valueContext,0)
+        def value(self):
+            return self.getTypedRuleContext(search_grammarParser.ValueContext,0)
 
 
         def enterRule(self, listener:ParseTreeListener):
@@ -878,7 +911,7 @@ class search_grammarParser ( Parser ):
         localctx = search_grammarParser.RestrictionContext(self, self._ctx, self.state)
         self.enterRule(localctx, 4, self.RULE_restriction)
         try:
-            self.state = 99
+            self.state = 103
             self._errHandler.sync(self)
             la_ = self._interp.adaptivePredict(self._input,3,self._ctx)
             if la_ == 1:
@@ -918,14 +951,14 @@ class search_grammarParser ( Parser ):
                 self.state = 52
                 self.operator()
                 self.state = 53
-                self.static_value()
+                self.value()
                 pass
 
             elif la_ == 5:
-                localctx = search_grammarParser.OracleRestrictionContext(self, localctx)
+                localctx = search_grammarParser.ColorRestrictionContext(self, localctx)
                 self.enterOuterAlt(localctx, 5)
                 self.state = 55
-                self.match(search_grammarParser.ORACLE_CODE)
+                self.match(search_grammarParser.COLOR_CODE)
                 self.state = 56
                 self.operator()
                 self.state = 57
@@ -933,10 +966,10 @@ class search_grammarParser ( Parser ):
                 pass
 
             elif la_ == 6:
-                localctx = search_grammarParser.PowerRestrictionContext(self, localctx)
+                localctx = search_grammarParser.OracleRestrictionContext(self, localctx)
                 self.enterOuterAlt(localctx, 6)
                 self.state = 59
-                self.match(search_grammarParser.POWER_CODE)
+                self.match(search_grammarParser.ORACLE_CODE)
                 self.state = 60
                 self.operator()
                 self.state = 61
@@ -944,10 +977,10 @@ class search_grammarParser ( Parser ):
                 pass
 
             elif la_ == 7:
-                localctx = search_grammarParser.ToughnessRestrictionContext(self, localctx)
+                localctx = search_grammarParser.PowerRestrictionContext(self, localctx)
                 self.enterOuterAlt(localctx, 7)
                 self.state = 63
-                self.match(search_grammarParser.TOUGHNESS_CODE)
+                self.match(search_grammarParser.POWER_CODE)
                 self.state = 64
                 self.operator()
                 self.state = 65
@@ -955,10 +988,10 @@ class search_grammarParser ( Parser ):
                 pass
 
             elif la_ == 8:
-                localctx = search_grammarParser.LoyaltyRestrictionContext(self, localctx)
+                localctx = search_grammarParser.ToughnessRestrictionContext(self, localctx)
                 self.enterOuterAlt(localctx, 8)
                 self.state = 67
-                self.match(search_grammarParser.LOYALTY_CODE)
+                self.match(search_grammarParser.TOUGHNESS_CODE)
                 self.state = 68
                 self.operator()
                 self.state = 69
@@ -966,10 +999,10 @@ class search_grammarParser ( Parser ):
                 pass
 
             elif la_ == 9:
-                localctx = search_grammarParser.ArtistRestrictionContext(self, localctx)
+                localctx = search_grammarParser.LoyaltyRestrictionContext(self, localctx)
                 self.enterOuterAlt(localctx, 9)
                 self.state = 71
-                self.match(search_grammarParser.ARTIST_CODE)
+                self.match(search_grammarParser.LOYALTY_CODE)
                 self.state = 72
                 self.operator()
                 self.state = 73
@@ -977,14 +1010,14 @@ class search_grammarParser ( Parser ):
                 pass
 
             elif la_ == 10:
-                localctx = search_grammarParser.CmcRestrictionContext(self, localctx)
+                localctx = search_grammarParser.ArtistRestrictionContext(self, localctx)
                 self.enterOuterAlt(localctx, 10)
                 self.state = 75
-                self.match(search_grammarParser.CMC_CODE)
+                self.match(search_grammarParser.ARTIST_CODE)
                 self.state = 76
                 self.operator()
                 self.state = 77
-                self.match(search_grammarParser.UNSIGNED_INTEGER)
+                self.value()
                 pass
 
             elif la_ == 11:
@@ -995,61 +1028,72 @@ class search_grammarParser ( Parser ):
                 self.state = 80
                 self.operator()
                 self.state = 81
-                self.dynamic_value()
+                self.match(search_grammarParser.UNSIGNED_INTEGER)
                 pass
 
             elif la_ == 12:
-                localctx = search_grammarParser.RarityRestrictionContext(self, localctx)
+                localctx = search_grammarParser.CmcRestrictionContext(self, localctx)
                 self.enterOuterAlt(localctx, 12)
                 self.state = 83
-                self.match(search_grammarParser.RARITY_CODE)
+                self.match(search_grammarParser.CMC_CODE)
                 self.state = 84
-                self.match(search_grammarParser.T__5)
+                self.operator()
                 self.state = 85
-                self.value()
+                self.dynamic_value()
                 pass
 
             elif la_ == 13:
-                localctx = search_grammarParser.LayoutRestrictionContext(self, localctx)
+                localctx = search_grammarParser.RarityRestrictionContext(self, localctx)
                 self.enterOuterAlt(localctx, 13)
-                self.state = 86
-                self.match(search_grammarParser.LAYOUT_CODE)
                 self.state = 87
-                self.match(search_grammarParser.T__5)
+                self.match(search_grammarParser.RARITY_CODE)
                 self.state = 88
+                self.match(search_grammarParser.T__5)
+                self.state = 89
                 self.value()
                 pass
 
             elif la_ == 14:
-                localctx = search_grammarParser.FlagsRestrictionContext(self, localctx)
+                localctx = search_grammarParser.LayoutRestrictionContext(self, localctx)
                 self.enterOuterAlt(localctx, 14)
-                self.state = 89
-                self.match(search_grammarParser.FLAGS_CODE)
                 self.state = 90
-                self.operator()
+                self.match(search_grammarParser.LAYOUT_CODE)
                 self.state = 91
-                self.value_chain(0)
-                pass
-
-            elif la_ == 15:
-                localctx = search_grammarParser.ExpansionRestrictionContext(self, localctx)
-                self.enterOuterAlt(localctx, 15)
-                self.state = 93
-                self.match(search_grammarParser.EXPANSION_CODE)
-                self.state = 94
                 self.match(search_grammarParser.T__5)
-                self.state = 95
+                self.state = 92
                 self.value()
                 pass
 
+            elif la_ == 15:
+                localctx = search_grammarParser.FlagsRestrictionContext(self, localctx)
+                self.enterOuterAlt(localctx, 15)
+                self.state = 93
+                self.match(search_grammarParser.FLAGS_CODE)
+                self.state = 94
+                self.operator()
+                self.state = 95
+                self.value_chain(0)
+                pass
+
             elif la_ == 16:
-                localctx = search_grammarParser.BlockRestrictionContext(self, localctx)
+                localctx = search_grammarParser.ExpansionRestrictionContext(self, localctx)
                 self.enterOuterAlt(localctx, 16)
-                self.state = 96
-                self.match(search_grammarParser.BLOCK_CODE)
                 self.state = 97
-                self.match(search_grammarParser.T__5)
+                self.match(search_grammarParser.EXPANSION_CODE)
                 self.state = 98
+                self.match(search_grammarParser.T__5)
+                self.state = 99
+                self.value()
+                pass
+
+            elif la_ == 17:
+                localctx = search_grammarParser.BlockRestrictionContext(self, localctx)
+                self.enterOuterAlt(localctx, 17)
+                self.state = 100
+                self.match(search_grammarParser.BLOCK_CODE)
+                self.state = 101
+                self.match(search_grammarParser.T__5)
+                self.state = 102
                 self.value()
                 pass
 
@@ -1144,10 +1188,10 @@ class search_grammarParser ( Parser ):
             self._ctx = localctx
             _prevctx = localctx
 
-            self.state = 102
+            self.state = 106
             self.static_value()
             self._ctx.stop = self._input.LT(-1)
-            self.state = 108
+            self.state = 112
             self._errHandler.sync(self)
             _alt = self._interp.adaptivePredict(self._input,4,self._ctx)
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
@@ -1157,13 +1201,13 @@ class search_grammarParser ( Parser ):
                     _prevctx = localctx
                     localctx = search_grammarParser.ChainChainContext(self, search_grammarParser.Value_chainContext(self, _parentctx, _parentState))
                     self.pushNewRecursionContext(localctx, _startState, self.RULE_value_chain)
-                    self.state = 104
+                    self.state = 108
                     if not self.precpred(self._ctx, 1):
                         from antlr4.error.Errors import FailedPredicateException
                         raise FailedPredicateException(self, "self.precpred(self._ctx, 1)")
-                    self.state = 105
+                    self.state = 109
                     self.value() 
-                self.state = 110
+                self.state = 114
                 self._errHandler.sync(self)
                 _alt = self._interp.adaptivePredict(self._input,4,self._ctx)
 
@@ -1247,19 +1291,19 @@ class search_grammarParser ( Parser ):
         localctx = search_grammarParser.ValueContext(self, self._ctx, self.state)
         self.enterRule(localctx, 8, self.RULE_value)
         try:
-            self.state = 113
+            self.state = 117
             self._errHandler.sync(self)
             token = self._input.LA(1)
             if token in [search_grammarParser.UNSIGNED_INTEGER, search_grammarParser.QUOTED_VALUE, search_grammarParser.VALUE]:
                 localctx = search_grammarParser.StaticValueContext(self, localctx)
                 self.enterOuterAlt(localctx, 1)
-                self.state = 111
+                self.state = 115
                 self.static_value()
                 pass
             elif token in [search_grammarParser.DYNAMIC_VALUE]:
                 localctx = search_grammarParser.DynamicValueContext(self, localctx)
                 self.enterOuterAlt(localctx, 2)
-                self.state = 112
+                self.state = 116
                 self.dynamic_value()
                 pass
             else:
@@ -1367,25 +1411,25 @@ class search_grammarParser ( Parser ):
         localctx = search_grammarParser.Static_valueContext(self, self._ctx, self.state)
         self.enterRule(localctx, 10, self.RULE_static_value)
         try:
-            self.state = 118
+            self.state = 122
             self._errHandler.sync(self)
             token = self._input.LA(1)
             if token in [search_grammarParser.VALUE]:
                 localctx = search_grammarParser.InferredValueContext(self, localctx)
                 self.enterOuterAlt(localctx, 1)
-                self.state = 115
+                self.state = 119
                 self.match(search_grammarParser.VALUE)
                 pass
             elif token in [search_grammarParser.QUOTED_VALUE]:
                 localctx = search_grammarParser.QuotedValueContext(self, localctx)
                 self.enterOuterAlt(localctx, 2)
-                self.state = 116
+                self.state = 120
                 self.match(search_grammarParser.QUOTED_VALUE)
                 pass
             elif token in [search_grammarParser.UNSIGNED_INTEGER]:
                 localctx = search_grammarParser.UnsignedIntegerValueContext(self, localctx)
                 self.enterOuterAlt(localctx, 3)
-                self.state = 117
+                self.state = 121
                 self.match(search_grammarParser.UNSIGNED_INTEGER)
                 pass
             else:
@@ -1553,43 +1597,43 @@ class search_grammarParser ( Parser ):
         localctx = search_grammarParser.OperatorContext(self, self._ctx, self.state)
         self.enterRule(localctx, 12, self.RULE_operator)
         try:
-            self.state = 126
+            self.state = 130
             self._errHandler.sync(self)
             token = self._input.LA(1)
             if token in [search_grammarParser.T__6]:
                 localctx = search_grammarParser.IncludesOperatorContext(self, localctx)
                 self.enterOuterAlt(localctx, 1)
-                self.state = 120
+                self.state = 124
                 self.match(search_grammarParser.T__6)
                 pass
             elif token in [search_grammarParser.T__5]:
                 localctx = search_grammarParser.EqualsOperatorContext(self, localctx)
                 self.enterOuterAlt(localctx, 2)
-                self.state = 121
+                self.state = 125
                 self.match(search_grammarParser.T__5)
                 pass
             elif token in [search_grammarParser.T__7]:
                 localctx = search_grammarParser.LessThanOperatorContext(self, localctx)
                 self.enterOuterAlt(localctx, 3)
-                self.state = 122
+                self.state = 126
                 self.match(search_grammarParser.T__7)
                 pass
             elif token in [search_grammarParser.T__8]:
                 localctx = search_grammarParser.LessEqualOperatorContext(self, localctx)
                 self.enterOuterAlt(localctx, 4)
-                self.state = 123
+                self.state = 127
                 self.match(search_grammarParser.T__8)
                 pass
             elif token in [search_grammarParser.T__9]:
                 localctx = search_grammarParser.GreaterThanOperatorContext(self, localctx)
                 self.enterOuterAlt(localctx, 5)
-                self.state = 124
+                self.state = 128
                 self.match(search_grammarParser.T__9)
                 pass
             elif token in [search_grammarParser.T__10]:
                 localctx = search_grammarParser.GreaterEqualOperatorContext(self, localctx)
                 self.enterOuterAlt(localctx, 6)
-                self.state = 125
+                self.state = 129
                 self.match(search_grammarParser.T__10)
                 pass
             else:
@@ -1807,76 +1851,76 @@ class search_grammarParser ( Parser ):
         localctx = search_grammarParser.Dynamic_valueContext(self, self._ctx, self.state)
         self.enterRule(localctx, 14, self.RULE_dynamic_value)
         try:
-            self.state = 143
+            self.state = 147
             self._errHandler.sync(self)
             la_ = self._interp.adaptivePredict(self._input,8,self._ctx)
             if la_ == 1:
                 localctx = search_grammarParser.DynamicNameContext(self, localctx)
                 self.enterOuterAlt(localctx, 1)
-                self.state = 128
+                self.state = 132
                 self.match(search_grammarParser.DYNAMIC_VALUE)
                 pass
 
             elif la_ == 2:
                 localctx = search_grammarParser.DynamicNameContext(self, localctx)
                 self.enterOuterAlt(localctx, 2)
-                self.state = 129
+                self.state = 133
                 self.match(search_grammarParser.DYNAMIC_VALUE)
-                self.state = 130
+                self.state = 134
                 self.match(search_grammarParser.NAME_CODE)
                 pass
 
             elif la_ == 3:
                 localctx = search_grammarParser.DynamicOracleContext(self, localctx)
                 self.enterOuterAlt(localctx, 3)
-                self.state = 131
+                self.state = 135
                 self.match(search_grammarParser.DYNAMIC_VALUE)
-                self.state = 132
+                self.state = 136
                 self.match(search_grammarParser.ORACLE_CODE)
                 pass
 
             elif la_ == 4:
                 localctx = search_grammarParser.DynamicPowerContext(self, localctx)
                 self.enterOuterAlt(localctx, 4)
-                self.state = 133
+                self.state = 137
                 self.match(search_grammarParser.DYNAMIC_VALUE)
-                self.state = 134
+                self.state = 138
                 self.match(search_grammarParser.POWER_CODE)
                 pass
 
             elif la_ == 5:
                 localctx = search_grammarParser.DynamicToughnessContext(self, localctx)
                 self.enterOuterAlt(localctx, 5)
-                self.state = 135
+                self.state = 139
                 self.match(search_grammarParser.DYNAMIC_VALUE)
-                self.state = 136
+                self.state = 140
                 self.match(search_grammarParser.TOUGHNESS_CODE)
                 pass
 
             elif la_ == 6:
                 localctx = search_grammarParser.DynamicLoyaltyContext(self, localctx)
                 self.enterOuterAlt(localctx, 6)
-                self.state = 137
+                self.state = 141
                 self.match(search_grammarParser.DYNAMIC_VALUE)
-                self.state = 138
+                self.state = 142
                 self.match(search_grammarParser.LOYALTY_CODE)
                 pass
 
             elif la_ == 7:
                 localctx = search_grammarParser.DynamicArtistContext(self, localctx)
                 self.enterOuterAlt(localctx, 7)
-                self.state = 139
+                self.state = 143
                 self.match(search_grammarParser.DYNAMIC_VALUE)
-                self.state = 140
+                self.state = 144
                 self.match(search_grammarParser.ARTIST_CODE)
                 pass
 
             elif la_ == 8:
                 localctx = search_grammarParser.DynamicCmcContext(self, localctx)
                 self.enterOuterAlt(localctx, 8)
-                self.state = 141
+                self.state = 145
                 self.match(search_grammarParser.DYNAMIC_VALUE)
-                self.state = 142
+                self.state = 146
                 self.match(search_grammarParser.CMC_CODE)
                 pass
 

@@ -89,6 +89,15 @@ class search_grammarListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by search_grammarParser#ColorRestriction.
+    def enterColorRestriction(self, ctx:search_grammarParser.ColorRestrictionContext):
+        pass
+
+    # Exit a parse tree produced by search_grammarParser#ColorRestriction.
+    def exitColorRestriction(self, ctx:search_grammarParser.ColorRestrictionContext):
+        pass
+
+
     # Enter a parse tree produced by search_grammarParser#OracleRestriction.
     def enterOracleRestriction(self, ctx:search_grammarParser.OracleRestrictionContext):
         pass

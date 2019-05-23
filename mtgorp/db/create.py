@@ -88,7 +88,7 @@ class _CardboardParser(object):
 			):
 				if name == raw_card['names'][0]:
 					return (
-						tuple(n for n in raw_card['names']),
+						tuple(raw_card['names']),
 						(),
 					)
 
@@ -130,6 +130,9 @@ class _ArtistParser(object):
 
 	@classmethod
 	def parse(cls, name: str, artists: Table):
+		if not name:
+			return None
+
 		artist = Artist(name)
 
 		if not artist.name in artists:
@@ -142,7 +145,7 @@ class _ArtistParser(object):
 class _PrintingParser(object):
 
 	@classmethod
-	def _find_printing_from_name(cls, name: str, raw_printings):
+	def _find_raw_printing_from_name(cls, name: str, raw_printings):
 		for printing in raw_printings:
 			if printing.get('name', '') == name:
 				return printing
@@ -162,7 +165,7 @@ class _PrintingParser(object):
 				raise AttributeParseException('Printing not front')
 
 			if cardboard.back_card is not None:
-				raw_back_printing = cls._find_printing_from_name(cardboard.back_card.name, raw_printings)
+				raw_back_printing = cls._find_raw_printing_from_name(cardboard.back_card.name, raw_printings)
 				back_artist = _ArtistParser.parse(raw_back_printing.get('artist', None), artists)
 				back_flavor = raw_back_printing.get('flavorText', None)
 			else:
@@ -171,7 +174,7 @@ class _PrintingParser(object):
 
 			flags = []
 
-			if raw_printing.get('timeshifted', False):
+			if raw_printing.get('timeshifted'):
 				flags.append(Flag.TIMESHIFTED)
 
 			information = BoosterInformation.information()
@@ -194,7 +197,6 @@ class _PrintingParser(object):
 				'number',
 				raw_printing.get(
 					'mciNumber',
-					None,
 				),
 			)
 

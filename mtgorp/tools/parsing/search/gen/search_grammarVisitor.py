@@ -54,6 +54,11 @@ class search_grammarVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by search_grammarParser#ColorRestriction.
+    def visitColorRestriction(self, ctx:search_grammarParser.ColorRestrictionContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by search_grammarParser#OracleRestriction.
     def visitOracleRestriction(self, ctx:search_grammarParser.OracleRestrictionContext):
         return self.visitChildren(ctx)

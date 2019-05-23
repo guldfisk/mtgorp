@@ -10,7 +10,7 @@ from mtgorp.tools.parsing.rarity.parse import RarityParser
 from mtgorp.tools.parsing.layout.parse import LayoutParser
 from mtgorp.tools.parsing.expansion.parse import ExpansionParser
 from mtgorp.tools.parsing.block.parse import BlockParser
-
+from mtgorp.tools.parsing.color.parse import ColorParse
 from mtgorp.tools.parsing.search.gen.search_grammarParser import search_grammarParser
 from mtgorp.tools.parsing.search.gen.search_grammarVisitor import search_grammarVisitor
 
@@ -102,10 +102,19 @@ class SearchVisitor(search_grammarVisitor):
 		return (
 			(
 				self.visit(ctx.operator())
-			)
-				(
+			)(
 				e.ManaCostExtractor,
-				self._mana_cost_parser.parse(self.visit(ctx.static_value()))
+				self._mana_cost_parser.parse(self.visit(ctx.value()))
+			)
+		)
+	
+	def visitColorRestriction(self, ctx: search_grammarParser.ColorRestrictionContext):
+		return (
+			(
+				self.visit(ctx.operator())
+			)(
+				e.ColorExtractor,
+				ColorParse.parse(self.visit(ctx.value()))
 			)
 		)
 
