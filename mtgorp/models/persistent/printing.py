@@ -33,6 +33,9 @@ class Face(_Face):
 	def flavor(self) -> str:
 		return self._flavor
 
+	def __repr__(self) -> str:
+		return f'{self.__class__.__name__}({self.artist}, {None if self.flavor is None else self.flavor[:8]})'
+
 
 class Printing(Model, _Printing):
 	primary_key = PrimaryKey('id')
