@@ -100,10 +100,10 @@ class _CardboardParser(object):
 					)
 
 			elif raw_card_layout == Layout.MELD:
-				if name in raw_card['names'][0:2]:
+				if name in (raw_card['names'][0], raw_card['names'][-1]):
 					return (
 						(name,),
-						(raw_card['names'][-1],),
+						(raw_card['names'][1],),
 					)
 
 			raise AttributeParseException(f'"{name}" is not front side of layout')
