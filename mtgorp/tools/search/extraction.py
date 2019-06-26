@@ -170,14 +170,6 @@ class ManaCostExtractor(Extractor[ManaCost]):
 		return strategy.extract_mana_cost(extractable)
 
 
-class ColorExtractor(Extractor[Color]):
-	extraction_type = Color
-
-	@classmethod
-	def extract(cls, extractable: t.Any, strategy: t.Type[ExtractionStrategy]) -> t.Iterable[t.AbstractSet]:
-		return strategy.extract_color(extractable)
-
-
 class ColorExtractor(Extractor[t.AbstractSet[Color]]):
 	extraction_type = t.AbstractSet[Color]
 
