@@ -1,6 +1,9 @@
 import typing as t
 
+import functools
 
+
+@functools.total_ordering
 class PTValue(object):
 	
 	def __init__(self, value: int=0, variable: bool=False):
@@ -30,28 +33,10 @@ class PTValue(object):
 	def __hash__(self) -> int:
 		return hash(self.value)
 
-	def __lt__(self, other):
-		return (
-			isinstance(other, int) and self.value < other
-			or isinstance(other, self.__class__) and self.value < other.value
-		)
-	
-	def __le__(self, other):
-		return (
-			isinstance(other, int) and self.value <= other
-			or isinstance(other, self.__class__) and self.value <= other.value
-		)
-	
 	def __gt__(self, other):
 		return (
 			isinstance(other, int) and self.value > other
 			or isinstance(other, self.__class__) and self.value > other.value
-		)
-	
-	def __ge__(self, other):
-		return (
-			isinstance(other, int) and self.value >= other
-			or isinstance(other, self.__class__) and self.value >= other.value
 		)
 
 
