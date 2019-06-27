@@ -27,7 +27,7 @@ class AttributeMatch(Matchable, metaclass=ABCMeta):
 		self._value = value
 		self.__check = (
 			self._check_value_is_extractor
-			if isinstance(value, type) else
+			if isinstance(value, type) and issubclass(value, e.Extractor) else
 			self._check_value
 		)
 
@@ -43,7 +43,7 @@ class AttributeMatch(Matchable, metaclass=ABCMeta):
 
 	def match(self, model: searchable, strategy: t.Type[e.ExtractionStrategy]) -> bool:
 		return any(
-			extracted is not None and self.__check(extracted, model)
+			self.__check(extracted, model)
 			for extracted in
 			self._extractor.extract(model, strategy)
 		)
@@ -134,13 +134,19 @@ class Criteria(Matchable, metaclass=ABCMeta):
 		self._matchables = frozenset(checkables)
 
 	def _and(self, checkable: Matchable):
-		return self.__class__(self._matchables | frozenset((checkable,)))
+		return self.__class__(
+			self._matchables | frozenset((checkable,))
+		)
 
 	@abstractmethod
 	def match(self, model: searchable, strategy: t.Type[e.ExtractionStrategy]) -> bool:
 		pass
 
-	def matches(self, models: t.Iterable[searchable], strategy: t.Type[e.ExtractionStrategy]) -> t.Iterable[searchable]:
+	def matches(
+		self,
+		models: t.Iterable[searchable],
+		strategy: t.Type[e.ExtractionStrategy],
+	) -> t.Iterable[searchable]:
 		return (model for model in models if self.match(model, strategy))
 
 	def __eq__(self, other):

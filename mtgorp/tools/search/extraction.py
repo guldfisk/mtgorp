@@ -225,6 +225,7 @@ class ArtistExtractor(Extractor[str]):
 	def extract(cls, extractable: t.Any, strategy: t.Type[ExtractionStrategy]) -> t.Iterable[str]:
 		return strategy.extract_artist(extractable)
 
+
 class ExpansionExtractor(Extractor[Expansion]):
 	extraction_type = Expansion
 
@@ -291,20 +292,18 @@ class CardboardStrategy(ExtractionStrategy[Cardboard]):
 	def extract_power(cls, cardboard: Cardboard) -> t.Iterable[PTValue]:
 		return (
 			card.power_toughness.power
-			if card.power_toughness is not None else
-			None
 			for card in
 			cardboard.cards
+			if card.power_toughness is not None
 		)
 
 	@classmethod
 	def extract_toughness(cls, cardboard: Cardboard) -> t.Iterable[PTValue]:
 		return (
 			card.power_toughness.toughness
-			if card.power_toughness is not None else
-			None
 			for card in
 			cardboard.cards
+			if card.power_toughness is not None
 		)
 
 	@classmethod
@@ -314,13 +313,12 @@ class CardboardStrategy(ExtractionStrategy[Cardboard]):
 	@classmethod
 	def extract_artist(cls, cardboard: Cardboard) -> t.Iterable[str]:
 		return (
-			None
-			if face.artist is None else
 			face.artist.name.lower()
 			for printing in
 			cardboard.printings
 			for face in
 			printing.faces
+			if face.artist is None
 		)
 
 	@classmethod
@@ -330,11 +328,10 @@ class CardboardStrategy(ExtractionStrategy[Cardboard]):
 	@classmethod
 	def extract_block(cls, cardboard: Cardboard) -> t.Iterable[Block]:
 		return (
-			None
-			if printing.expansion is None else
 			printing.expansion.block
 			for printing in
 			cardboard.printings
+			if printing.expansion is not None
 		)
 	
 	
@@ -388,20 +385,18 @@ class PrintingStrategy(ExtractionStrategy):
 	def extract_power(cls, printing: Printing) -> t.Iterable[PTValue]:
 		return (
 			card.power_toughness.power
-			if card.power_toughness is not None else
-			None
 			for card in
 			printing.cardboard.cards
+			if card.power_toughness is not None
 		)
 
 	@classmethod
 	def extract_toughness(cls, printing: Printing) -> t.Iterable[PTValue]:
 		return (
 			card.power_toughness.toughness
-			if card.power_toughness is not None else
-			None
 			for card in
 			printing.cardboard.cards
+			if card.power_toughness is not None
 		)
 
 	@classmethod
@@ -411,11 +406,10 @@ class PrintingStrategy(ExtractionStrategy):
 	@classmethod
 	def extract_artist(cls, printing: Printing) -> t.Iterable[str]:
 		return (
-			None
-			if face.artist is None else
 			face.artist.name.lower()
 			for face in
 			printing.faces
+			if face.artist is not None
 		)
 
 	@classmethod
@@ -424,4 +418,4 @@ class PrintingStrategy(ExtractionStrategy):
 
 	@classmethod
 	def extract_block(cls, printing: Printing) -> t.Iterable[Block]:
-		return None if printing.expansion is None else printing.expansion.block,
+		return () if printing.expansion is None else (printing.expansion.block,)

@@ -204,7 +204,7 @@ class SearchVisitor(search_grammarVisitor):
 				self.visit(ctx.operator())
 			)(
 				e.ArtistExtractor,
-				value
+				value.lower()
 			)
 		)
 

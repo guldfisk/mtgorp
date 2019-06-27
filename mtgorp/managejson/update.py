@@ -1,3 +1,5 @@
+import typing as t
+
 import os
 import re
 
@@ -11,28 +13,30 @@ from mtgorp.db import create
 MTG_JSON_RSS_URL = 'http://mtgjson.com/atom.xml'
 
 
-def check_rss(url):
+def check_rss(url) -> t.Optional[str]:
 	rg = r.get(url)
 	root = ElementTree.fromstring(rg.text)
 	last_updates = None
+	
 	for child in root:
 		if re.match('.*updated$', child.tag):
 			last_updates = child.text
 			break
+			
 	return last_updates
 
 
-def update():
+def update() -> None:
 	download.re_download()
 	create.update_database()
 
 
-def delete_content(f):
+def delete_content(f) -> None:
 	f.seek(0)
 	f.truncate()
 
 
-def check_and_update():
+def check_and_update() -> bool:
 	last_updates = check_rss(MTG_JSON_RSS_URL)
 	
 	if not last_updates:
