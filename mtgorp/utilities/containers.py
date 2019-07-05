@@ -1,7 +1,10 @@
 import typing as t
 
-from multiset import FrozenMultiset
+from collections import Counter
+
+from multiset import FrozenMultiset, BaseMultiset
 from multiset import Multiset as _Multiset
+
 
 T = t.TypeVar('T')
 
@@ -22,6 +25,30 @@ class HashableMultiset(FrozenMultiset, t.Generic[T]):
 
 	def __getitem__(self, item: T) -> int:
 		return super().__getitem__(item)
+
+	def combine_with_counter(self, other: Counter) -> 'HashableMultiset':
+		result = self.__copy__()
+		_elements = result._elements
+		_total = result._total
+		for element, multiplicity in other.items():
+			old_multiplicity = _elements.get(element, 0)
+			new_multiplicity = old_multiplicity + multiplicity
+			if old_multiplicity > 0 and new_multiplicity <= 0:
+				del _elements[element]
+				_total -= old_multiplicity
+			elif new_multiplicity > 0:
+				_elements[element] = new_multiplicity
+				_total += multiplicity
+		result._total = _total
+		return result
+
+	def __add__(self, other):
+		if isinstance(other, (BaseMultiset, set, frozenset)):
+			pass
+		elif isinstance(other, Counter):
+			return self.combine_with_counter(other)
+		elif not isinstance(other, t.Set):
+			return NotImplemented
 
 
 class Multiset(_Multiset, t.Generic[T]):
