@@ -43,12 +43,9 @@ class HashableMultiset(FrozenMultiset, t.Generic[T]):
 		return result
 
 	def __add__(self, other):
-		if isinstance(other, (BaseMultiset, set, frozenset)):
-			pass
-		elif isinstance(other, Counter):
+		if isinstance(other, Counter):
 			return self.combine_with_counter(other)
-		elif not isinstance(other, t.Set):
-			return NotImplemented
+		return super().__add__(other)
 
 
 class Multiset(_Multiset, t.Generic[T]):
