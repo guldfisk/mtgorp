@@ -1,12 +1,35 @@
 import typing as t
+from collections import Counter as _Counter
+from typing import ItemsView, Mapping as Mapping, Tuple, Optional, List
 
-from collections import Counter
-
-from multiset import FrozenMultiset, BaseMultiset
-from multiset import Multiset as _Multiset
+from multiset import FrozenMultiset, Multiset as _Multiset
 
 
 T = t.TypeVar('T')
+
+
+class Counter(_Counter, t.Generic[T]):
+
+	def __init__(self, mapping: t.Optional[t.Mapping[T, int]] = None) -> None:
+		if mapping is None:
+			super().__init__({})
+		else:
+			super().__init__(mapping)
+
+	def __getitem__(self, k: T) -> int:
+		return super().__getitem__(k)
+
+	def items(self) -> ItemsView[T, int]:
+		return super().items()
+
+	def update(self, mapping: Mapping[T, int], **kwargs: int) -> None:
+		super().update(mapping, **kwargs)
+
+	def subtract(self, mapping: Mapping[T, int]) -> None:
+		super().subtract(mapping)
+
+	def most_common(self, n: Optional[int] = ...) -> List[Tuple[T, int]]:
+		return super().most_common(n)
 
 
 class HashableMultiset(FrozenMultiset, t.Generic[T]):
@@ -26,7 +49,7 @@ class HashableMultiset(FrozenMultiset, t.Generic[T]):
 	def __getitem__(self, item: T) -> int:
 		return super().__getitem__(item)
 
-	def combine_with_counter(self, other: Counter) -> 'HashableMultiset':
+	def combine_with_counter(self, other: _Counter) -> 'HashableMultiset':
 		result = self.__copy__()
 		_elements = result._elements
 		_total = result._total
@@ -43,7 +66,7 @@ class HashableMultiset(FrozenMultiset, t.Generic[T]):
 		return result
 
 	def __add__(self, other):
-		if isinstance(other, Counter):
+		if isinstance(other, _Counter):
 			return self.combine_with_counter(other)
 		return super().__add__(other)
 
