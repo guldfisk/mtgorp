@@ -210,7 +210,7 @@ class Pattern(t.Generic[T]):
 	def match(self, model: T) -> bool:
 		return self._matcher.match(model, self._strategy)
 
-	def matches(self, models: t.Iterable[T]) -> t.Iterable[T]:
+	def matches(self, models: t.Iterable[T]) -> t.Iterator[T]:
 		return (
 			model
 			for model in
