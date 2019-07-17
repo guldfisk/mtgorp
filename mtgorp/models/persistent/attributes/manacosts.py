@@ -3,9 +3,10 @@ from abc import ABCMeta
 
 from lazy_property import LazyProperty
 
+from yeetlong.multiset import FrozenMultiset
+
 import mtgorp.models.persistent.attributes.colors as cols
 from mtgorp.models.persistent.attributes.colors import Color
-from mtgorp.utilities.containers import HashableMultiset
 
 
 class ManaCostAtom(metaclass=ABCMeta):
@@ -145,7 +146,7 @@ class HybridCostAtom(ManaCostAtom):
 class ManaCost(object):
 	
 	def __init__(self, atoms: t.Iterable[ManaCostAtom]=None):
-		self._atoms = atoms if isinstance(atoms, HashableMultiset) else HashableMultiset(atoms)
+		self._atoms = atoms if isinstance(atoms, FrozenMultiset) else FrozenMultiset(atoms)
 	
 	@property
 	def cmc(self) -> int:

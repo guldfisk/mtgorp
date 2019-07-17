@@ -1,8 +1,9 @@
 import typing as t
 
 from abc import abstractmethod, ABC
-
 import datetime
+
+from yeetlong.multiset import FrozenMultiset
 
 from orp.relationships import Many
 
@@ -14,8 +15,6 @@ from mtgorp.models.persistent.attributes.layout import Layout
 from mtgorp.models.persistent.attributes.rarities import Rarity
 from mtgorp.models.persistent.attributes.flags import Flags
 from mtgorp.models.persistent.attributes.borders import Border
-
-from mtgorp.utilities.containers import HashableMultiset
 
 
 class Artist(ABC):
@@ -358,7 +357,7 @@ class Booster(ABC):
 
 	@property
 	@abstractmethod
-	def printings(self) -> HashableMultiset[Printing]:
+	def printings(self) -> FrozenMultiset[Printing]:
 		pass
 
 	@property

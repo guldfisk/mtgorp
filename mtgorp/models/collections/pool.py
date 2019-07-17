@@ -1,8 +1,9 @@
 import typing as t
 
+from yeetlong.multiset import FrozenMultiset
+
 from mtgorp.models.persistent.printing import Printing
 from mtgorp.models.collections.deck import Deck
-from mtgorp.utilities.containers import HashableMultiset
 from mtgorp.models.serilization.serializeable import Serializeable, serialization_model, Inflator
 
 
@@ -15,9 +16,9 @@ class Pool(Serializeable):
 	):
 		self._printings = (
 			printings
-			if isinstance(printings, HashableMultiset) else
-			HashableMultiset(printings)
-		) #type: HashableMultiset[Printing]
+			if isinstance(printings, FrozenMultiset) else
+			FrozenMultiset(printings)
+		) #type: FrozenMultiset[Printing]
 
 		self._decks = (
 			()
@@ -30,7 +31,7 @@ class Pool(Serializeable):
 		)
 	
 	@property
-	def printings(self) -> HashableMultiset[Printing]:
+	def printings(self) -> FrozenMultiset[Printing]:
 		return self._printings
 	
 	@property

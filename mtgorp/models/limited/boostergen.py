@@ -3,8 +3,9 @@ import bisect
 import random
 import typing as t
 
-from multiset import Multiset, BaseMultiset
 from frozendict import frozendict
+
+from yeetlong.multiset import FrozenMultiset, BaseMultiset, Multiset
 
 from mtgorp.models.persistent.attributes.rarities import Rarity
 from mtgorp.models.persistent.attributes.flags import Flag
@@ -18,8 +19,6 @@ from mtgorp.models.limited.booster import Booster
 
 from mtgorp.tools.search.pattern import CriteriaBuilder, Criteria, Pattern
 from mtgorp.tools.search.extraction import PrintingStrategy
-
-from mtgorp.utilities.containers import HashableMultiset
 
 
 def multiset_choice(ms: BaseMultiset):
@@ -161,9 +160,9 @@ class KeySlot(object):
 	def __init__(self, options: t.Iterable[Option]):
 		self._options = (
 			options
-			if isinstance(options, HashableMultiset) else
-			HashableMultiset(options)
-		) #type: HashableMultiset[Option]
+			if isinstance(options, FrozenMultiset) else
+			FrozenMultiset(options)
+		) #type: FrozenMultiset[Option]
 
 	def get_map_slot(self, expansion_collection: ExpansionCollection) -> 'MapSlot':
 		return MapSlot(
@@ -207,9 +206,9 @@ class BoosterKey(_BoosterKey):
 	def __init__(self, slots: t.Iterable[KeySlot]):
 		self._slots = (
 			slots
-			if isinstance(slots, HashableMultiset) else
-			HashableMultiset(slots)
-		) #type: HashableMultiset[KeySlot]
+			if isinstance(slots, FrozenMultiset) else
+			FrozenMultiset(slots)
+		) #type: FrozenMultiset[KeySlot]
 
 	@property
 	def slots(self):
@@ -240,7 +239,7 @@ class BoosterKey(_BoosterKey):
 class MapSlot(object):
 
 	def __init__(self, options: t.Iterable[t.FrozenSet[Printing]]):
-		self.options = options if isinstance(options, HashableMultiset) else HashableMultiset(options)
+		self.options = options if isinstance(options, FrozenMultiset) else FrozenMultiset(options)
 
 	# def _filter_options(self, forbidden: BaseMultiset):
 	# 	for value, multiplicity in self.options.items():
@@ -278,7 +277,7 @@ class MapSlot(object):
 class BoosterMap(_BoosterMap):
 
 	def __init__(self, slots: t.Iterable[MapSlot]):
-		self.slots = slots if isinstance(slots, HashableMultiset) else HashableMultiset(slots)
+		self.slots = slots if isinstance(slots, FrozenMultiset) else FrozenMultiset(slots)
 
 	def generate_booster(self) -> Booster:
 		slots = Multiset(slot.sample_slot() for slot in self.slots)

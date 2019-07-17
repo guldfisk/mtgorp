@@ -1,9 +1,10 @@
 import typing as t
 
+from yeetlong.multiset import FrozenMultiset
+
 from mtgorp.models.persistent.printing import Printing
 from mtgorp.tools.search.pattern import Criteria, PrintingPatternBuilder
 from mtgorp.models.persistent.attributes import typeline
-from mtgorp.utilities.containers import HashableMultiset, Multiset
 from mtgorp.models.serilization.serializeable import Serializeable, serialization_model, Inflator
 
 
@@ -12,30 +13,30 @@ class Deck(Serializeable):
 	def __init__(self, maindeck: t.Iterable[Printing], sideboard: t.Iterable[Printing] = None):
 		self._maindeck = (
 			maindeck
-			if isinstance(maindeck, HashableMultiset)
-			else HashableMultiset(maindeck)
-		) #type: HashableMultiset[Printing]
+			if isinstance(maindeck, FrozenMultiset)
+			else FrozenMultiset(maindeck)
+		) #type: FrozenMultiset[Printing]
 
 		self._sideboard = (
 			(
 				sideboard
-				if isinstance(sideboard, HashableMultiset) else
-				HashableMultiset(sideboard)
+				if isinstance(sideboard, FrozenMultiset) else
+				FrozenMultiset(sideboard)
 			)
 			if sideboard is not None else
-			HashableMultiset()
-		) #type: HashableMultiset[Printing]
+			FrozenMultiset()
+		) #type: FrozenMultiset[Printing]
 	
 	@property
-	def maindeck(self) -> HashableMultiset[Printing]:
+	def maindeck(self) -> FrozenMultiset[Printing]:
 		return self._maindeck
 	
 	@property
-	def sideboard(self) -> HashableMultiset[Printing]:
+	def sideboard(self) -> FrozenMultiset[Printing]:
 		return self._sideboard
 	
 	@property
-	def seventy_five(self) -> HashableMultiset[Printing]:
+	def seventy_five(self) -> FrozenMultiset[Printing]:
 		return self._maindeck + self._sideboard
 	
 	def __iter__(self) -> t.Iterable[Printing]:

@@ -3,12 +3,13 @@ import typing as t
 
 from abc import abstractmethod, ABC
 
+from yeetlong.multiset import Multiset
+
 from mtgorp.models.persistent.cardboard import Cardboard
 from mtgorp.models.persistent.printing import Printing
 from mtgorp.models.persistent.attributes import typeline
 from mtgorp.tools.search.pattern import Criteria, CriteriaBuilder
 from mtgorp.tools.search.extraction import ExtractionStrategy, CardboardStrategy, PrintingStrategy
-from mtgorp.utilities.containers import Multiset
 
 
 T = t.TypeVar('T')

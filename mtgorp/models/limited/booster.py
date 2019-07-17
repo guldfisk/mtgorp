@@ -1,19 +1,19 @@
 import typing as t
 
+from yeetlong.multiset import FrozenMultiset
+
 from mtgorp.models.interfaces import Printing, Expansion
 from mtgorp.models.interfaces import Booster as _Booster
-
-from mtgorp.utilities.containers import HashableMultiset
 
 
 class Booster(_Booster):
 
 	def __init__(self, printings: t.Iterable[Printing], expansion: Expansion = None):
-		self._printings = printings if isinstance(printings, HashableMultiset) else HashableMultiset(printings)
+		self._printings = printings if isinstance(printings, FrozenMultiset) else FrozenMultiset(printings)
 		self._expansion = expansion
 
 	@property
-	def printings(self) -> HashableMultiset[Printing]:
+	def printings(self) -> FrozenMultiset[Printing]:
 		return self._printings
 
 	@property
