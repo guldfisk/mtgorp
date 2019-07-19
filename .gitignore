@@ -1,13 +1,3 @@
 __pycache__/
 .idea/
-mtgorp/models/models_test.py
-mtgorp/db/test.py
-/mtgorp/models/cubeObjects.py
-/mtgorp/models/mtgObjects.py
-/mtgorp/tools/cardSearch.py
-/mtgorp/tools/searchClient.py
-/mtgorp/tools/selectRandom.py
-/mtgorp/tools/search/oldsearch.py
-/mtgorp/utilities/misc.py
-/test.py
-/mtgorp/test.py
+test.py
