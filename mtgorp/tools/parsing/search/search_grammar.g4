@@ -74,7 +74,7 @@ dynamic_value :
 DYNAMIC_VALUE : '@';
 
 NAME_CODE : [nN]|'name'|'NAME';
-TYPE_CODE : [tT]|'type'|'type';
+TYPE_CODE : [tT]|'type';
 MANA_CODE : [mM]|'manacost'|'MANACOST';
 COLOR_CODE : 'color'|'COLOR';
 ORACLE_CODE : [oO]|'oracle'|'ORACLE';
@@ -96,6 +96,6 @@ PRINTING_CODE : 'pr'|'PR'|'printing'|'PRINTING';
 UNSIGNED_INTEGER : [0-9]+;
 
 QUOTED_VALUE : '"'~('"')*'"';
-VALUE : [a-zA-Z0-9\-',:{}/*+!âáéàíúöû]+;
+VALUE : [a-zA-Z0-9\-',:{}/*+âáéàíúöû]+;
 
 WHITESPACE : [ \n\t\r] -> skip;
