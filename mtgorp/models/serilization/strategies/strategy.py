@@ -26,12 +26,12 @@ class Strategy(Inflator):
 		self._db = db #type: CardDatabase
 
 	@classmethod
-	def _to_compacted_model(cls, serializeable: serialization_model) -> compacted_model:
+	def to_compacted_model(cls, serializeable: serialization_model) -> compacted_model:
 		if isinstance(serializeable, Model):
 			return serializeable.primary_key
 
 		if isinstance(serializeable, Serializeable):
-			return cls._to_compacted_model(
+			return cls.to_compacted_model(
 				serializeable.serialize()
 			)
 
@@ -41,13 +41,13 @@ class Strategy(Inflator):
 		if isinstance(serializeable, dict):
 			return {
 				key:
-					cls._to_compacted_model(value)
+					cls.to_compacted_model(value)
 				for key, value in
 				serializeable.items()
 			}
 
 		return [
-			cls._to_compacted_model(item)
+			cls.to_compacted_model(item)
 			for item in
 			serializeable
 		]
@@ -63,7 +63,7 @@ class Strategy(Inflator):
 	@classmethod
 	def serialize(cls, serializeable: Serializeable) -> t.AnyStr:
 		return cls._serialize(
-			cls._to_compacted_model(
+			cls.to_compacted_model(
 				serializeable.serialize()
 			)
 		)
