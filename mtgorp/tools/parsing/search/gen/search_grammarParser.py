@@ -1,9 +1,10 @@
-# Generated from /home/biggenerals/PycharmProjects/mtgorp/mtgorp/tools/parsing/search/search_grammar.g4 by ANTLR 4.7
+# Generated from /home/phdk/PycharmProjects/mtgorp/mtgorp/tools/parsing/search/search_grammar.g4 by ANTLR 4.7.2
 # encoding: utf-8
 from antlr4 import *
 from io import StringIO
 from typing.io import TextIO
 import sys
+
 
 def serializedATN():
     with StringIO() as buf:
@@ -140,9 +141,10 @@ class search_grammarParser ( Parser ):
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
-        self.checkVersion("4.7")
+        self.checkVersion("4.7.2")
         self._interp = ParserATNSimulator(self, self.atn, self.decisionsToDFA, self.sharedContextCache)
         self._predicates = None
+
 
 
 
@@ -196,6 +198,7 @@ class search_grammarParser ( Parser ):
         finally:
             self.exitRule()
         return localctx
+
 
     class OperationContext(ParserRuleContext):
 
@@ -448,6 +451,7 @@ class search_grammarParser ( Parser ):
         finally:
             self.unrollRecursionContexts(_parentctx)
         return localctx
+
 
     class RestrictionContext(ParserRuleContext):
 
@@ -1106,6 +1110,7 @@ class search_grammarParser ( Parser ):
             self.exitRule()
         return localctx
 
+
     class Value_chainContext(ParserRuleContext):
 
         def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
@@ -1219,6 +1224,7 @@ class search_grammarParser ( Parser ):
             self.unrollRecursionContexts(_parentctx)
         return localctx
 
+
     class ValueContext(ParserRuleContext):
 
         def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
@@ -1316,6 +1322,7 @@ class search_grammarParser ( Parser ):
         finally:
             self.exitRule()
         return localctx
+
 
     class Static_valueContext(ParserRuleContext):
 
@@ -1442,6 +1449,7 @@ class search_grammarParser ( Parser ):
         finally:
             self.exitRule()
         return localctx
+
 
     class OperatorContext(ParserRuleContext):
 
@@ -1646,6 +1654,7 @@ class search_grammarParser ( Parser ):
         finally:
             self.exitRule()
         return localctx
+
 
     class Dynamic_valueContext(ParserRuleContext):
 
