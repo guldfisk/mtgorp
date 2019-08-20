@@ -111,6 +111,9 @@ class Printing(Model, _Printing):
 	def border(self) -> t.Optional[Border]:
 		return self.expansion.border
 
+	def full_name(self) -> str:
+		return f'{self.cardboard.name}|{self.expansion.code}'
+
 	def __repr__(self):
 		return '{}({}, {}, {})'.format(
 			self.__class__.__name__,
