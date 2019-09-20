@@ -11,14 +11,14 @@ serializeable_value = t.Union[compacted_value, Model, 'Serializeable']
 
 compacted_model = t.Union[
     compacted_value,
-    t.List[t.Union[compacted_value, t.List, t.Dict]],
-    t.Dict[str, t.Union[compacted_value, t.List, t.Dict]],
+    t.List[t.Union[compacted_value, t.List, t.Mapping]],
+    t.Mapping[str, t.Union[compacted_value, t.List, t.Mapping]],
 ]
 
 serialization_model = t.Union[
     serializeable_value,
-    t.Iterable[t.Union[serializeable_value, t.Iterable, t.Dict]],
-    t.Dict[str, t.Union[serializeable_value, t.Iterable, t.Dict]],
+    t.Iterable[t.Union[serializeable_value, t.Iterable, t.Mapping]],
+    t.Mapping[str, t.Union[serializeable_value, t.Iterable, t.Mapping]],
 ]
 
 
@@ -63,8 +63,7 @@ class PersistentHashable(ABC):
     
     @abstractmethod
     def _calc_persistent_hash(self) -> t.Iterable[t.ByteString]:
-        pass        
-        
+        pass
     
     def persistent_hash(self) -> str:
         if hasattr(self, '_persistent_hash'):
