@@ -79,7 +79,7 @@ MANA_CODE : [mM]|'manacost'|'MANACOST';
 COLOR_CODE : 'color'|'COLOR';
 ORACLE_CODE : [oO]|'oracle'|'ORACLE';
 POWER_CODE : 'power'|'POWER'|'po'|'PO';
-TOUGHNESS_CODE : 'toughness'|'TOUGHNESS';
+TOUGHNESS_CODE : 'toughness'|'TOUGHNESS'|'tough';
 LOYALTY_CODE : 'loyalty'|'LOYALTY';
 ARTIST_CODE : 'artist'|'ARTIST';
 CMC_CODE : 'cmc'|'CMC';
