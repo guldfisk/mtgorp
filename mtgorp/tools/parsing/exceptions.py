@@ -1,4 +1,3 @@
 
-
 class ParseException(Exception):
-	pass
+    pass

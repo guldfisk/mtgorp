@@ -7,24 +7,24 @@ from mtgorp.db.attributeparse.exceptions import AttributeParseException
 
 
 class CardTypeParseException(AttributeParseException):
-	pass
+    pass
 
 
 class Parser(parser.Parser):
-	card_type_map = {
-		t.name: t for t in ALL_TYPES
-	}
-	type_matcher = re.compile("[\\w\\-’]+")
+    card_type_map = {
+        t.name: t for t in ALL_TYPES
+    }
+    type_matcher = re.compile("[\\w\\-’]+")
 
-	@staticmethod
-	def parse(s: str) -> TypeLine:
-		try:
-			return TypeLine(
-				*(
-					Parser.card_type_map[m.group()]
-					for m in
-					Parser.type_matcher.finditer(s)
-				)
-			)
-		except KeyError as e:
-			raise CardTypeParseException(e)
+    @staticmethod
+    def parse(s: str) -> TypeLine:
+        try:
+            return TypeLine(
+                *(
+                    Parser.card_type_map[m.group()]
+                    for m in
+                    Parser.type_matcher.finditer(s)
+                )
+            )
+        except KeyError as e:
+            raise CardTypeParseException(e)

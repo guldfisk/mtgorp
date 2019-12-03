@@ -13,55 +13,55 @@ from mtgorp.tools.parsing.exceptions import ParseException
 
 
 class SearchPatternParseException(ParseException):
-	pass
+    pass
 
 
 class SearchPatternParseListener(ErrorListener):
 
-	def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
-		raise SearchPatternParseException('Syntax error')
+    def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
+        raise SearchPatternParseException('Syntax error')
 
-	def reportContextSensitivity(self, recognizer, dfa, startIndex, stopIndex, prediction, configs):
-		raise SearchPatternParseException('Conetext sensitivity')
+    def reportContextSensitivity(self, recognizer, dfa, startIndex, stopIndex, prediction, configs):
+        raise SearchPatternParseException('Conetext sensitivity')
 
 
 class SearchParser(object):
 
-	def __init__(self, db: CardDatabase):
-		self._visitor = SearchVisitor(db)
+    def __init__(self, db: CardDatabase):
+        self._visitor = SearchVisitor(db)
 
-	@classmethod
-	def _build(cls, parsed: t.Union[AllBuilder, AnyBuilder]) -> Criteria:
-		return (
-			All
-			if isinstance(parsed, AllBuilder) else
-			Any
-		)(
-			(
-				cls._build(item)
-				if isinstance(item, AllBuilder) or isinstance(item, AnyBuilder)
-				else item
-			) for item in
-			parsed
-		)
+    @classmethod
+    def _build(cls, parsed: t.Union[AllBuilder, AnyBuilder]) -> Criteria:
+        return (
+            All
+            if isinstance(parsed, AllBuilder) else
+            Any
+        )(
+            (
+                cls._build(item)
+                if isinstance(item, AllBuilder) or isinstance(item, AnyBuilder)
+                else item
+            ) for item in
+            parsed
+        )
 
-	def parse_criteria(self, s: str) -> Criteria:
-		parser = search_grammarParser(
-			CommonTokenStream(
-				search_grammarLexer(
-					InputStream(s)
-				)
-			)
-		)
+    def parse_criteria(self, s: str) -> Criteria:
+        parser = search_grammarParser(
+            CommonTokenStream(
+                search_grammarLexer(
+                    InputStream(s)
+                )
+            )
+        )
 
-		parser._listeners = [SearchPatternParseListener()]
+        parser._listeners = [SearchPatternParseListener()]
 
-		return self._build(
-			self._visitor.visit(parser.start())
-		)
+        return self._build(
+            self._visitor.visit(parser.start())
+        )
 
-	def parse(self, s: str, strategy: t.Type[ExtractionStrategy] = CardboardStrategy) -> Pattern:
-		return Pattern(
-			self.parse_criteria(s),
-			strategy,
-		)
+    def parse(self, s: str, strategy: t.Type[ExtractionStrategy] = CardboardStrategy) -> Pattern:
+        return Pattern(
+            self.parse_criteria(s),
+            strategy,
+        )

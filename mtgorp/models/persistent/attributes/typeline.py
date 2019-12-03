@@ -1,3 +1,4 @@
+import functools
 import typing as t
 
 import itertools
@@ -8,75 +9,75 @@ from abc import ABCMeta
 from lazy_property import LazyProperty
 
 
-class BaseCardType(metaclass=ABCMeta):
+class BaseCardType(metaclass = ABCMeta):
 
-	def __init__(self, name: str):
-		self._name = name
+    def __init__(self, name: str):
+        self._name = name
 
-	@property
-	def name(self):
-		return self._name
+    @property
+    def name(self):
+        return self._name
 
-	def __hash__(self):
-		return hash((self.__class__, self._name))
+    def __hash__(self):
+        return hash((self.__class__, self._name))
 
-	def __eq__(self, other):
-		return isinstance(other, self.__class__) and self._name == other.name
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self._name == other.name
 
-	def __repr__(self):
-		return self._name
+    def __repr__(self):
+        return self._name
 
-	def __lt__(self, other):
-		return self._name < other.name
+    def __lt__(self, other):
+        return self._name < other.name
 
 
 class CardSuperType(BaseCardType):
 
-	def __lt__(self, other):
-		return _SUPER_TYPE_INDEX.get(self, -1) < _SUPER_TYPE_INDEX.get(other, -1)
+    def __lt__(self, other):
+        return _SUPER_TYPE_INDEX.get(self, -1) < _SUPER_TYPE_INDEX.get(other, -1)
 
 
 class CardType(BaseCardType):
 
-	def __init__(self, name: str):
-		super().__init__(name)
-		self.sub_types = frozenset() #type: t.AbstractSet[CardSubType]
+    def __init__(self, name: str):
+        super().__init__(name)
+        self.sub_types: t.AbstractSet[CardSubType] = frozenset()
 
-	def __lt__(self, other):
-		return _CARD_TYPE_INDEX.get(self, -1) < _CARD_TYPE_INDEX.get(other, -1)
+    def __lt__(self, other):
+        return _CARD_TYPE_INDEX.get(self, -1) < _CARD_TYPE_INDEX.get(other, -1)
 
-	def __reduce__(self):
-		return (
-			self.__class__,
-			(self._name,),
-			{'sub_types': self.sub_types},
-		)
+    def __reduce__(self):
+        return (
+            self.__class__,
+            (self._name,),
+            {'sub_types': self.sub_types},
+        )
 
 
 class CardSubType(BaseCardType):
 
-	def __init__(self, name: str, card_types: t.Optional[t.Iterable[CardType]] = None):
-		super().__init__(name)
+    def __init__(self, name: str, card_types: t.Optional[t.Iterable[CardType]] = None):
+        super().__init__(name)
 
-		if card_types is None:
-			self.card_types = frozenset()
-			return
+        if card_types is None:
+            self.card_types = frozenset()
+            return
 
-		self.card_types = frozenset(card_types) #type: t.AbstractSet[CardType]
+        self.card_types: t.AbstractSet[CardType] = frozenset(card_types)
 
-		for card_type in card_types:
-			card_type.sub_types |=  frozenset((self,))
+        for card_type in card_types:
+            card_type.sub_types |= frozenset((self,))
 
-	def __reduce__(self):
-		return (
-			self.__class__,
-			(self._name,),
-			{'card_types': self.card_types},
-		)
+    def __reduce__(self):
+        return (
+            self.__class__,
+            (self._name,),
+            {'card_types': self.card_types},
+        )
 
 
 class BasicLandType(CardSubType):
-	pass
+    pass
 
 
 SNOW = CardSuperType('Snow')
@@ -85,10 +86,10 @@ WORLD = CardSuperType('World')
 BASIC = CardSuperType('Basic')
 
 SUPER_TYPES = (
-	LEGENDARY,
-	BASIC,
-	WORLD,
-	SNOW,
+    LEGENDARY,
+    BASIC,
+    WORLD,
+    SNOW,
 )
 
 CREATURE = CardType('Creature')
@@ -101,28 +102,28 @@ SORCERY = CardType('Sorcery')
 TRIBAL = CardType('Tribal')
 
 CARD_TYPES = (
-	TRIBAL,
-	ENCHANTMENT,
-	ARTIFACT,
-	LAND,
-	CREATURE,
-	PLANESWALKER,
-	INSTANT,
-	SORCERY
+    TRIBAL,
+    ENCHANTMENT,
+    ARTIFACT,
+    LAND,
+    CREATURE,
+    PLANESWALKER,
+    INSTANT,
+    SORCERY
 )
 
 _SUPER_TYPE_INDEX = {
-	t: idx for idx, t in enumerate(SUPER_TYPES)
+    t: idx for idx, t in enumerate(SUPER_TYPES)
 }
 
 _CARD_TYPE_INDEX = {
-	t: idx for idx, t in enumerate(CARD_TYPES)
+    t: idx for idx, t in enumerate(CARD_TYPES)
 }
 
 CLUE = CardSubType('Clue', (ARTIFACT,))
 CONTRAPTION = CardSubType('Contraption', (ARTIFACT,))
-EQUIPMENT  = CardSubType('Equipment', (ARTIFACT,))
-FORTIFICATION  = CardSubType('Fortification', (ARTIFACT,))
+EQUIPMENT = CardSubType('Equipment', (ARTIFACT,))
+FORTIFICATION = CardSubType('Fortification', (ARTIFACT,))
 TREASURE = CardSubType('Treasure', (ARTIFACT,))
 VEHICLE = CardSubType('Vehicle', (ARTIFACT,))
 
@@ -447,118 +448,88 @@ ZOMBIE = CardSubType('Zombie', (CREATURE, TRIBAL))
 ZUBERA = CardSubType('Zubera', (CREATURE, TRIBAL))
 
 BASIC_LAND_TYPES = (
-	PLAINS,
-	ISLAND,
-	SWAMP,
-	MOUNTAIN,
-	FOREST,
+    PLAINS,
+    ISLAND,
+    SWAMP,
+    MOUNTAIN,
+    FOREST,
 )
 
 ALL_TYPES = tuple(
-	member
-	for name, member in
-	inspect.getmembers(sys.modules[__name__])
-	if isinstance(member, BaseCardType)
+    member
+    for name, member in
+    inspect.getmembers(sys.modules[__name__])
+    if isinstance(member, BaseCardType)
 )
 
 
+@functools.total_ordering
 class TypeLine(object):
-	SEPARATOR = ' — '
+    SEPARATOR = ' — '
 
-	def __init__(self, *types: BaseCardType):
-		self._types = frozenset(types)
-		self._repr = None #type: t.Optional[str]
+    def __init__(self, *types: BaseCardType):
+        self._types = frozenset(types)
+        self._repr: t.Optional[str] = None
 
-	def __eq__(self, other):
-		return (
-			isinstance(other, TypeLine)
-			and self._types == other.types
-		)
+    def __eq__(self, other):
+        return (
+            isinstance(other, TypeLine)
+            and self._types == other.types
+        )
 
-	def __gt__(self, other):
-		return (
-			isinstance(other, TypeLine)
-			and self._types > other.types
-		)
+    def __lt__(self, other):
+        return (
+            isinstance(other, TypeLine)
+            and self._types < other.types
+        )
 
-	def __ge__(self, other):
-		return (
-			isinstance(other, TypeLine)
-			and self._types >= other.types
-		)
+    def __hash__(self):
+        return hash(self._types)
 
-	def __lt__(self, other):
-		return (
-			isinstance(other, TypeLine)
-			and self._types < other.types
-		)
+    def __repr__(self):
+        if self._repr is not None:
+            return self._repr
 
-	def __le__(self, other):
-		return (
-			isinstance(other, TypeLine)
-			and self._types <= other.types
-		)
+        self._repr = ' '.join(
+            str(card_type)
+            for card_type in
+            itertools.chain(
+                sorted(self.super_types),
+                sorted(self.card_types),
+            )
+        )
 
-	def __hash__(self):
-		return hash(self._types)
+        if self.sub_types:
+            if self._repr:
+                self._repr += TypeLine.SEPARATOR
+            self._repr += ' '.join(
+                str(sub_type)
+                for sub_type in
+                sorted(self.sub_types)
+            )
 
-	def __repr__(self):
-		if self._repr is not None:
-			return  self._repr
+        return self._repr
 
-		self._repr = ' '.join(
-			str(card_type)
-			for card_type in
-			itertools.chain(
-				sorted(self.super_types),
-				sorted(self.card_types),
-			)
-		)
+    def __iter__(self):
+        return self._types.__iter__()
 
-		if self.sub_types:
-			self._repr += TypeLine.SEPARATOR + ' '.join(
-				str(sub_type)
-				for sub_type in
-				sorted(self.sub_types)
-			)
+    def __contains__(self, item):
+        if isinstance(item, self.__class__):
+            return item._types.issubset(self._types)
+        return item in self._types
 
-		return self._repr
+    @property
+    def types(self) -> t.AbstractSet[BaseCardType]:
+        return self._types
 
-	def __iter__(self):
-		return self._types.__iter__()
+    @LazyProperty
+    def super_types(self) -> t.Set[CardSuperType]:
+        return {t for t in self._types if isinstance(t, CardSuperType)}
 
-	def __contains__(self, item):
-		if isinstance(item, self.__class__):
-			return item._types.issubset(self._types)
-		return item in self._types
+    @LazyProperty
+    def card_types(self) -> t.Set[CardType]:
+        return {t for t in self._types if isinstance(t, CardType)}
 
-	@property
-	def types(self) -> t.AbstractSet[BaseCardType]:
-		return self._types
-
-	@LazyProperty
-	def super_types(self) -> t.Set[CardSuperType]:
-		return {t for t in self._types if isinstance(t, CardSuperType)}
-
-	@LazyProperty
-	def card_types(self) -> t.Set[CardType]:
-		return {t for t in self._types if isinstance(t, CardType)}
-
-	@LazyProperty
-	def sub_types(self) -> t.Set[CardSubType]:
-		return {t for t in self._types if isinstance(t, CardSubType)}
-
-
-
-def test():
-	import pickle
-
-	s = pickle.dumps(CREATURE)
-
-	angel = pickle.loads(s) #type: CardType
-
-	print(angel, angel.sub_types)
-
-
-if __name__ == '__main__':
-	test()
+    @LazyProperty
+    def sub_types(self) -> t.Set[CardSubType]:
+        return {t for t in self._types if isinstance(t, CardSubType)}

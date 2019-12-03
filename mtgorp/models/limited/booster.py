@@ -8,31 +8,30 @@ from mtgorp.models.interfaces import Booster as _Booster
 
 class Booster(_Booster):
 
-	def __init__(self, printings: t.Iterable[Printing], expansion: Expansion = None):
-		self._printings = printings if isinstance(printings, FrozenMultiset) else FrozenMultiset(printings)
-		self._expansion = expansion
+    def __init__(self, printings: t.Iterable[Printing], expansion: Expansion = None):
+        self._printings = printings if isinstance(printings, FrozenMultiset) else FrozenMultiset(printings)
+        self._expansion = expansion
 
-	@property
-	def printings(self) -> FrozenMultiset[Printing]:
-		return self._printings
+    @property
+    def printings(self) -> FrozenMultiset[Printing]:
+        return self._printings
 
-	@property
-	def sorted_printings(self) -> t.List[Printing]:
-		return sorted(self._printings, key=lambda p: p.rarity._evaluate_wish, reverse=True)
+    @property
+    def sorted_printings(self) -> t.List[Printing]:
+        return sorted(self._printings, key=lambda p: p.rarity.value, reverse=True)
 
-	@property
-	def expansion(self):
-		return self._expansion
+    @property
+    def expansion(self) -> t.Optional[Expansion]:
+        return self._expansion
 
-	def __str__(self) -> str:
-		return '{}({})'.format(
-			self.__class__.__name__,
-			tuple(a_printing.cardboard.name for a_printing in self.sorted_printings),
-		)
+    def __str__(self) -> str:
+        return '{}({})'.format(
+            self.__class__.__name__,
+            ', '.join(a_printing.cardboard.name for a_printing in self.sorted_printings),
+        )
 
-	def __contains__(self, printing: Printing) -> bool:
-		return printing in self._printings
+    def __contains__(self, printing: Printing) -> bool:
+        return printing in self._printings
 
-	def __iter__(self) -> t.Iterable[Printing]:
-		return self._printings.__iter__()
-
+    def __iter__(self) -> t.Iterator[Printing]:
+        return self._printings.__iter__()

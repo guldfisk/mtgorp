@@ -13,350 +13,349 @@ from mtgorp.tools.parsing.block.parse import BlockParser
 from mtgorp.tools.parsing.color.parse import ColorParse
 from mtgorp.tools.parsing.search.gen.search_grammarParser import search_grammarParser
 from mtgorp.tools.parsing.search.gen.search_grammarVisitor import search_grammarVisitor
-
 from mtgorp.tools.parsing.exceptions import ParseException
 
 
 class TypeParseException(ParseException):
-	pass
+    pass
 
 
 class SearchPatternBuilder(list):
 
-	def __repr__(self):
-		return f'{self.__class__.__name__}({super().__repr__()})'
+    def __repr__(self):
+        return f'{self.__class__.__name__}({super().__repr__()})'
 
 
 class AllBuilder(SearchPatternBuilder):
-	pass
+    pass
 
 
 class AnyBuilder(SearchPatternBuilder):
-	pass
+    pass
 
 
 class _Chain(list):
-	pass
+    pass
 
 
 class SearchVisitor(search_grammarVisitor):
 
-	def __init__(self, db: CardDatabase):
-		self._mana_cost_parser = ManaCostParser()
-		self._expansion_parser = ExpansionParser(db)
-		self._block_parser = BlockParser(db)
+    def __init__(self, db: CardDatabase):
+        self._mana_cost_parser = ManaCostParser()
+        self._expansion_parser = ExpansionParser(db)
+        self._block_parser = BlockParser(db)
 
-	def visitStart(self, ctx: search_grammarParser.StartContext):
-		pattern = self.visit(ctx.operation())
-		if not isinstance(pattern, SearchPatternBuilder):
-			return AllBuilder([pattern])
-		return pattern
+    def visitStart(self, ctx: search_grammarParser.StartContext):
+        pattern = self.visit(ctx.operation())
+        if not isinstance(pattern, SearchPatternBuilder):
+            return AllBuilder([pattern])
+        return pattern
 
-	def visitNot(self, ctx: search_grammarParser.NotContext):
-		return p.Not(self.visit(ctx.operation()))
+    def visitNot(self, ctx: search_grammarParser.NotContext):
+        return p.Not(self.visit(ctx.operation()))
 
-	def visitRestrictionOperation(self, ctx: search_grammarParser.RestrictionOperationContext):
-		return self.visit(ctx.restriction())
+    def visitRestrictionOperation(self, ctx: search_grammarParser.RestrictionOperationContext):
+        return self.visit(ctx.restriction())
 
-	def visitOr(self, ctx: search_grammarParser.OrContext):
-		return AnyBuilder([self.visit(ctx.operation(0)), self.visit(ctx.operation(1))])
+    def visitOr(self, ctx: search_grammarParser.OrContext):
+        return AnyBuilder([self.visit(ctx.operation(0)), self.visit(ctx.operation(1))])
 
-	def visitParenthesis(self, ctx: search_grammarParser.ParenthesisContext):
-		return self.visit(ctx.operation())
+    def visitParenthesis(self, ctx: search_grammarParser.ParenthesisContext):
+        return self.visit(ctx.operation())
 
-	def visitAnd(self, ctx: search_grammarParser.AndContext):
-		return AllBuilder([self.visit(ctx.operation(0)), self.visit(ctx.operation(1))])
+    def visitAnd(self, ctx: search_grammarParser.AndContext):
+        return AllBuilder([self.visit(ctx.operation(0)), self.visit(ctx.operation(1))])
 
-	def visitNameRestriction(self, ctx: search_grammarParser.NameRestrictionContext):
-		value = self.visit(ctx.value())
+    def visitNameRestriction(self, ctx: search_grammarParser.NameRestrictionContext):
+        value = self.visit(ctx.value())
 
-		if not isinstance(value, str) and not value._extraction_strategy == str:
-			raise TypeParseException('Mismatched dynamic value type')
-		else:
-			value = value.lower()
+        if not isinstance(value, str) and not value._extraction_strategy == str:
+            raise TypeParseException('Mismatched dynamic value type')
+        else:
+            value = value.lower()
 
-		return (
-			(
-				p.Contains
-				if ctx.operator() is None else
-				self.visit(ctx.operator())
-			)
-			(
-				e.NameExtractor,
-				value,
-			)
-		)
+        return (
+            (
+                p.Contains
+                if ctx.operator() is None else
+                self.visit(ctx.operator())
+            )
+                (
+                e.NameExtractor,
+                value,
+            )
+        )
 
-	def visitTypeRestriction(self, ctx: search_grammarParser.TypeRestrictionContext):
-		return (
-			(
-				self.visit(ctx.operator())
-			)
-				(
-				e.TypeLineExtractor,
-				TypeLineParser.parse(self.visit(ctx.value_chain()))
-			)
-		)
+    def visitTypeRestriction(self, ctx: search_grammarParser.TypeRestrictionContext):
+        return (
+            (
+                self.visit(ctx.operator())
+            )
+                (
+                e.TypeLineExtractor,
+                TypeLineParser.parse(self.visit(ctx.value_chain()))
+            )
+        )
 
-	def visitManaRestriction(self, ctx: search_grammarParser.ManaRestrictionContext):
-		return (
-			(
-				self.visit(ctx.operator())
-			)(
-				e.ManaCostExtractor,
-				self._mana_cost_parser.parse(self.visit(ctx.value()))
-			)
-		)
-	
-	def visitColorRestriction(self, ctx: search_grammarParser.ColorRestrictionContext):
-		return (
-			(
-				self.visit(ctx.operator())
-			)(
-				e.ColorExtractor,
-				ColorParse.parse(self.visit(ctx.value()))
-			)
-		)
+    def visitManaRestriction(self, ctx: search_grammarParser.ManaRestrictionContext):
+        return (
+            (
+                self.visit(ctx.operator())
+            )(
+                e.ManaCostExtractor,
+                self._mana_cost_parser.parse(self.visit(ctx.value()))
+            )
+        )
 
-	def visitOracleRestriction(self, ctx: search_grammarParser.OracleRestrictionContext):
-		value = self.visit(ctx.value())
+    def visitColorRestriction(self, ctx: search_grammarParser.ColorRestrictionContext):
+        return (
+            (
+                self.visit(ctx.operator())
+            )(
+                e.ColorExtractor,
+                ColorParse.parse(self.visit(ctx.value()))
+            )
+        )
 
-		if isinstance(value, type):
-			if not value.extraction_type == str:
-				raise TypeParseException('Mismatched dynamic value type')
-		else:
-			value = value.lower()
+    def visitOracleRestriction(self, ctx: search_grammarParser.OracleRestrictionContext):
+        value = self.visit(ctx.value())
 
-		return (
-			(
-				self.visit(ctx.operator())
-			)(
-				e.OracleExtractor,
-				value,
-			)
-		)
+        if isinstance(value, type):
+            if not value.extraction_type == str:
+                raise TypeParseException('Mismatched dynamic value type')
+        else:
+            value = value.lower()
 
-	def visitPowerRestriction(self, ctx: search_grammarParser.PowerRestrictionContext):
-		value = self.visit(ctx.value())
+        return (
+            (
+                self.visit(ctx.operator())
+            )(
+                e.OracleExtractor,
+                value,
+            )
+        )
 
-		if isinstance(value, type):
-			if not value.extraction_type in (int, PTValue):
-				raise TypeParseException('Mismatched dynamic value type')
-		else:
-			value = PTValueParser.parse(value)
+    def visitPowerRestriction(self, ctx: search_grammarParser.PowerRestrictionContext):
+        value = self.visit(ctx.value())
 
-		return (
-			(
-				self.visit(ctx.operator())
-			)(
-				e.PowerExtractor,
-				value,
-			)
-		)
+        if isinstance(value, type):
+            if not value.extraction_type in (int, PTValue):
+                raise TypeParseException('Mismatched dynamic value type')
+        else:
+            value = PTValueParser.parse(value)
 
-	def visitToughnessRestriction(self, ctx: search_grammarParser.ToughnessRestrictionContext):
-		value = self.visit(ctx.value())
+        return (
+            (
+                self.visit(ctx.operator())
+            )(
+                e.PowerExtractor,
+                value,
+            )
+        )
 
-		if isinstance(value, type):
-			if not value.extraction_type in (int, PTValue):
-				raise TypeParseException('Mismatched dynamic value type')
-		else:
-			value = PTValueParser.parse(value)
+    def visitToughnessRestriction(self, ctx: search_grammarParser.ToughnessRestrictionContext):
+        value = self.visit(ctx.value())
 
-		return (
-			(
-				self.visit(ctx.operator())
-			)(
-				e.ToughnessExtractor,
-				value,
-			)
-		)
+        if isinstance(value, type):
+            if not value.extraction_type in (int, PTValue):
+                raise TypeParseException('Mismatched dynamic value type')
+        else:
+            value = PTValueParser.parse(value)
 
-	def visitLoyaltyRestriction(self, ctx: search_grammarParser.LoyaltyRestrictionContext):
-		value = self.visit(ctx.value())
+        return (
+            (
+                self.visit(ctx.operator())
+            )(
+                e.ToughnessExtractor,
+                value,
+            )
+        )
 
-		if isinstance(value, type):
-			if not value.extraction_type in (int, PTValue):
-				raise TypeParseException('Mismatched dynamic value type')
-		else:
-			value = PTValueParser.parse(value)
+    def visitLoyaltyRestriction(self, ctx: search_grammarParser.LoyaltyRestrictionContext):
+        value = self.visit(ctx.value())
 
-		return (
-			(
-				self.visit(ctx.operator())
-			)(
-				e.LoyaltyExtractor,
-				value,
-			)
-		)
+        if isinstance(value, type):
+            if not value.extraction_type in (int, PTValue):
+                raise TypeParseException('Mismatched dynamic value type')
+        else:
+            value = PTValueParser.parse(value)
 
-	def visitArtistRestriction(self, ctx: search_grammarParser.ArtistRestrictionContext):
-		value = self.visit(ctx.value())
+        return (
+            (
+                self.visit(ctx.operator())
+            )(
+                e.LoyaltyExtractor,
+                value,
+            )
+        )
 
-		if isinstance(value, type):
-			if not value.extraction_type == str:
-				raise TypeParseException('Mismatched dynamic value type')
-		else:
-			value = value.lower()
+    def visitArtistRestriction(self, ctx: search_grammarParser.ArtistRestrictionContext):
+        value = self.visit(ctx.value())
 
-		return (
-			(
-				self.visit(ctx.operator())
-			)(
-				e.ArtistExtractor,
-				value.lower()
-			)
-		)
+        if isinstance(value, type):
+            if not value.extraction_type == str:
+                raise TypeParseException('Mismatched dynamic value type')
+        else:
+            value = value.lower()
 
-	def visitCmcRestriction(self, ctx: search_grammarParser.CmcRestrictionContext):
-		if ctx.UNSIGNED_INTEGER() is None:
-			value = self.visit(ctx.dynamic_value())
-			if not value._extraction_strategy in (int, PTValue):
-				raise TypeParseException('Mismatched dynamic value type')
-		else:
-			value = int(str(ctx.UNSIGNED_INTEGER()))
+        return (
+            (
+                self.visit(ctx.operator())
+            )(
+                e.ArtistExtractor,
+                value.lower()
+            )
+        )
 
-		return (
-			(
-				self.visit(ctx.operator())
-			)(
-				e.CmcExtractor,
-				value
-			)
-		)
+    def visitCmcRestriction(self, ctx: search_grammarParser.CmcRestrictionContext):
+        if ctx.UNSIGNED_INTEGER() is None:
+            value = self.visit(ctx.dynamic_value())
+            if not value._extraction_strategy in (int, PTValue):
+                raise TypeParseException('Mismatched dynamic value type')
+        else:
+            value = int(str(ctx.UNSIGNED_INTEGER()))
 
-	def visitFlagsRestriction(self, ctx: search_grammarParser.FlagsRestrictionContext):
-		return (
-			(
-				self.visit(ctx.operator())
-			)(
-				e.FlagsExtractor,
-				FlagParser.parse(self.visit(ctx.value_chain())),
-			)
-		)
+        return (
+            (
+                self.visit(ctx.operator())
+            )(
+                e.CmcExtractor,
+                value
+            )
+        )
 
-	def visitRarityRestriction(self, ctx: search_grammarParser.RarityRestrictionContext):
-		value = self.visit(ctx.value())
+    def visitFlagsRestriction(self, ctx: search_grammarParser.FlagsRestrictionContext):
+        return (
+            (
+                self.visit(ctx.operator())
+            )(
+                e.FlagsExtractor,
+                FlagParser.parse(self.visit(ctx.value_chain())),
+            )
+        )
 
-		if isinstance(value, type):
-			if not value.extraction_type == str:
-				raise TypeParseException('Mismatched dynamic value type')
+    def visitRarityRestriction(self, ctx: search_grammarParser.RarityRestrictionContext):
+        value = self.visit(ctx.value())
 
-		return (
-			(
-				p.Equals
-			)(
-				e.RarityExtractor,
-				RarityParser.parse(value)
-			)
-		)
+        if isinstance(value, type):
+            if not value.extraction_type == str:
+                raise TypeParseException('Mismatched dynamic value type')
 
-	def visitLayoutRestriction(self, ctx: search_grammarParser.LayoutRestrictionContext):
-		value = self.visit(ctx.value())
+        return (
+            (
+                p.Equals
+            )(
+                e.RarityExtractor,
+                RarityParser.parse(value)
+            )
+        )
 
-		if isinstance(value, type):
-			if not value.extraction_type == str:
-				raise TypeParseException('Mismatched dynamic value type')
+    def visitLayoutRestriction(self, ctx: search_grammarParser.LayoutRestrictionContext):
+        value = self.visit(ctx.value())
 
-		return (
-			(
-				p.Equals
-			)(
-				e.LayoutExtractor,
-				LayoutParser.parse(value),
-			)
-		)
+        if isinstance(value, type):
+            if not value.extraction_type == str:
+                raise TypeParseException('Mismatched dynamic value type')
 
-	def visitExpansionRestriction(self, ctx: search_grammarParser.ExpansionRestrictionContext):
-		value = self.visit(ctx.value())
+        return (
+            (
+                p.Equals
+            )(
+                e.LayoutExtractor,
+                LayoutParser.parse(value),
+            )
+        )
 
-		if isinstance(value, type):
-			if not value.extraction_type == str:
-				raise TypeParseException('Mismatched dynamic value type')
+    def visitExpansionRestriction(self, ctx: search_grammarParser.ExpansionRestrictionContext):
+        value = self.visit(ctx.value())
 
-		return (
-			(
-				p.Equals
-			)(
-				e.ExpansionExtractor,
-				self._expansion_parser.parse(value),
-			)
-		)
+        if isinstance(value, type):
+            if not value.extraction_type == str:
+                raise TypeParseException('Mismatched dynamic value type')
 
-	def visitBlockRestriction(self, ctx: search_grammarParser.BlockRestrictionContext):
-		value = self.visit(ctx.value())
+        return (
+            (
+                p.Equals
+            )(
+                e.ExpansionExtractor,
+                self._expansion_parser.parse(value),
+            )
+        )
 
-		if isinstance(value, type):
-			if not value.extraction_type == str:
-				raise TypeParseException('Mismatched dynamic value type')
+    def visitBlockRestriction(self, ctx: search_grammarParser.BlockRestrictionContext):
+        value = self.visit(ctx.value())
 
-		return (
-			(
-				p.Equals
-			)(
-				e.BlockExtractor,
-				self._block_parser.parse(value),
-			)
-		)
+        if isinstance(value, type):
+            if not value.extraction_type == str:
+                raise TypeParseException('Mismatched dynamic value type')
 
-	def visitStaticValue(self, ctx: search_grammarParser.StaticValueContext):
-		return self.visit(ctx.static_value())
+        return (
+            (
+                p.Equals
+            )(
+                e.BlockExtractor,
+                self._block_parser.parse(value),
+            )
+        )
 
-	def visitChainValue(self, ctx: search_grammarParser.ChainValueContext):
-		return _Chain([self.visit(ctx.static_value())])
+    def visitStaticValue(self, ctx: search_grammarParser.StaticValueContext):
+        return self.visit(ctx.static_value())
 
-	def visitChainChain(self, ctx: search_grammarParser.ChainChainContext):
-		chain, value = self.visit(ctx.value_chain()), self.visit(ctx.value())
-		chain.append(value)
-		return chain
+    def visitChainValue(self, ctx: search_grammarParser.ChainValueContext):
+        return _Chain([self.visit(ctx.static_value())])
 
-	def visitInferredValue(self, ctx: search_grammarParser.InferredValueContext):
-			return ctx.getText()
+    def visitChainChain(self, ctx: search_grammarParser.ChainChainContext):
+        chain, value = self.visit(ctx.value_chain()), self.visit(ctx.value())
+        chain.append(value)
+        return chain
 
-	def visitQuotedValue(self, ctx: search_grammarParser.QuotedValueContext):
-		return ctx.getText()[1:-1]
+    def visitInferredValue(self, ctx: search_grammarParser.InferredValueContext):
+        return ctx.getText()
 
-	def visitDynamicValue(self, ctx: search_grammarParser.DynamicValueContext):
-		return self.visit(ctx.dynamic_value())
+    def visitQuotedValue(self, ctx: search_grammarParser.QuotedValueContext):
+        return ctx.getText()[1:-1]
 
-	def visitUnsignedIntegerValue(self, ctx: search_grammarParser.UnsignedIntegerValueContext):
-		return ctx.getText()
+    def visitDynamicValue(self, ctx: search_grammarParser.DynamicValueContext):
+        return self.visit(ctx.dynamic_value())
 
-	def visitIncludesOperator(self, ctx: search_grammarParser.IncludesOperatorContext):
-		return p.Contains
+    def visitUnsignedIntegerValue(self, ctx: search_grammarParser.UnsignedIntegerValueContext):
+        return ctx.getText()
 
-	def visitEqualsOperator(self, ctx: search_grammarParser.EqualsOperatorContext):
-		return p.Equals
+    def visitIncludesOperator(self, ctx: search_grammarParser.IncludesOperatorContext):
+        return p.Contains
 
-	def visitLessThanOperator(self, ctx: search_grammarParser.LessThanOperatorContext):
-		return p.LessThan
+    def visitEqualsOperator(self, ctx: search_grammarParser.EqualsOperatorContext):
+        return p.Equals
 
-	def visitLessEqualOperator(self, ctx: search_grammarParser.LessEqualOperatorContext):
-		return p.LessThanOrEquals
+    def visitLessThanOperator(self, ctx: search_grammarParser.LessThanOperatorContext):
+        return p.LessThan
 
-	def visitGreaterThanOperator(self, ctx: search_grammarParser.GreaterThanOperatorContext):
-		return p.GreaterThan
+    def visitLessEqualOperator(self, ctx: search_grammarParser.LessEqualOperatorContext):
+        return p.LessThanOrEquals
 
-	def visitGreaterEqualOperator(self, ctx: search_grammarParser.GreaterEqualOperatorContext):
-		return p.GreaterThanOrEquals
+    def visitGreaterThanOperator(self, ctx: search_grammarParser.GreaterThanOperatorContext):
+        return p.GreaterThan
 
-	def visitDynamicName(self, ctx: search_grammarParser.DynamicNameContext):
-		return e.NameExtractor
+    def visitGreaterEqualOperator(self, ctx: search_grammarParser.GreaterEqualOperatorContext):
+        return p.GreaterThanOrEquals
 
-	def visitDynamicOracle(self, ctx: search_grammarParser.DynamicOracleContext):
-		return e.OracleExtractor
+    def visitDynamicName(self, ctx: search_grammarParser.DynamicNameContext):
+        return e.NameExtractor
 
-	def visitDynamicPower(self, ctx: search_grammarParser.DynamicPowerContext):
-		return e.PowerExtractor
+    def visitDynamicOracle(self, ctx: search_grammarParser.DynamicOracleContext):
+        return e.OracleExtractor
 
-	def visitDynamicToughness(self, ctx: search_grammarParser.DynamicToughnessContext):
-		return e.ToughnessExtractor
+    def visitDynamicPower(self, ctx: search_grammarParser.DynamicPowerContext):
+        return e.PowerExtractor
 
-	def visitDynamicLoyalty(self, ctx: search_grammarParser.DynamicLoyaltyContext):
-		return e.LoyaltyExtractor
+    def visitDynamicToughness(self, ctx: search_grammarParser.DynamicToughnessContext):
+        return e.ToughnessExtractor
 
-	def visitDynamicArtist(self, ctx: search_grammarParser.DynamicArtistContext):
-		return e.ArtistExtractor
+    def visitDynamicLoyalty(self, ctx: search_grammarParser.DynamicLoyaltyContext):
+        return e.LoyaltyExtractor
 
-	def visitDynamicCmc(self, ctx: search_grammarParser.DynamicCmcContext):
-		return e.CmcExtractor
+    def visitDynamicArtist(self, ctx: search_grammarParser.DynamicArtistContext):
+        return e.ArtistExtractor
+
+    def visitDynamicCmc(self, ctx: search_grammarParser.DynamicCmcContext):
+        return e.CmcExtractor

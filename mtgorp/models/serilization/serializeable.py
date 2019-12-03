@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import typing as t
 import hashlib
 
@@ -47,7 +49,7 @@ class Serializeable(ABC):
 
     @classmethod
     @abstractmethod
-    def deserialize(cls, value: serialization_model, inflator: Inflator) -> 'Serializeable':
+    def deserialize(cls, value: serialization_model, inflator: Inflator) -> Serializeable:
         pass
 
     @abstractmethod

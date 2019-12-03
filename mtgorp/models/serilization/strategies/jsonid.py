@@ -8,9 +8,9 @@ from mtgorp.models.serilization.strategies.strategy import Strategy
 
 class JsonId(Strategy):
 
-	@classmethod
-	def _serialize(cls, model: compacted_model) -> t.AnyStr:
-		return json.dumps(model)
+    @classmethod
+    def _serialize(cls, model: compacted_model) -> t.AnyStr:
+        return json.dumps(model)
 
-	def _deserialize(self, s: t.AnyStr) -> compacted_model:
-		return json.loads(s)
+    def _deserialize(self, s: t.AnyStr) -> compacted_model:
+        return json.loads(s)

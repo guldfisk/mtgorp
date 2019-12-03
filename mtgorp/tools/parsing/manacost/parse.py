@@ -14,53 +14,53 @@ from mtgorp.tools.parsing.manacost.visitor import ManaCostVisitor, ManaCostBuild
 
 
 class ManaCostParseException(ParseException):
-	pass
+    pass
 
 
 class ManaCostParseListener(ErrorListener):
 
-	def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
-		raise ManaCostParseException('Syntax error')
+    def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
+        raise ManaCostParseException('Syntax error')
 
-	def reportContextSensitivity(self, recognizer, dfa, startIndex, stopIndex, prediction, configs):
-		raise ManaCostParseException('Conetext sensitivity')
+    def reportContextSensitivity(self, recognizer, dfa, startIndex, stopIndex, prediction, configs):
+        raise ManaCostParseException('Conetext sensitivity')
 
 
 
 class ManaCostParser(object):
 
-	def __init__(self):
-		self._visitor = ManaCostVisitor()
+    def __init__(self):
+        self._visitor = ManaCostVisitor()
 
 
-	@classmethod
-	def _build(cls, parsed) -> t.Union[ManaCost, HybridCostAtom]:
-		return (
-			ManaCost
-			if isinstance(parsed, ManaCostBuilder) else
-			HybridCostAtom
-		)(
-			(
-				cls._build(item)
-				if isinstance(item, ManaCostBuilder) or isinstance(item, HybridBuilder)
-				else item
-			) for item in
-			parsed
-		)
+    @classmethod
+    def _build(cls, parsed) -> t.Union[ManaCost, HybridCostAtom]:
+        return (
+            ManaCost
+            if isinstance(parsed, ManaCostBuilder) else
+            HybridCostAtom
+        )(
+            (
+                cls._build(item)
+                if isinstance(item, ManaCostBuilder) or isinstance(item, HybridBuilder)
+                else item
+            ) for item in
+            parsed
+        )
 
-	def parse(self, s: str) -> ManaCost:
-		parser = manacost_grammarParser(
-			CommonTokenStream(
-				manacost_grammarLexer(
-					InputStream(s)
-				)
-			)
-		)
+    def parse(self, s: str) -> ManaCost:
+        parser = manacost_grammarParser(
+            CommonTokenStream(
+                manacost_grammarLexer(
+                    InputStream(s)
+                )
+            )
+        )
 
-		parser._listeners = [ManaCostParseListener()]
+        parser._listeners = [ManaCostParseListener()]
 
-		return self._build(
-			self._visitor.visit(
-				parser.start()
-			)
-		)
+        return self._build(
+            self._visitor.visit(
+                parser.start()
+            )
+        )

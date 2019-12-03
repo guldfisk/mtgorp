@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+import functools
 import typing as t
 from abc import ABCMeta
 
@@ -7,9 +10,9 @@ import mtgorp.models.persistent.attributes.colors as cols
 from mtgorp.models.persistent.attributes.colors import Color
 
 
-class ManaCostAtom(metaclass=ABCMeta):
+class ManaCostAtom(metaclass = ABCMeta):
 
-    def __init__(self, code: str, associations: t.Optional[t.AbstractSet[Color]]=None, cmc_value: int=1):
+    def __init__(self, code: str, associations: t.Optional[t.AbstractSet[Color]] = None, cmc_value: int = 1):
         self._code = code
         self._associations = associations if isinstance(associations, frozenset) else frozenset()
         self._cmc_value = cmc_value
@@ -23,7 +26,7 @@ class ManaCostAtom(metaclass=ABCMeta):
         return self._associations
 
     @property
-    def cmc_value (self) -> int:
+    def cmc_value(self) -> int:
         return self._cmc_value
 
     def __repr__(self):
@@ -79,12 +82,12 @@ class OtherCostAtom(ManaCostAtom):
 class HybridCostAtom(ManaCostAtom):
 
     def __init__(self, options: 't.AbstractSet[t.Union[ManaCost, ManaCostAtom]]'):
-        self._options = frozenset(self._flatten_options(options)) #type: t.AbstractSet[ManaCost]
+        self._options: t.AbstractSet[ManaCost] = frozenset(self._flatten_options(options))
 
         assert len(self._options) > 1
 
         super(HybridCostAtom, self).__init__(
-            code='/'.join(
+            code = '/'.join(
                 str(option)
                 for option in (
                     sorted(
@@ -92,15 +95,15 @@ class HybridCostAtom(ManaCostAtom):
                     )
                 )
             ),
-            associations=frozenset(
+            associations = frozenset(
                 frozenset.union(*[option.colors for option in self._options])
             ),
-            cmc_value=max(option.cmc for option in self._options)
+            cmc_value = max(option.cmc for option in self._options)
         )
 
     @property
     def options(self):
-        return  self._options
+        return self._options
 
     def __eq__(self, other):
         return isinstance(other, self.__class__) and self._options == other.options
@@ -115,7 +118,7 @@ class HybridCostAtom(ManaCostAtom):
         return self._options.__len__()
 
     @staticmethod
-    def _flatten_options(mana_costs: 't.Union[t.AbstractSet[t.Union[ManaCost, ManaCostAtom]], HybridCostAtom]'):
+    def _flatten_options(mana_costs: t.Union[t.AbstractSet[t.Union[ManaCost, ManaCostAtom]], HybridCostAtom]):
         for option in mana_costs:
             if isinstance(option, HybridCostAtom):
                 for mana_cost in option:
@@ -141,9 +144,10 @@ class HybridCostAtom(ManaCostAtom):
         return len(s) < len(o)
 
 
+@functools.total_ordering
 class ManaCost(object):
 
-    def __init__(self, atoms: t.Iterable[ManaCostAtom]=None):
+    def __init__(self, atoms: t.Iterable[ManaCostAtom] = None):
         self._atoms = atoms if isinstance(atoms, FrozenMultiset) else FrozenMultiset(atoms)
 
     @property
@@ -159,15 +163,6 @@ class ManaCost(object):
 
     def __lt__(self, other):
         return isinstance(other, ManaCost) and self._atoms < other._atoms
-
-    def __le__(self, other):
-        return isinstance(other, ManaCost) and self._atoms <= other._atoms
-
-    def __gt__(self, other):
-        return isinstance(other, ManaCost) and self._atoms > other._atoms
-
-    def __ge__(self, other):
-        return isinstance(other, ManaCost) and self._atoms >= other._atoms
 
     def __hash__(self):
         return hash((self.__class__, self._atoms))
@@ -253,7 +248,7 @@ ONE_PHYREXIAN_GREEN = HybridCostAtom({ONE_GREEN, ONE_PHYREXIAN})
 ONE_PHYREXIAN_GENERIC = HybridCostAtom({ONE_GENERIC, ONE_PHYREXIAN})
 
 ONE_COLORLESS = ColorlessCostAtom('C')
-VARIABLE_GENERIC = VariableCostAtom('X', cmc_value=0)
+VARIABLE_GENERIC = VariableCostAtom('X', cmc_value = 0)
 ONE_SNOW = OtherCostAtom('S')
 
 SINGULAR_ATOM_MAP = {

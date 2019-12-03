@@ -3,8 +3,8 @@ from mtgorp.db.load import Loader
 
 
 class MtgDb(object):
-	db = None #type: CardDatabase
-	
-	@classmethod
-	def init(cls):
-		cls.db = Loader.load()
+    db: CardDatabase = None
+
+    @classmethod
+    def init(cls):
+        cls.db = Loader.load()

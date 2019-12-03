@@ -27,7 +27,10 @@
       "Graceful Cat"
     ],
     "booster_key": [
-      ["rare", "mythic rare"],
+      [
+        "rare",
+        "mythic rare"
+      ],
       "uncommon",
       "uncommon",
       "uncommon",
@@ -40,12 +43,21 @@
       "common",
       "common",
       "common",
-      ["common", "premium"],
+      [
+        "common",
+        "premium"
+      ],
       "land"
     ],
     "booster_expansion_collection": {
-      "basics": ["AKH", null],
-      "premium": ["MPS_AKH", 0]
+      "basics": [
+        "AKH",
+        null
+      ],
+      "premium": [
+        "MPS_AKH",
+        0
+      ]
     }
   },
   "HOU": {
@@ -69,7 +81,10 @@
       "Woodland Stream"
     ],
     "booster_key": [
-      ["rare", "mythic rare"],
+      [
+        "rare",
+        "mythic rare"
+      ],
       "uncommon",
       "uncommon",
       "uncommon",
@@ -82,19 +97,30 @@
       "common",
       "common",
       "common",
-      ["common", "premium"],
+      [
+        "common",
+        "premium"
+      ],
       "land"
     ],
     "booster_expansion_collection": {
-      "basics": ["AKH", null],
-      "premium": ["MPS_AKH", 1]
+      "basics": [
+        "AKH",
+        null
+      ],
+      "premium": [
+        "MPS_AKH",
+        1
+      ]
     }
   },
   "MPS_AKH": {
-    "fragment_dividers": [31]
+    "fragment_dividers": [
+      31
+    ]
   },
   "CNS": {
-    "flags" : [
+    "flags": [
       {
         "name": "DRAFT_MATTERS",
         "cards": [

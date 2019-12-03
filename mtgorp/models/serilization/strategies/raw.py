@@ -15,4 +15,3 @@ class RawStrategy(Strategy):
 
     def deserialize(self, cls: t.Type[S], s: compacted_model) -> S:
         return cls.deserialize(s, self)
-

@@ -8,9 +8,9 @@ from mtgorp.models.serilization.strategies.strategy import Strategy
 
 class PickleStrategy(Strategy):
 
-	@classmethod
-	def _serialize(cls, model: compacted_model) -> t.AnyStr:
-		return pickle.dumps(model)
+    @classmethod
+    def _serialize(cls, model: compacted_model) -> t.AnyStr:
+        return pickle.dumps(model)
 
-	def _deserialize(self, s: t.AnyStr) -> compacted_model:
-		return pickle.loads(s)
+    def _deserialize(self, s: t.AnyStr) -> compacted_model:
+        return pickle.loads(s)
