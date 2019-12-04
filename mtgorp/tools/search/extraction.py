@@ -433,7 +433,12 @@ class PrintingStrategy(ExtractionStrategy):
 
     @classmethod
     def extract_mana_cost(cls, printing: Printing) -> t.Iterable[ManaCost]:
-        return (card.mana_cost for card in printing.cardboard.cards)
+        return (
+            card.mana_cost
+            for card in
+            printing.cardboard.cards
+            if card.mana_cost is not None
+        )
 
     @classmethod
     def extract_color(cls, printing: Printing) -> t.Iterable[t.AbstractSet[Color]]:
@@ -471,7 +476,12 @@ class PrintingStrategy(ExtractionStrategy):
 
     @classmethod
     def extract_loyalty(cls, printing: Printing) -> t.Iterable[PTValue]:
-        return (card.loyalty for card in printing.cardboard.cards)
+        return (
+            card.loyalty
+            for card in
+            printing.cardboard.cards
+            if card.loyalty is not None
+        )
 
     @classmethod
     def extract_artist(cls, printing: Printing) -> t.Iterable[str]:

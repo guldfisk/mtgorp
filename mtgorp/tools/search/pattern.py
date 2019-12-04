@@ -205,9 +205,9 @@ class Criteria(Matchable, metaclass = ABCMeta):
         return hash((self.__class__, self._matchables))
 
     def __repr__(self):
-        return '{}{}'.format(
+        return '{}({})'.format(
             self.__class__.__name__,
-            tuple(self._matchables),
+            ', '.join(map(str, self._matchables))
         )
 
 
@@ -217,8 +217,12 @@ class All(Criteria):
         return all(check.match(model, strategy) for check in self._matchables)
 
     def explain(self) -> str:
-        return '({})'.format(
-            ' and '.join(matchable.explain() for matchable in self._matchables)
+        return ' and '.join(
+            '(' + matchable.explain() + ')'
+            if isinstance(matchable, Criteria) else
+            matchable.explain()
+            for matchable in
+            self._matchables
         )
 
 
@@ -228,8 +232,12 @@ class Any(Criteria):
         return any(check.match(model, strategy) for check in self._matchables)
 
     def explain(self) -> str:
-        return '({})'.format(
-            ' or '.join(matchable.explain() for matchable in self._matchables)
+        return ' or '.join(
+            '(' + matchable.explain() + ')'
+            if isinstance(matchable, Criteria) else
+            matchable.explain()
+            for matchable in
+            self._matchables
         )
 
 

@@ -1,3 +1,5 @@
+import itertools
+
 from mtgorp.db.database import CardDatabase
 from mtgorp.models.persistent.attributes.powertoughness import PTValue
 from mtgorp.tools.search import pattern as p
@@ -58,13 +60,37 @@ class SearchVisitor(search_grammarVisitor):
         return self.visit(ctx.restriction())
 
     def visitOr(self, ctx: search_grammarParser.OrContext):
-        return AnyBuilder([self.visit(ctx.operation(0)), self.visit(ctx.operation(1))])
+        first, second = self.visit(ctx.operation(0)), self.visit(ctx.operation(1))
+
+        return AnyBuilder(
+            itertools.chain(
+                *(
+                    item
+                    if isinstance(item, AnyBuilder) else
+                    [item]
+                    for item in
+                    (first, second)
+                )
+            )
+        )
 
     def visitParenthesis(self, ctx: search_grammarParser.ParenthesisContext):
         return self.visit(ctx.operation())
 
     def visitAnd(self, ctx: search_grammarParser.AndContext):
-        return AllBuilder([self.visit(ctx.operation(0)), self.visit(ctx.operation(1))])
+        first, second = self.visit(ctx.operation(0)), self.visit(ctx.operation(1))
+
+        return AllBuilder(
+            itertools.chain(
+                *(
+                    item
+                    if isinstance(item, AllBuilder) else
+                    [item]
+                    for item in
+                    (first, second)
+                )
+            )
+        )
 
     def visitNameRestriction(self, ctx: search_grammarParser.NameRestrictionContext):
         value = self.visit(ctx.value())

@@ -1,4 +1,3 @@
-import functools
 import typing as t
 
 import itertools
@@ -463,7 +462,6 @@ ALL_TYPES = tuple(
 )
 
 
-@functools.total_ordering
 class TypeLine(object):
     SEPARATOR = ' — '
 
@@ -481,6 +479,24 @@ class TypeLine(object):
         return (
             isinstance(other, TypeLine)
             and self._types < other.types
+        )
+
+    def __le__(self, other):
+        return (
+            isinstance(other, TypeLine)
+            and self._types <= other.types
+        )
+
+    def __gt__(self, other):
+        return (
+            isinstance(other, TypeLine)
+            and self._types > other.types
+        )
+
+    def __ge__(self, other):
+        return (
+            isinstance(other, TypeLine)
+            and self._types >= other.types
         )
 
     def __hash__(self):

@@ -144,7 +144,6 @@ class HybridCostAtom(ManaCostAtom):
         return len(s) < len(o)
 
 
-@functools.total_ordering
 class ManaCost(object):
 
     def __init__(self, atoms: t.Iterable[ManaCostAtom] = None):
@@ -163,6 +162,15 @@ class ManaCost(object):
 
     def __lt__(self, other):
         return isinstance(other, ManaCost) and self._atoms < other._atoms
+
+    def __le__(self, other):
+        return isinstance(other, ManaCost) and self._atoms <= other._atoms
+
+    def __gt__(self, other):
+        return isinstance(other, ManaCost) and self._atoms > other._atoms
+
+    def __ge__(self, other):
+        return isinstance(other, ManaCost) and self._atoms >= other._atoms
 
     def __hash__(self):
         return hash((self.__class__, self._atoms))
@@ -187,6 +195,9 @@ class ManaCost(object):
             accumulated += '{{{}}}'.format(generics)
 
         return accumulated
+
+    def __repr__(self) -> str:
+        return self.__str__()
 
     def __iter__(self):
         return self._atoms.__iter__()
