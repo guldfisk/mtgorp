@@ -16,10 +16,6 @@ setup(
     version='1.0',
     packages=['mtgorp'],
     package_data={'': extra_files},
-    # dependency_links=[
-    # 	'https://github.com/guldfisk/orp/tarball/master#egg=orp-1.0',
-    # 	'https://github.com/guldfisk/yeetlong/tarball/master#egg=yeetlong-1.0',
-    # ],
     install_requires=[
         'orp @ https://github.com/guldfisk/orp/tarball/master#egg=orp-1.0',
         'yeetlong @ https://github.com/guldfisk/yeetlong/tarball/master#egg=yeetlong-1.0',
