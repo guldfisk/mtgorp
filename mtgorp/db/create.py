@@ -433,3 +433,6 @@ def update_database(
         )
     finally:
         sys.setrecursionlimit(previous_recursion_limit)
+
+if __name__ == '__main__':
+    update_database()
