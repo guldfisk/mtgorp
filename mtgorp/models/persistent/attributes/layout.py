@@ -9,3 +9,4 @@ class Layout(Enum):
     AFTERMATH = 4
     MELD = 5
     SAGA = 6
+    ADVENTURE = 7
