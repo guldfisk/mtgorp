@@ -200,6 +200,7 @@ XENAGOS = CardSubType('Xenagos', (PLANESWALKER,))
 YANGGU = CardSubType('Yanggu', (PLANESWALKER,))
 YANLING = CardSubType('Yanling', (PLANESWALKER,))
 
+ADVENTURE = CardSubType('Adventure', (INSTANT, SORCERY))
 ARCANE = CardSubType('Arcane', (INSTANT, SORCERY))
 TRAP = CardSubType('Trap', (INSTANT, SORCERY))
 

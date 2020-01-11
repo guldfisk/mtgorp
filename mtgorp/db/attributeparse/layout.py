@@ -5,27 +5,28 @@ from mtgorp.db.attributeparse.exceptions import AttributeParseException
 
 
 class LayoutParseException(AttributeParseException):
-	pass
+    pass
 
 
 class Parser(parser.Parser):
-	_LAYOUT_MAP = {
-		'normal': Layout.STANDARD,
-		'leveler': Layout.STANDARD,
-		'transform': Layout.TRANSFORM,
-		'flip': Layout.FLIP,
-		'meld': Layout.MELD,
-		'split': Layout.SPLIT,
-		'aftermath': Layout.AFTERMATH,
-		'saga': Layout.SAGA,
-	}
+    _LAYOUT_MAP = {
+        'normal': Layout.STANDARD,
+        'leveler': Layout.STANDARD,
+        'transform': Layout.TRANSFORM,
+        'flip': Layout.FLIP,
+        'meld': Layout.MELD,
+        'split': Layout.SPLIT,
+        'aftermath': Layout.AFTERMATH,
+        'saga': Layout.SAGA,
+        'adventure': Layout.ADVENTURE,
+    }
 
-	@classmethod
-	def parse(cls, s: str) -> Layout:
-		try:
-			return cls._LAYOUT_MAP[
-				s
-			]
-		
-		except KeyError:
-			raise LayoutParseException(f'Invalid layout "{s}"')
+    @classmethod
+    def parse(cls, s: str) -> Layout:
+        try:
+            return cls._LAYOUT_MAP[
+                s
+            ]
+
+        except KeyError:
+            raise LayoutParseException(f'Invalid layout "{s}"')

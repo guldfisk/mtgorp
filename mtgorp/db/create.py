@@ -85,6 +85,7 @@ class _CardboardParser(object):
                 raw_card_layout == Layout.SPLIT
                 or raw_card_layout == Layout.FLIP
                 or raw_card_layout == Layout.AFTERMATH
+                or raw_card_layout == Layout.ADVENTURE
             ):
                 if name == raw_card['names'][0]:
                     return (
