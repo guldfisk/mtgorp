@@ -415,7 +415,7 @@ def update_database(
     all_cards_path = paths.ALL_CARDS_PATH,
     all_sets_path = paths.ALL_SETS_PATH,
     db_path = paths.APP_DATA_PATH,
-):
+) -> CardDatabase:
     if not os.path.exists(db_path):
         os.makedirs(db_path)
     if not os.path.exists(paths.ALL_CARDS_PATH) or not os.path.exists(paths.ALL_SETS_PATH):
@@ -423,16 +423,19 @@ def update_database(
 
     previous_recursion_limit = sys.getrecursionlimit()
 
+    db = DatabaseCreator.create_database(
+        all_cards_path,
+        all_sets_path,
+    )
+
     try:
         sys.setrecursionlimit(50000)
-        PicklePersistor(os.path.join(paths.APP_DATA_PATH, 'db')).save(
-            DatabaseCreator.create_database(
-                all_cards_path,
-                all_sets_path,
-            )
-        )
+        PicklePersistor(os.path.join(paths.APP_DATA_PATH, 'db')).save(db)
     finally:
         sys.setrecursionlimit(previous_recursion_limit)
+
+    return db
+
 
 if __name__ == '__main__':
     update_database()
