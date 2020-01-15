@@ -125,6 +125,7 @@ EQUIPMENT = CardSubType('Equipment', (ARTIFACT,))
 FORTIFICATION = CardSubType('Fortification', (ARTIFACT,))
 TREASURE = CardSubType('Treasure', (ARTIFACT,))
 VEHICLE = CardSubType('Vehicle', (ARTIFACT,))
+GOLD = CardSubType('Gold', (ARTIFACT,))
 
 AURA = CardSubType('Aura', (ENCHANTMENT,))
 CARTOUCHE = CardSubType('Cartouche', (ENCHANTMENT,))
@@ -199,6 +200,7 @@ WRENN = CardSubType('Wrenn', (PLANESWALKER,))
 XENAGOS = CardSubType('Xenagos', (PLANESWALKER,))
 YANGGU = CardSubType('Yanggu', (PLANESWALKER,))
 YANLING = CardSubType('Yanling', (PLANESWALKER,))
+CALIX = CardSubType('Calix', (PLANESWALKER,))
 
 ADVENTURE = CardSubType('Adventure', (INSTANT, SORCERY))
 ARCANE = CardSubType('Arcane', (INSTANT, SORCERY))
@@ -451,6 +453,8 @@ WURM = CardSubType('Wurm', (CREATURE, TRIBAL))
 YETI = CardSubType('Yeti', (CREATURE, TRIBAL))
 ZOMBIE = CardSubType('Zombie', (CREATURE, TRIBAL))
 ZUBERA = CardSubType('Zubera', (CREATURE, TRIBAL))
+DEMIGOD = CardSubType('Demigod', (CREATURE, TRIBAL))
+TENTACLE = CardSubType('Tentacle', (CREATURE, TRIBAL))
 
 
 BASIC_LAND_TYPES = (
