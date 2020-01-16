@@ -1,3 +1,5 @@
+import typing as t
+
 from orp.database import Table, Database
 
 from mtgorp.models.persistent.card import Card
@@ -37,25 +39,25 @@ class CardDatabase(Database):
         self._expansions = self._tables[Expansion]
 
     @property
-    def cards(self) -> Table[str, Card]:
+    def cards(self) -> t.Dict[str, Card]:
         return self._cards
 
     @property
-    def cardboards(self) -> Table[str, Cardboard]:
+    def cardboards(self) -> t.Dict[str, Cardboard]:
         return self._cardboards
 
     @property
-    def printings(self) -> Table[int, Printing]:
+    def printings(self) -> t.Dict[int, Printing]:
         return self._printings
 
     @property
-    def artists(self) -> Table[str, Artist]:
+    def artists(self) -> t.Dict[str, Artist]:
         return self._artists
 
     @property
-    def blocks(self) -> Table[str, Block]:
+    def blocks(self) -> t.Dict[str, Block]:
         return self._blocks
 
     @property
-    def expansions(self) -> Table[str, Expansion]:
+    def expansions(self) -> t.Dict[str, Expansion]:
         return self._expansions

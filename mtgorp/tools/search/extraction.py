@@ -405,7 +405,7 @@ class CardboardStrategy(ExtractionStrategy[Cardboard]):
         )
 
 
-class PrintingStrategy(ExtractionStrategy):
+class PrintingStrategy(ExtractionStrategy[Printing]):
 
     @classmethod
     def extract_name(cls, printing: Printing) -> t.Iterable[str]:
