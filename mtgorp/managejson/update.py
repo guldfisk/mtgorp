@@ -54,7 +54,7 @@ def check() -> t.Optional[str]:
     
 
 def update_last_updated(last_updated: str) -> None:
-    with open(os.path.join(paths.JSON_PATH, 'lastupdtd.txt'), 'r') as f:
+    with open(os.path.join(paths.JSON_PATH, 'lastupdtd.txt'), 'w') as f:
         f.write(last_updated)
 
 
