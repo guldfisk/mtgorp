@@ -15,7 +15,7 @@ def download_file(url: str, location: str, chunk_size: int = 1024) -> None:
 
 TO_RETRIEVE = {
     paths.ALL_CARDS_PATH: 'http://mtgjson.com/json/AllCards.json',
-    paths.ALL_SETS_PATH: 'http://mtgjson.com/json/AllSets.json'
+    paths.ALL_SETS_PATH: 'http://mtgjson.com/json/AllSets.json',
 }
 
 
