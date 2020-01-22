@@ -168,6 +168,11 @@ class Cardboard(ABC):
     def original_printing(self) -> Printing:
         pass
 
+    @property
+    @abstractmethod
+    def latest_printing(self) -> Printing:
+        pass
+
 
 class Face(ABC):
 

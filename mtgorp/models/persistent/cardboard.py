@@ -184,3 +184,11 @@ class Cardboard(Model, _Cardboard):
             key = lambda printing:
             printing.expansion.release_date
         )[0]
+    
+    @property
+    def latest_printing(self) -> Printing:
+        return sorted(
+            self._printings,
+            key = lambda printing:
+            printing.expansion.release_date
+        )[-1]
