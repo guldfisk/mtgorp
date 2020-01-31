@@ -403,7 +403,14 @@ class DatabaseCreator(object):
 
         return CardDatabase(
             cards = cards,
-            cardboards = cardboards,
+            cardboards = Table(
+                {
+                    pk: cardboard
+                    for pk, cardboard in
+                    cardboards.items()
+                    if cardboard.printings
+                }
+            ),
             printings = printings,
             artists = artists,
             blocks = blocks,
