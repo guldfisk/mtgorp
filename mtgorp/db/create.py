@@ -1,9 +1,10 @@
-import json
 import datetime
 import os
 import sys
 import re
 import typing as t
+
+import ijson
 
 from orp.database import Table
 from orp.persist import PicklePersistor
@@ -330,10 +331,10 @@ class DatabaseCreator(object):
     @classmethod
     def create_card_table(cls, raw_cards):
         cards = Table()
-        for name in raw_cards:
+        for _, card in raw_cards:
             try:
                 cards.insert(
-                    _CardParser.parse(raw_cards[name])
+                    _CardParser.parse(card)
                 )
             except AttributeParseException:
                 pass
@@ -342,10 +343,10 @@ class DatabaseCreator(object):
     @classmethod
     def create_cardboard_table(cls, raw_cards, cards):
         cardboards = Table()
-        for name in raw_cards:
+        for name, card in raw_cards:
             try:
                 cardboards.insert(
-                    _CardboardParser.parse(raw_cards[name], cards)
+                    _CardboardParser.parse(card, cards)
                 )
             except AttributeParseException:
                 pass
@@ -361,11 +362,11 @@ class DatabaseCreator(object):
         blocks: Table
     ):
         expansions = Table()
-        for code in raw_expansions:
+        for code, expansion in raw_expansions:
             try:
                 expansions.insert(
                     _ExpansionParser.parse(
-                        raw_expansion = raw_expansions[code],
+                        raw_expansion = expansion,
                         cardboards = cardboards,
                         printings = printings,
                         artists = artists,
@@ -383,27 +384,42 @@ class DatabaseCreator(object):
         all_cards_path = paths.ALL_CARDS_PATH,
         all_sets_path = paths.ALL_SETS_PATH,
     ):
-        with open(all_cards_path, 'r', encoding = 'UTF-8') as f:
-            raw_cards = json.load(f)
-        with open(all_sets_path, 'r', encoding = 'UTF-8') as f:
-            raw_expansions = json.load(f)
+        with open(all_cards_path, 'r', encoding = 'UTF-8') as all_cards_file:
 
-        cards = cls.create_card_table(raw_cards)
-        cardboards = cls.create_cardboard_table(raw_cards, cards)
-        artists = Table()
-        blocks = Table()
-        printings = Table()
-        expansions = cls.create_expansion_table(
-            raw_expansions = raw_expansions,
-            cardboards = cardboards,
-            printings = printings,
-            artists = artists,
-            blocks = blocks,
-        )
+            with open(all_sets_path, 'r', encoding = 'UTF-8') as all_sets_file:
+                raw_cards = ijson.kvitems(all_cards_file, '')
+
+                cards = cls.create_card_table(raw_cards)
+
+                all_cards_file.seek(0)
+                raw_cards = ijson.kvitems(all_cards_file, '')
+
+                cardboards = cls.create_cardboard_table(raw_cards, cards)
+
+                artists = Table()
+                blocks = Table()
+                printings = Table()
+
+                raw_expansions = ijson.kvitems(all_sets_file, '')
+
+                expansions = cls.create_expansion_table(
+                    raw_expansions = raw_expansions,
+                    cardboards = cardboards,
+                    printings = printings,
+                    artists = artists,
+                    blocks = blocks,
+                )
 
         return CardDatabase(
             cards = cards,
-            cardboards = cardboards,
+            cardboards = Table(
+                {
+                    pk: cardboard
+                    for pk, cardboard in
+                    cardboards.items()
+                    if cardboard.printings
+                }
+            ),
             printings = printings,
             artists = artists,
             blocks = blocks,
@@ -418,6 +434,7 @@ def update_database(
 ) -> CardDatabase:
     if not os.path.exists(db_path):
         os.makedirs(db_path)
+
     if not os.path.exists(paths.ALL_CARDS_PATH) or not os.path.exists(paths.ALL_SETS_PATH):
         update.check_and_update()
 
