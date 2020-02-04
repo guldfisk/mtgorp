@@ -300,30 +300,29 @@ class _ExpansionParser(object):
 
     @classmethod
     def post_parse(cls, expansions: t.Dict[str, Expansion]):
-        information = BoosterInformation.information()
+        # information = BoosterInformation.information()
         for expansion in expansions.values():
             # todo find out how promo subsets was renamed and adjust limited data json
             # if expansion.code in information and 'booster_expansion_collection' in information[expansion.code]:
-            if False:
-                values = information[expansion.code]['booster_expansion_collection']
-                expansion._booster_expansion_collection = ExpansionCollection(
-                    main = expansion,
-                    **{
-                        key:
-                            (
-                                expansions[values[key][0]]
-                                if values[key][1] is None
-                                else expansions[values[key][0]].fragments[values[key][1]]
-                            )
-                        for key in
-                        values
-                    },
-                )
-            else:
-                expansion._booster_expansion_collection = ExpansionCollection(
-                    main = expansion,
-                    basics = expansion if expansion.block is None else expansion.block.expansions_chronologically[0],
-                )
+            #     values = information[expansion.code]['booster_expansion_collection']
+            #     expansion._booster_expansion_collection = ExpansionCollection(
+            #         main = expansion,
+            #         **{
+            #             key:
+            #                 (
+            #                     expansions[values[key][0]]
+            #                     if values[key][1] is None
+            #                     else expansions[values[key][0]].fragments[values[key][1]]
+            #                 )
+            #             for key in
+            #             values
+            #         },
+            #     )
+            # else:
+            expansion._booster_expansion_collection = ExpansionCollection(
+                main = expansion,
+                basics = expansion if expansion.block is None else expansion.block.expansions_chronologically[0],
+            )
 
 
 class DatabaseCreator(object):
@@ -385,7 +384,6 @@ class DatabaseCreator(object):
         all_sets_path = paths.ALL_SETS_PATH,
     ):
         with open(all_cards_path, 'r', encoding = 'UTF-8') as all_cards_file:
-
             with open(all_sets_path, 'r', encoding = 'UTF-8') as all_sets_file:
                 raw_cards = ijson.kvitems(all_cards_file, '')
 
