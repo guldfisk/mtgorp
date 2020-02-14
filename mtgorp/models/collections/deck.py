@@ -3,8 +3,6 @@ import typing as t
 from yeetlong.multiset import FrozenMultiset
 
 from mtgorp.models.persistent.printing import Printing
-from mtgorp.tools.search.pattern import Criteria, PrintingPatternBuilder
-from mtgorp.models.persistent.attributes import typeline
 from mtgorp.models.serilization.serializeable import Serializeable, serialization_model, Inflator
 
 
