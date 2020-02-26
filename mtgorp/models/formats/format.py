@@ -35,10 +35,11 @@ class DeckSizeIsMinimum(Validation):
 
     def __init__(self, size: int):
         self._expected_deck_size = size
-    #
+
     def validate(self, deck: Deck) -> t.List[str]:
         if len(deck.maindeck) < self._expected_deck_size:
             return [f'deck size {len(deck.maindeck)} below required minimum size {self._expected_deck_size}']
+        return []
 
 
 class DeckSizeIs(Validation):
@@ -49,6 +50,7 @@ class DeckSizeIs(Validation):
     def validate(self, deck: Deck) -> t.List[str]:
         if len(deck.maindeck) != self._expected_deck_size:
             return [f'deck size {len(deck.maindeck)} does not match required {self._expected_deck_size}']
+        return []
 
 
 class SideboardSizeIs(Validation):
@@ -59,6 +61,7 @@ class SideboardSizeIs(Validation):
     def validate(self, deck: Deck) -> t.List[str]:
         if len(deck.sideboard) != 15:
             return [f'sideboard size {len(deck.sideboard)} does not match required {self._expected_sideboard_size}']
+        return []
 
 
 class MaxDuplicates(Validation):
