@@ -79,7 +79,7 @@ class MaxDuplicates(Validation):
             printing.cardboard
             for printing in
             deck.seventy_five
-            if not self._ignore_basics and BASIC in printing.cardboard.front_card.type_line
+            if not (self._ignore_basics and BASIC in printing.cardboard.front_card.type_line)
         ).items():
             if multiplicity > self._max_duplicates:
                 errors.append(
