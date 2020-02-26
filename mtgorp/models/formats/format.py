@@ -108,7 +108,7 @@ class Format(object, metaclass = _FormatMeta):
                 )
             )
         )
-        return bool(errors), errors
+        return not bool(errors), errors
 
 
 class Highlander(Format):
