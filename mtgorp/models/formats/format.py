@@ -59,7 +59,7 @@ class SideboardSizeIs(Validation):
         self._expected_sideboard_size = size
 
     def validate(self, deck: Deck) -> t.List[str]:
-        if len(deck.sideboard) != 15:
+        if len(deck.sideboard) != self._expected_sideboard_size:
             return [f'sideboard size {len(deck.sideboard)} does not match required {self._expected_sideboard_size}']
         return []
 
