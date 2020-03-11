@@ -264,12 +264,15 @@ class BoosterMap(_BoosterMap):
         printings = Multiset()
 
         for value, multiplicity in slots.items():
-            printings.update(
-                random.sample(
-                    value,
-                    multiplicity,
+            try:
+                printings.update(
+                    random.sample(
+                        value,
+                        multiplicity,
+                    )
                 )
-            )
+            except ValueError:
+                raise GenerateBoosterException('Not enough printings')
 
         return Booster(printings)
 

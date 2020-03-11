@@ -259,11 +259,11 @@ class _ExpansionParser(object):
 
             information = BoosterInformation.information()
             
-            default_booster_key = boosterkey.Parser.parse(['rare'] + ['uncommon'] * 3 + ['common'] * 11 + ['land'])
+            default_booster_key = boosterkey.Parser.parse(['rare'] + ['uncommon'] * 3 + ['common'] * 10 + ['land'])
             default_booster_key_with_mythic = boosterkey.Parser.parse(
-                ['rare', 'mythic rare']
+                [['rare', 'mythic rare']]
                 + ['uncommon'] * 3
-                + ['common'] * 11
+                + ['common'] * 10
                 + ['land']
             )
 
