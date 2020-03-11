@@ -106,7 +106,7 @@ class Option(object):
         )
 
 
-COMMON = Option(CriteriaBuilder().rarity.equals(Rarity.COMMON).all())
+COMMON = Option(CriteriaBuilder().rarity.equals(Rarity.COMMON).type_line.contains.no(typeline.BASIC).all())
 UNCOMMON = Option(CriteriaBuilder().rarity.equals(Rarity.UNCOMMON).all())
 RARE = Option(CriteriaBuilder().rarity.equals(Rarity.RARE).all())
 MYTHIC = Option(CriteriaBuilder().rarity.equals(Rarity.MYTHIC).all())
@@ -137,11 +137,11 @@ DOUBLEFACED_MYTHIC = Option(
 )
 PREMIUM = Option(
     CriteriaBuilder().all(),
-    'premium'
+    'premium',
 )
 BASIC = Option(
     CriteriaBuilder().type_line.contains(typeline.BASIC).all(),
-    'basics'
+    'basics',
 )
 DRAFT_MATTERS_COMMON = Option(
     CriteriaBuilder().flags.contains(Flag.DRAFT_MATTERS).rarity.equals(Rarity.COMMON).all(),
@@ -243,12 +243,6 @@ class MapSlot(object):
     def __init__(self, options: t.Iterable[t.FrozenSet[Printing]]):
         self.options = options if isinstance(options, FrozenMultiset) else FrozenMultiset(options)
 
-    # def _filter_options(self, forbidden: BaseMultiset):
-    # 	for value, multiplicity in self.options.items():
-    # 		filtered = value - forbidden
-    # 		if filtered:
-    # 			yield filtered, multiplicity
-
     def sample(self):
         return random.choice(
             multiset_choice(
@@ -258,22 +252,6 @@ class MapSlot(object):
 
     def sample_slot(self):
         return multiset_choice(self.options)
-    # if not forbidden:
-    # 	return choice_multiset(
-    # 		choice_multiset(self.options)
-    # 	)
-    # new_options = Multiset(
-    # 	{
-    # 		filtered: multiplicity
-    # 		for filtered, multiplicity in
-    # 		self._filter_options(forbidden)
-    # 	}
-    # )
-    # if not new_options:
-    # 	raise GenerateBoosterException('Ran out of cards')
-    # return choice_multiset(
-    # 	choice_multiset(new_options)
-    # )
 
 
 class BoosterMap(_BoosterMap):
@@ -294,13 +272,4 @@ class BoosterMap(_BoosterMap):
             )
 
         return Booster(printings)
-
-    # printings = Multiset()
-    # for slot, multiplicity in self.slots.items():
-    # 	forbidden = set()
-    # 	for i in range(multiplicity):
-    # 		printing = slot.sample(forbidden=forbidden)
-    # 		printings.add(printing)
-    # 		forbidden.add(printing)
-    # return _booster.Booster(printings)
 

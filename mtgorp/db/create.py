@@ -258,6 +258,17 @@ class _ExpansionParser(object):
             ).date() if 'releaseDate' in raw_expansion else None
 
             information = BoosterInformation.information()
+            
+            default_booster_key = boosterkey.Parser.parse(['rare'] + ['uncommon'] * 3 + ['common'] * 11 + ['land'])
+            default_booster_key_with_mythic = boosterkey.Parser.parse(
+                ['rare', 'mythic rare']
+                + ['uncommon'] * 3
+                + ['common'] * 11
+                + ['land']
+            )
+
+            mythic_release_date = datetime.date(year = 2008, month = 8, day = 3)
+
             expansion = Expansion(
                 name = name,
                 code = code,
@@ -266,7 +277,15 @@ class _ExpansionParser(object):
                 booster_key = (
                     boosterkey.Parser.parse(information[code]['booster_key'])
                     if code in information and 'booster_key' in information[code] else
-                    boosterkey.Parser.parse(tuple(raw_expansion.get('booster', ())))
+                    (
+                        boosterkey.Parser.parse(raw_expansion['boosterV3'])
+                        if 'boosterV3' in raw_expansion else
+                        (
+                            default_booster_key_with_mythic
+                            if release_date >= mythic_release_date else
+                            default_booster_key
+                        )
+                    )
                 ),
                 border = border.Parser.parse(raw_expansion['border']) if 'border' in raw_expansion else None,
                 magic_card_info_code = raw_expansion.get('magicCardsInfoCode', None),
