@@ -28,3 +28,7 @@ class Block(Model, _Block):
     @property
     def expansions_chronologically(self) -> t.List[Expansion]:
         return sorted(self.expansions, key = lambda expansion: expansion.release_date)
+
+    @property
+    def first_expansion(self) -> Expansion:
+        return min(self.expansions, key = lambda expansion: expansion.release_date)

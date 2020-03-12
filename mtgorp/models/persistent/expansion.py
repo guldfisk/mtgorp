@@ -8,6 +8,7 @@ from lazy_property import LazyProperty
 from orp.relationships import Many, One, OneDescriptor
 from orp.database import Model, PrimaryKey
 
+from mtgorp.models.persistent.attributes.expansiontype import ExpansionType
 from mtgorp.models.persistent.attributes.borders import Border
 from mtgorp.models.interfaces import Block, BoosterKey, ExpansionCollection, Booster, Printing
 from mtgorp.models.interfaces import Expansion as _Expansion
@@ -23,6 +24,7 @@ class Expansion(Model, _Expansion):
         code: str,
         name: str = None,
         block: Block = None,
+        expansion_type: ExpansionType = None,
         release_date: datetime.date = None,
         booster_key: BoosterKey = None,
         booster_expansion_collection: ExpansionCollection = None,
@@ -34,6 +36,7 @@ class Expansion(Model, _Expansion):
     ):
         self._name = name
         self._block = One(self, 'expansions', block)
+        self._expansion_type = expansion_type
         self._release_date = release_date
         self._booster_key = booster_key
         self._booster_expansion_collection = booster_expansion_collection
@@ -78,6 +81,10 @@ class Expansion(Model, _Expansion):
     @property
     def code(self) -> str:
         return self._code
+
+    @property
+    def expansion_type(self) -> ExpansionType:
+        return self._expansion_type
 
     @property
     def release_date(self) -> t.Optional[datetime.date]:

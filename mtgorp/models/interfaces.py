@@ -2,13 +2,14 @@ from __future__ import annotations
 
 import typing as t
 
-from abc import abstractmethod, ABC
 import datetime
+from abc import abstractmethod, ABC
 
 from yeetlong.multiset import FrozenMultiset
 
 from orp.relationships import Many
 
+from mtgorp.models.persistent.attributes.expansiontype import ExpansionType
 from mtgorp.models.persistent.attributes.typeline import TypeLine
 from mtgorp.models.persistent.attributes.manacosts import ManaCost
 from mtgorp.models.persistent.attributes.colors import Color
@@ -286,6 +287,10 @@ class Expansion(ABC):
         pass
 
     @property
+    def expansion_type(self) -> ExpansionType:
+        pass
+
+    @property
     @abstractmethod
     def release_date(self) -> t.Optional[datetime.date]:
         pass
@@ -354,6 +359,10 @@ class Block(ABC):
     @property
     @abstractmethod
     def expansions_chronologically(self) -> t.List[Expansion]:
+        pass
+
+    @property
+    def first_expansion(self) -> Expansion:
         pass
 
 

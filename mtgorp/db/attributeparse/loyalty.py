@@ -7,15 +7,15 @@ from mtgorp.models.persistent.attributes.powertoughness import PTValue
 
 
 class LoyaltyParseException(AttributeParseException):
-	pass
+    pass
 
 
 class Parser(parser.Parser):
-	matcher = re.compile('-?\\d+')
+    matcher = re.compile('-?\\d+')
 
-	@staticmethod
-	def parse(s: str) -> PTValue:
-		if not Parser.matcher.match(s):
-			return PTValue(variable=True)
+    @staticmethod
+    def parse(s: str) -> PTValue:
+        if not Parser.matcher.match(s):
+            return PTValue(variable = True)
 
-		return PTValue(int(s))
+        return PTValue(int(s))

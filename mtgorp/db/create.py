@@ -12,7 +12,7 @@ from orp.persist import PicklePersistor
 from mtgorp.managejson import paths, update
 from mtgorp.db.database import CardDatabase
 from mtgorp.db.attributeparse import (
-    typeline, color, powertoughness, rarity, border, layout, boosterkey, loyalty, manacost
+    typeline, color, powertoughness, rarity, border, layout, boosterkey, loyalty, manacost, expansiontype
 )
 from mtgorp.db.attributeparse.exceptions import AttributeParseException
 from mtgorp.models.persistent.attributes.layout import Layout
@@ -273,6 +273,7 @@ class _ExpansionParser(object):
                 name = name,
                 code = code,
                 block = _BlockParser.parse(raw_expansion['block'], blocks) if 'block' in raw_expansion else None,
+                expansion_type = expansiontype.Parser.parse(raw_expansion.get('type')),
                 release_date = release_date,
                 booster_key = (
                     boosterkey.Parser.parse(information[code]['booster_key'])
@@ -340,7 +341,7 @@ class _ExpansionParser(object):
             # else:
             expansion._booster_expansion_collection = ExpansionCollection(
                 main = expansion,
-                basics = expansion if expansion.block is None else expansion.block.expansions_chronologically[0],
+                basics = expansion if expansion.block is None else expansion.block.first_expansion,
             )
 
 

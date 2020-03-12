@@ -166,13 +166,17 @@ class KeySlot(object):
             FrozenMultiset(options)
         )
 
-    def get_map_slot(self, expansion_collection: ExpansionCollection) -> MapSlot:
+    def get_map_slot(self, expansion_collection: t.Union[ExpansionCollection, t.Collection[Printing]]) -> MapSlot:
         return MapSlot(
             {
                 frozenset(
                     printing
                     for printing in
-                    expansion_collection[option.collection_key].printings
+                    (
+                        expansion_collection[option.collection_key].printings
+                        if isinstance(expansion_collection, ExpansionCollection) else
+                        expansion_collection
+                    )
                     if printing.in_booster and option.pattern.match(printing)
                 ):
                     weight
@@ -216,7 +220,7 @@ class BoosterKey(_BoosterKey):
     def slots(self):
         return self._slots
 
-    def get_booster_map(self, expansion_collection: ExpansionCollection) -> BoosterMap:
+    def get_booster_map(self, expansion_collection: t.Union[ExpansionCollection, t.Collection[Printing]]) -> BoosterMap:
         return BoosterMap(
             {
                 slot.get_map_slot(expansion_collection): multiplicity
