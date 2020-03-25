@@ -12,7 +12,7 @@ class BlockParseException(ParseException):
 class BlockParser(object):
 
     def __init__(self, db: CardDatabase):
-        self._db = db  # type: CardDatabase
+        self._db = db
 
     def _unique_block(self, s: str) -> Block:
         _s = s.lower()

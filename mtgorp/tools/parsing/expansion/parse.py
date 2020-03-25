@@ -12,7 +12,7 @@ class ExpansionParseException(ParseException):
 class ExpansionParser(object):
 
     def __init__(self, db: CardDatabase):
-        self._db = db #type: CardDatabase
+        self._db = db
 
     def _unique_expansion(self, s: str) -> Expansion:
         _s = s.lower()
