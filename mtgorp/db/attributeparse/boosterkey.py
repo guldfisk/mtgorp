@@ -100,11 +100,15 @@ class Parser(parser.Parser):
         })
     }
 
-    @staticmethod
-    def parse(values: t.Iterable[t.Union[str, t.Tuple[str, ...]]]) -> boostergen.BoosterKey:
+    @classmethod
+    def _frozen_flatten(cls, value: t.Any) -> t.Union[str, t.AbstractSet]:
+        return value if isinstance(value, str) else frozenset(map(cls._frozen_flatten, value))
+
+    @classmethod
+    def parse(cls, values: t.Iterable[t.Union[str, t.Tuple[str, ...]]]) -> boostergen.BoosterKey:
         return boostergen.BoosterKey(
             Parser.SLOT_MAP[key]
             for key in
-            (value if isinstance(value, str) else frozenset(value) for value in values)
+            map(cls._frozen_flatten, values)
             if key in Parser.SLOT_MAP
         )

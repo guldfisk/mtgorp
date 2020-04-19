@@ -52,7 +52,7 @@ class Pool(Serializeable):
     def serialize(self) -> serialization_model:
         return {
             'printings': self._printings,
-            'decks': self._decks,
+            'deck': self._decks,
         }
 
     @classmethod
@@ -62,6 +62,6 @@ class Pool(Serializeable):
             (
                 Deck.deserialize(_value, inflator)
                 for _value in
-                value.get('decks', ())
+                value.get('deck', ())
             ),
         )
