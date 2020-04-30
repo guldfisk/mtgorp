@@ -1,3 +1,4 @@
+import datetime
 import typing as t
 
 import os
@@ -13,6 +14,7 @@ from mtgorp.managejson import download, paths
 
 
 MTG_JSON_RSS_URL = 'http://mtgjson.com/atom.xml'
+MTG_JSON_DATETIME_FORMAT = '%Y-%m-%dT%H:%M:%S.%fZ'
 
 
 def check_rss(url) -> t.Optional[str]:
@@ -36,8 +38,8 @@ def update() -> None:
 def delete_content(f) -> None:
     f.seek(0)
     f.truncate()
-    
-    
+
+
 def check() -> t.Optional[str]:
     last_updates = check_rss(MTG_JSON_RSS_URL)
 
@@ -47,15 +49,23 @@ def check() -> t.Optional[str]:
     if not os.path.exists(paths.JSON_PATH):
         os.makedirs(paths.JSON_PATH)
 
-    open(os.path.join(paths.JSON_PATH, 'lastupdtd.txt'), 'a').close()
-    
-    with open(os.path.join(paths.JSON_PATH, 'lastupdtd.txt'), 'r') as f:
+    open(paths.LAST_UPDATED_PATH, 'a').close()
+
+    with open(paths.LAST_UPDATED_PATH, 'r') as f:
         return None if last_updates == f.read() else last_updates
-    
+
 
 def update_last_updated(last_updated: str) -> None:
-    with open(os.path.join(paths.JSON_PATH, 'lastupdtd.txt'), 'w') as f:
+    with open(paths.LAST_UPDATED_PATH, 'w') as f:
         f.write(last_updated)
+
+
+def get_last_updated() -> t.Optional[datetime.datetime]:
+    try:
+        with open(paths.LAST_UPDATED_PATH, 'r') as f:
+            return datetime.datetime.strptime(f.read(), MTG_JSON_DATETIME_FORMAT)
+    except (IOError, ValueError):
+        return None
 
 
 def check_and_update() -> bool:

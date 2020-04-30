@@ -1,3 +1,4 @@
+import datetime
 import typing as t
 
 from orp.database import Table, Database
@@ -20,6 +21,7 @@ class CardDatabase(Database):
         artists: Table,
         blocks: Table,
         expansions: Table,
+        json_versione: datetime.datetime,
     ):
         super().__init__(
             {
@@ -37,6 +39,8 @@ class CardDatabase(Database):
         self._artists = self._tables[Artist]
         self._blocks = self._tables[Block]
         self._expansions = self._tables[Expansion]
+
+        self._json_version = json_versione
 
     @property
     def cards(self) -> t.Dict[str, Card]:
@@ -61,3 +65,7 @@ class CardDatabase(Database):
     @property
     def expansions(self) -> t.Dict[str, Expansion]:
         return self._expansions
+
+    @property
+    def json_version(self) -> datetime.datetime:
+        return self._json_version

@@ -31,7 +31,7 @@ class Color(Enum):
         return obj
 
 
-AMOUNT_COLORS = 5
+AMOUNT_COLORS = len(Color)
 
 
 def color_set_sort_value(color_set: t.AbstractSet[Color]) -> int:

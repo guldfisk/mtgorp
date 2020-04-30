@@ -397,11 +397,18 @@ class DatabaseCreator(object):
         _ExpansionParser.post_parse(expansions)
         return expansions
 
+    # @classmethod
+    # def _get_temp_path(cls, path: str) -> str:
+    #     components = os.path.split(path)
+    #     name, ext = os.path.splitext(components[-1])
+    #     return os.path.join(*(components[:-1] + (name + '_' + ext,)))
+
     @classmethod
     def create_database(
         cls,
-        all_cards_path = paths.ALL_CARDS_PATH,
-        all_sets_path = paths.ALL_SETS_PATH,
+        json_updated_at: datetime.datetime,
+        all_cards_path: str = paths.ALL_CARDS_PATH,
+        all_sets_path: str = paths.ALL_SETS_PATH,
     ):
         with open(all_cards_path, 'r', encoding = 'UTF-8') as all_cards_file:
             with open(all_sets_path, 'r', encoding = 'UTF-8') as all_sets_file:
@@ -442,6 +449,7 @@ class DatabaseCreator(object):
             artists = artists,
             blocks = blocks,
             expansions = expansions,
+            json_versione = json_updated_at,
         )
 
 
@@ -453,18 +461,23 @@ def update_database(
     if not os.path.exists(db_path):
         os.makedirs(db_path)
 
-    if not os.path.exists(paths.ALL_CARDS_PATH) or not os.path.exists(paths.ALL_SETS_PATH):
+    if (
+        not os.path.exists(paths.ALL_CARDS_PATH)
+        or not os.path.exists(paths.ALL_SETS_PATH)
+        or not os.path.exists(paths.LAST_UPDATED_PATH)
+    ):
         update.check_and_update()
 
     previous_recursion_limit = sys.getrecursionlimit()
 
     db = DatabaseCreator.create_database(
+        update.get_last_updated(),
         all_cards_path,
         all_sets_path,
     )
 
     try:
-        sys.setrecursionlimit(50000)
+        sys.setrecursionlimit(5 * 10 ** 4)
         PicklePersistor(os.path.join(paths.APP_DATA_PATH, 'db')).save(db)
     finally:
         sys.setrecursionlimit(previous_recursion_limit)
