@@ -201,6 +201,7 @@ XENAGOS = CardSubType('Xenagos', (PLANESWALKER,))
 YANGGU = CardSubType('Yanggu', (PLANESWALKER,))
 YANLING = CardSubType('Yanling', (PLANESWALKER,))
 CALIX = CardSubType('Calix', (PLANESWALKER,))
+LUKKA = CardSubType('Lukka', (PLANESWALKER,))
 
 ADVENTURE = CardSubType('Adventure', (INSTANT, SORCERY))
 ARCANE = CardSubType('Arcane', (INSTANT, SORCERY))
@@ -455,6 +456,8 @@ ZOMBIE = CardSubType('Zombie', (CREATURE, TRIBAL))
 ZUBERA = CardSubType('Zubera', (CREATURE, TRIBAL))
 DEMIGOD = CardSubType('Demigod', (CREATURE, TRIBAL))
 TENTACLE = CardSubType('Tentacle', (CREATURE, TRIBAL))
+OOTER = CardSubType('Otter', (CREATURE, TRIBAL))
+SHARK = CardSubType('Shark', (CREATURE, TRIBAL))
 
 
 BASIC_LAND_TYPES = (
