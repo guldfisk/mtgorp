@@ -40,7 +40,7 @@ def delete_content(f) -> None:
     f.truncate()
 
 
-def check() -> t.Optional[str]:
+def check() -> t.Optional[datetime.datetime]:
     last_updates = check_rss(MTG_JSON_RSS_URL)
 
     if not last_updates:
@@ -52,7 +52,7 @@ def check() -> t.Optional[str]:
     open(paths.LAST_UPDATED_PATH, 'a').close()
 
     with open(paths.LAST_UPDATED_PATH, 'r') as f:
-        return None if last_updates == f.read() else last_updates
+        return None if last_updates == f.read() else datetime.datetime.strptime(last_updates, MTG_JSON_DATETIME_FORMAT)
 
 
 def update_last_updated(last_updated: str) -> None:
