@@ -55,9 +55,9 @@ def check() -> t.Optional[datetime.datetime]:
         return None if last_updates == f.read() else datetime.datetime.strptime(last_updates, MTG_JSON_DATETIME_FORMAT)
 
 
-def update_last_updated(last_updated: str) -> None:
+def update_last_updated(last_updated: t.Union[str, datetime.datetime]) -> None:
     with open(paths.LAST_UPDATED_PATH, 'w') as f:
-        f.write(last_updated)
+        f.write(last_updated if isinstance(last_updated, str) else last_updated.strftime(MTG_JSON_DATETIME_FORMAT))
 
 
 def get_last_updated() -> t.Optional[datetime.datetime]:
