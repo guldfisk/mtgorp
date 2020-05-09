@@ -46,16 +46,14 @@ def check() -> t.Optional[datetime.datetime]:
     if not last_updates:
         return None
 
-    if not os.path.exists(paths.JSON_PATH):
-        os.makedirs(paths.JSON_PATH)
+    latest_update = datetime.datetime.strptime(last_updates, MTG_JSON_DATETIME_FORMAT)
 
-    open(paths.LAST_UPDATED_PATH, 'a').close()
-
-    with open(paths.LAST_UPDATED_PATH, 'r') as f:
-        return None if last_updates == f.read() else datetime.datetime.strptime(last_updates, MTG_JSON_DATETIME_FORMAT)
+    return None if get_last_updated() == latest_update else latest_update
 
 
 def update_last_updated(last_updated: t.Union[str, datetime.datetime]) -> None:
+    os.makedirs(os.path.join(*os.path.split(paths.LAST_UPDATED_PATH)[:-1]), exist_ok = True)
+
     with open(paths.LAST_UPDATED_PATH, 'w') as f:
         f.write(last_updated if isinstance(last_updated, str) else last_updated.strftime(MTG_JSON_DATETIME_FORMAT))
 
@@ -64,7 +62,7 @@ def get_last_updated() -> t.Optional[datetime.datetime]:
     try:
         with open(paths.LAST_UPDATED_PATH, 'r') as f:
             return datetime.datetime.strptime(f.read(), MTG_JSON_DATETIME_FORMAT)
-    except (IOError, ValueError):
+    except (IOError, ValueError, FileNotFoundError):
         return None
 
 
