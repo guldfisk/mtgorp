@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import typing as t
 
 from yeetlong.multiset import FrozenMultiset
@@ -8,7 +10,11 @@ from mtgorp.models.serilization.serializeable import Serializeable, serializatio
 
 class Deck(Serializeable):
 
-    def __init__(self, maindeck: t.Iterable[Printing], sideboard: t.Iterable[Printing] = None):
+    def __init__(
+        self,
+        maindeck: t.Union[t.Iterable[Printing], t.Iterable[t.Tuple[Printing, int]]],
+        sideboard: t.Union[t.Iterable[Printing], t.Iterable[t.Tuple[Printing, int]], None] = None,
+    ):
         self._maindeck: FrozenMultiset[Printing] = (
             maindeck
             if isinstance(maindeck, FrozenMultiset)
@@ -60,7 +66,7 @@ class Deck(Serializeable):
         }
 
     @classmethod
-    def deserialize(cls, value: serialization_model, inflator: Inflator) -> 'Deck':
+    def deserialize(cls, value: serialization_model, inflator: Inflator) -> Deck:
         return Deck(
             inflator.inflate_all(Printing, value['maindeck']),
             inflator.inflate_all(Printing, value.get('sideboard', ())),

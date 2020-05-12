@@ -126,14 +126,14 @@ class CodSerializer(DeckSerializer):
         sideboard = ElementTree.SubElement(root, 'zone', {'name': 'side'})
 
         for element, printings in ((maindeck, deck.maindeck), (sideboard, deck.sideboard)):
-            for printing, multiplicity in printings.items():
+            for cardboard, multiplicity in Multiset(printing.cardboard for printing in printings).items():
                 ElementTree.SubElement(
                     element,
                     'card',
                     {
                         'number': str(multiplicity),
                         'price': '0',
-                        'name': ' // '.join(card.name for card in printing.cardboard.front_cards),
+                        'name': ' // '.join(card.name for card in cardboard.front_cards),
                     },
                 )
 
@@ -159,20 +159,20 @@ class CodSerializer(DeckSerializer):
     def deserialize(self, s: t.AnyStr) -> Deck:
         root = ElementTree.fromstring(s)
         return Deck(
-            {
-                printing: multiplicity
+            (
+                (printing, multiplicity)
                 for printing, multiplicity in
                 map(
                     self._element_to_printings,
                     root.findall('zone[@name="main"]/card'),
                 )
-            },
-            {
-                printing: multiplicity
+            ),
+            (
+                (printing, multiplicity)
                 for printing, multiplicity in
                 map(
                     self._element_to_printings,
                     root.findall('zone[@name="side"]/card'),
                 )
-            },
+            ),
         )
