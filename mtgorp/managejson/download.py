@@ -12,7 +12,7 @@ def _get_temp_path(path: str) -> str:
     return os.path.join(*(components[:-1] + (name + '_' + ext,)))
 
 
-def download_file(url: str, location: str, chunk_size: int = 1024) -> None:
+def _download_file(url: str, location: str, chunk_size: int = 1024) -> None:
     ro = r.get(url, stream = True)
     with open(location, 'wb') as f:
         for chunk in ro.iter_content(chunk_size = chunk_size):
@@ -25,10 +25,10 @@ TO_RETRIEVE = {
 }
 
 
-def make_new(to_retrieve: t.Mapping[str, str]) -> None:
+def _make_new(to_retrieve: t.Mapping[str, str]) -> None:
     for path in to_retrieve:
         temp_path = _get_temp_path(path)
-        download_file(
+        _download_file(
             to_retrieve[path],
             temp_path,
         )
@@ -38,7 +38,7 @@ def make_new(to_retrieve: t.Mapping[str, str]) -> None:
 def re_download() -> None:
     if not os.path.exists(paths.JSON_PATH):
         os.makedirs(paths.JSON_PATH)
-    make_new(TO_RETRIEVE)
+    _make_new(TO_RETRIEVE)
 
 
 if __name__ == '__main__':

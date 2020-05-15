@@ -9,7 +9,7 @@ import ijson
 from orp.database import Table
 from orp.persist import PicklePersistor
 
-from mtgorp.managejson import paths, update
+from mtgorp.managejson import paths
 from mtgorp.db.database import CardDatabase
 from mtgorp.db.attributeparse import (
     typeline, color, powertoughness, rarity, border, layout, boosterkey, loyalty, manacost, expansiontype
@@ -397,12 +397,6 @@ class DatabaseCreator(object):
         _ExpansionParser.post_parse(expansions)
         return expansions
 
-    # @classmethod
-    # def _get_temp_path(cls, path: str) -> str:
-    #     components = os.path.split(path)
-    #     name, ext = os.path.splitext(components[-1])
-    #     return os.path.join(*(components[:-1] + (name + '_' + ext,)))
-
     @classmethod
     def create_database(
         cls,
@@ -454,6 +448,7 @@ class DatabaseCreator(object):
 
 
 def update_database(
+    json_updated_at: t.Optional[datetime.datetime] = None,
     all_cards_path = paths.ALL_CARDS_PATH,
     all_sets_path = paths.ALL_SETS_PATH,
     db_path = paths.APP_DATA_PATH,
@@ -461,24 +456,19 @@ def update_database(
     if not os.path.exists(db_path):
         os.makedirs(db_path)
 
-    if (
-        not os.path.exists(paths.ALL_CARDS_PATH)
-        or not os.path.exists(paths.ALL_SETS_PATH)
-        or not os.path.exists(paths.LAST_UPDATED_PATH)
-    ):
-        update.check_and_update()
-
-    previous_recursion_limit = sys.getrecursionlimit()
-
     db = DatabaseCreator.create_database(
-        update.get_last_updated(),
+        datetime.datetime.fromtimestamp(0) if json_updated_at is None else json_updated_at,
         all_cards_path,
         all_sets_path,
     )
 
+    previous_recursion_limit = sys.getrecursionlimit()
+
     try:
         sys.setrecursionlimit(5 * 10 ** 4)
-        PicklePersistor(os.path.join(paths.APP_DATA_PATH, 'db')).save(db)
+        temp_path = os.path.join(paths.APP_DATA_PATH, '_db')
+        PicklePersistor(temp_path).save(db)
+        os.rename(temp_path, os.path.join(paths.APP_DATA_PATH, 'db'))
     finally:
         sys.setrecursionlimit(previous_recursion_limit)
 

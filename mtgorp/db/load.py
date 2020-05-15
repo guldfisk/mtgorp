@@ -1,5 +1,7 @@
 import os
 
+from pickle import UnpicklingError
+
 from orp.persist import PicklePersistor
 
 from mtgorp.managejson import paths
@@ -21,5 +23,5 @@ class Loader(object):
             return PicklePersistor(
                 os.path.join(paths.APP_DATA_PATH, 'db')
             ).load()
-        except FileNotFoundError:
+        except (FileNotFoundError, EOFError, UnpicklingError):
             raise DBLoadException()

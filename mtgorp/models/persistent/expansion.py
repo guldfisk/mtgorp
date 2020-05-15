@@ -83,6 +83,10 @@ class Expansion(Model, _Expansion):
         return self._code
 
     @property
+    def name_and_code(self):
+        return f'[{self._code}] {self._name}'
+
+    @property
     def expansion_type(self) -> ExpansionType:
         return self._expansion_type
 

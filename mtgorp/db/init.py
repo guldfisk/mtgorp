@@ -1,20 +1,11 @@
-from mtgorp.db import create
+import logging
 
-from mtgorp.managejson import download
-from mtgorp.managejson.update import check, update_last_updated
+from mtgorp.managejson.update import check_and_update
 
 
 def mtgdb_init():
-    last_updates = check()
-    if last_updates is not None:
-        print('New magic json')
-        download.re_download()
-        print('New magic json downloaded')
-        create.update_database()
-        print('Database updated')
-        update_last_updated(last_updates)
-    else:
-        print('Magic db up to date')
+    logging.basicConfig(format = '%(levelname)s %(message)s', level = logging.INFO)
+    check_and_update()
 
 
 if __name__ == '__main__':

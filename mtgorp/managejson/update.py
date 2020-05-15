@@ -1,4 +1,5 @@
 import datetime
+import logging
 import typing as t
 
 import os
@@ -7,6 +8,8 @@ import re
 import requests as r
 
 from xml.etree import ElementTree
+
+import pickledb
 
 from mtgorp.db import create
 
@@ -17,62 +20,77 @@ MTG_JSON_RSS_URL = 'http://mtgjson.com/atom.xml'
 MTG_JSON_DATETIME_FORMAT = '%Y-%m-%dT%H:%M:%S.%fZ'
 
 
-def check_rss(url) -> t.Optional[str]:
+def _get_update_db():
+    os.makedirs(paths.APP_DATA_PATH, exist_ok = True)
+    return pickledb.load(paths.UPDATE_INFO_PATH, True, sig = False)
+
+
+def with_update_db(f: t.Callable[..., t.Any]) -> t.Callable[..., t.Any]:
+    def wrapped(*args, **kwargs):
+        if not 'update_db' in kwargs:
+            kwargs['update_db'] = _get_update_db()
+        return f(*args, **kwargs)
+
+    return wrapped
+
+
+def check_rss(url: str = MTG_JSON_RSS_URL) -> t.Optional[datetime.datetime]:
     rg = r.get(url)
     root = ElementTree.fromstring(rg.text)
-    last_updates = None
 
     for child in root:
         if re.match('.*updated$', child.tag):
-            last_updates = child.text
-            break
+            return datetime.datetime.strptime(child.text, MTG_JSON_DATETIME_FORMAT)
 
-    return last_updates
-
-
-def update() -> None:
-    download.re_download()
-    create.update_database()
+    return None
 
 
-def delete_content(f) -> None:
-    f.seek(0)
-    f.truncate()
-
-
-def check() -> t.Optional[datetime.datetime]:
-    last_updates = check_rss(MTG_JSON_RSS_URL)
-
-    if not last_updates:
+@with_update_db
+def get_last_json_update(update_db: pickledb.PickleDB) -> t.Optional[datetime.datetime]:
+    key = update_db.get('last_json_update')
+    if not key:
         return None
-
-    latest_update = datetime.datetime.strptime(last_updates, MTG_JSON_DATETIME_FORMAT)
-
-    return None if get_last_updated() == latest_update else latest_update
+    return datetime.datetime.strptime(key, MTG_JSON_DATETIME_FORMAT)
 
 
-def update_last_updated(last_updated: t.Union[str, datetime.datetime]) -> None:
-    os.makedirs(os.path.join(*os.path.split(paths.LAST_UPDATED_PATH)[:-1]), exist_ok = True)
-
-    with open(paths.LAST_UPDATED_PATH, 'w') as f:
-        f.write(last_updated if isinstance(last_updated, str) else last_updated.strftime(MTG_JSON_DATETIME_FORMAT))
-
-
-def get_last_updated() -> t.Optional[datetime.datetime]:
-    try:
-        with open(paths.LAST_UPDATED_PATH, 'r') as f:
-            return datetime.datetime.strptime(f.read(), MTG_JSON_DATETIME_FORMAT)
-    except (IOError, ValueError, FileNotFoundError):
+@with_update_db
+def get_last_db_update(update_db: pickledb.PickleDB) -> t.Optional[datetime.datetime]:
+    key = update_db.get('last_db_update')
+    if not key:
         return None
+    return datetime.datetime.strptime(key, MTG_JSON_DATETIME_FORMAT)
 
 
-def check_and_update() -> bool:
-    last_updates = check()
-    if last_updates is not None:
-        update()
-        update_last_updated(last_updates)
+@with_update_db
+def regenerate_db(update_db: pickledb.PickleDB, force: bool = False) -> bool:
+    last_json_update = get_last_json_update(update_db = update_db)
+    last_db_update = get_last_db_update(update_db = update_db)
+
+    if not last_db_update or last_db_update < last_json_update or force:
+        logging.info('updating db')
+        create.update_database(last_json_update)
+        update_db.set('last_db_update', last_json_update.strftime(MTG_JSON_DATETIME_FORMAT))
+        logging.info('updated database')
         return True
+
     return False
+
+
+@with_update_db
+def check_and_update(update_db: pickledb.PickleDB, force: bool = False) -> bool:
+    last_remote_update = check_rss()
+    if not last_remote_update:
+        return False
+
+    last_json_update = get_last_json_update(update_db = update_db)
+
+    if not last_json_update or last_json_update < last_remote_update:
+        logging.info('mtgjson outdated')
+        download.re_download()
+        update_db.set('last_json_update', last_remote_update.strftime(MTG_JSON_DATETIME_FORMAT))
+        logging.info('downloaded new json')
+
+    return regenerate_db(update_db = update_db, force = force)
 
 
 if __name__ == '__main__':
