@@ -443,7 +443,7 @@ class DatabaseCreator(object):
             artists = artists,
             blocks = blocks,
             expansions = expansions,
-            json_versione = json_updated_at,
+            json_version = json_updated_at,
         )
 
 
@@ -465,7 +465,7 @@ def update_database(
     previous_recursion_limit = sys.getrecursionlimit()
 
     try:
-        sys.setrecursionlimit(5 * 10 ** 4)
+        sys.setrecursionlimit(2 ** 16)
         temp_path = os.path.join(paths.APP_DATA_PATH, '_db')
         PicklePersistor(temp_path).save(db)
         os.rename(temp_path, os.path.join(paths.APP_DATA_PATH, 'db'))

@@ -21,7 +21,7 @@ class CardDatabase(Database):
         artists: Table,
         blocks: Table,
         expansions: Table,
-        json_versione: datetime.datetime,
+        json_version: datetime.datetime,
     ):
         super().__init__(
             {
@@ -40,7 +40,7 @@ class CardDatabase(Database):
         self._blocks = self._tables[Block]
         self._expansions = self._tables[Expansion]
 
-        self._json_version = json_versione
+        self._json_version = json_version
 
     @property
     def cards(self) -> t.Dict[str, Card]:

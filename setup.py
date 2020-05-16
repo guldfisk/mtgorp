@@ -25,6 +25,7 @@ setup(
         'frozendict',
         'requests',
         'antlr4-python3-runtime',
-        'ijson', 'pickledb'
+        'ijson',
+        'pickledb',
     ]
 )
