@@ -283,10 +283,16 @@ class Expansion(ABC):
 
     @property
     @abstractmethod
+    def name_and_code(self) -> str:
+        pass
+
+    @property
+    @abstractmethod
     def code(self) -> str:
         pass
 
     @property
+    @abstractmethod
     def expansion_type(self) -> ExpansionType:
         pass
 

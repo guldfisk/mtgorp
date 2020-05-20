@@ -38,9 +38,14 @@ class CardSuperType(BaseCardType):
 
 class CardType(BaseCardType):
 
-    def __init__(self, name: str):
+    def __init__(self, name: str, is_permanent: bool = False):
         super().__init__(name)
         self.sub_types: t.AbstractSet[CardSubType] = frozenset()
+        self._is_permanent = is_permanent
+
+    @property
+    def is_permanent(self) -> bool:
+        return self._is_permanent
 
     def __lt__(self, other):
         return _CARD_TYPE_INDEX.get(self, -1) < _CARD_TYPE_INDEX.get(other, -1)
@@ -91,11 +96,11 @@ SUPER_TYPES = (
     SNOW,
 )
 
-CREATURE = CardType('Creature')
-ARTIFACT = CardType('Artifact')
-ENCHANTMENT = CardType('Enchantment')
-LAND = CardType('Land')
-PLANESWALKER = CardType('Planeswalker')
+CREATURE = CardType('Creature', is_permanent = True)
+ARTIFACT = CardType('Artifact', is_permanent = True)
+ENCHANTMENT = CardType('Enchantment', is_permanent = True)
+LAND = CardType('Land', is_permanent = True)
+PLANESWALKER = CardType('Planeswalker', is_permanent = True)
 INSTANT = CardType('Instant')
 SORCERY = CardType('Sorcery')
 TRIBAL = CardType('Tribal')
@@ -456,7 +461,7 @@ ZOMBIE = CardSubType('Zombie', (CREATURE, TRIBAL))
 ZUBERA = CardSubType('Zubera', (CREATURE, TRIBAL))
 DEMIGOD = CardSubType('Demigod', (CREATURE, TRIBAL))
 TENTACLE = CardSubType('Tentacle', (CREATURE, TRIBAL))
-OOTER = CardSubType('Otter', (CREATURE, TRIBAL))
+OTTER = CardSubType('Otter', (CREATURE, TRIBAL))
 SHARK = CardSubType('Shark', (CREATURE, TRIBAL))
 
 
@@ -563,3 +568,7 @@ class TypeLine(object):
     @LazyProperty
     def sub_types(self) -> t.Set[CardSubType]:
         return {t for t in self._types if isinstance(t, CardSubType)}
+
+    @property
+    def is_permanent(self) -> bool:
+        return any(t.is_permanent for t in self.card_types)

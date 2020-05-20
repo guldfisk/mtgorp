@@ -83,7 +83,7 @@ class Expansion(Model, _Expansion):
         return self._code
 
     @property
-    def name_and_code(self):
+    def name_and_code(self) -> str:
         return f'[{self._code}] {self._name}'
 
     @property
@@ -151,7 +151,7 @@ class ExpansionFragment(_ExpansionFragment):
     def fragmentize(self, frm: t.Optional[int] = 0, to: t.Optional[int] = None) -> ExpansionFragment:
         return ExpansionFragment(self, to, frm)
 
-    def generate_booster(self) -> 'Booster':
+    def generate_booster(self) -> Booster:
         pass
 
     @property
