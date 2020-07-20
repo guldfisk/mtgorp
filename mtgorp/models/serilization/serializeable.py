@@ -64,7 +64,7 @@ class Serializeable(ABC):
 class PersistentHashable(ABC):
     
     @abstractmethod
-    def _calc_persistent_hash(self) -> t.Iterable[t.ByteString]:
+    def _calc_persistent_hash(self) -> t.Iterator[t.ByteString]:
         pass
     
     def persistent_hash(self) -> str:
