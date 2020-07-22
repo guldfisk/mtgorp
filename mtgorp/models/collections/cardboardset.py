@@ -9,8 +9,12 @@ from mtgorp.models.serilization.serializeable import Serializeable, serializatio
 class CardboardSet(Serializeable):
 
     def __init__(self, cardboards: t.Optional[t.Iterable[Cardboard]] = None):
-        self._cardboards = set() if cardboards is None else set(cardboards)
+        self._cardboards = frozenset() if cardboards is None else frozenset(cardboards)
 
+    @property
+    def cardboards(self) -> t.AbstractSet[Cardboard]:
+        return self._cardboards
+    
     def serialize(self) -> serialization_model:
         return {
             'cardboards': list(self._cardboards),
