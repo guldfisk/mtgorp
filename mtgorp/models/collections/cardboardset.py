@@ -44,3 +44,6 @@ class CardboardSet(Serializeable):
 
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}({", ".join(c.name for c in self._cardboards)})'
+
+    def __and__(self, other: CardboardSet) -> CardboardSet:
+        return self.__class__(self._cardboards & other._cardboards)
