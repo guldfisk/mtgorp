@@ -14,7 +14,7 @@ class CardboardSet(Serializeable):
     @property
     def cardboards(self) -> t.AbstractSet[Cardboard]:
         return self._cardboards
-    
+
     def serialize(self) -> serialization_model:
         return {
             'cardboards': list(self._cardboards),
@@ -43,4 +43,4 @@ class CardboardSet(Serializeable):
         return self.__class__(self._cardboards - other._cardboards)
 
     def __repr__(self) -> str:
-        return self._cardboards.__repr__()
+        return f'{self.__class__.__name__}({", ".join(c.name for c in self._cardboards)})'
