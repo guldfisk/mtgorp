@@ -36,6 +36,12 @@ class CardboardSet(Serializeable):
     def __iter__(self) -> t.Iterator[Cardboard]:
         return self._cardboards.__iter__()
 
+    def __contains__(self, item) -> bool:
+        return self._cardboards.__contains__(item)
+
+    def __len__(self) -> int:
+        return len(self._cardboards)
+
     def __or__(self, other: CardboardSet) -> CardboardSet:
         return self.__class__(self._cardboards | other._cardboards)
 

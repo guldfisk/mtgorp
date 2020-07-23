@@ -7,7 +7,7 @@ from mtgorp.models.serilization.strategies.strategy import Strategy, S
 class RawStrategy(Strategy):
 
     @classmethod
-    def _serialize(cls, model: compacted_model) -> t.AnyStr:
+    def _serialize(cls, model: compacted_model) -> compacted_model:
         return model
 
     def _deserialize(self, s: t.AnyStr) -> compacted_model:
