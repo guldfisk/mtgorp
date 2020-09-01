@@ -18,7 +18,7 @@ class Booster(_Booster):
 
     @property
     def sorted_printings(self) -> t.List[Printing]:
-        return sorted(self._printings, key=lambda p: p.rarity.value, reverse=True)
+        return sorted(self._printings, key = lambda p: p.rarity.value, reverse = True)
 
     @property
     def expansion(self) -> t.Optional[Expansion]:
@@ -35,3 +35,6 @@ class Booster(_Booster):
 
     def __iter__(self) -> t.Iterator[Printing]:
         return self._printings.__iter__()
+
+    def __len__(self) -> int:
+        return len(self._printings)

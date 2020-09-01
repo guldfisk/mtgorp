@@ -30,6 +30,12 @@ class Parser(parser.Parser):
         'double faced common': boostergen.KeySlot((boostergen.DOUBLEFACED_COMMON,)),
         'common': boostergen.COMMON_SLOT,
         'double faced rare': boostergen.KeySlot((boostergen.DOUBLEFACED_RARE,)),
+        'double faced': boostergen.KeySlot({
+            boostergen.DOUBLEFACED_MYTHIC: 1,
+            boostergen.DOUBLEFACED_RARE: 7,
+            boostergen.DOUBLEFACED_UNCOMMON: 21,
+            boostergen.DOUBLEFACED_COMMON: 77,
+        }),
         'foil rare': boostergen.RARE_SLOT,
         'draft-matters': boostergen.KeySlot({
             boostergen.DRAFT_MATTERS_MYTHIC: 1,
@@ -64,7 +70,7 @@ class Parser(parser.Parser):
         }),
         frozenset(('rare', 'uncommon')): boostergen.KeySlot({
             boostergen.RARE: 1,
-            boostergen.UNCOMMON_SLOT: 3,
+            boostergen.UNCOMMON: 3,
         }),
         frozenset(('foil mythic rare', 'foil rare', 'foil uncommon', 'foil common')): CARD_WITH_MYTHIC,
         'foil_with_mythic': CARD_WITH_MYTHIC,

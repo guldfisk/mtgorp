@@ -176,15 +176,11 @@ class _PrintingParser(object):
 
             flags = []
 
-            if raw_printing.get('timeshifted'):
+            if raw_printing.get('timeshifted') or 'colorShifted' in raw_printing.get('frameEffects', ()):   
                 flags.append(Flag.TIMESHIFTED)
 
             information = BoosterInformation.information()
             if expansion.code in information:
-                if 'blacklist' in information[expansion.code]:
-                    in_booster = not cardboard.name in information[expansion.code]['blacklist']
-                else:
-                    in_booster = True
                 if 'flags' in information[expansion.code]:
                     for flag in information[expansion.code]['flags']:
                         if cardboard.name in flag.get('cards', ()):
@@ -192,8 +188,6 @@ class _PrintingParser(object):
                                 flags.append(Flag[flag.get('name', '')])
                             except KeyError:
                                 pass
-            else:
-                in_booster = True
 
             collector_number = raw_printing.get(
                 'number',
@@ -213,7 +207,7 @@ class _PrintingParser(object):
                             '[^\d]',
                             '',
                             collector_number,
-                            flags = re.IGNORECASE
+                            flags = re.IGNORECASE,
                         )
                     )
                 ),
@@ -223,7 +217,12 @@ class _PrintingParser(object):
                 back_artist = back_artist,
                 back_flavor = back_flavor,
                 rarity = rarity.Parser.parse(raw_printing['rarity']) if 'rarity' in raw_printing else None,
-                in_booster = in_booster,
+                in_booster = (
+                    not raw_printing.get('isStarter')
+                    or expansion.code in information
+                    and 'blacklist' in information[expansion.code]
+                    and cardboard.name in information[expansion.code]['blacklist']
+                ),
                 flags = Flags(flags),
             )
 
@@ -258,7 +257,7 @@ class _ExpansionParser(object):
             ).date() if 'releaseDate' in raw_expansion else None
 
             information = BoosterInformation.information()
-            
+
             default_booster_key = boosterkey.Parser.parse(['rare'] + ['uncommon'] * 3 + ['common'] * 10 + ['land'])
             default_booster_key_with_mythic = boosterkey.Parser.parse(
                 [['rare', 'mythic rare']]
@@ -320,29 +319,33 @@ class _ExpansionParser(object):
 
     @classmethod
     def post_parse(cls, expansions: t.Dict[str, Expansion]):
-        # information = BoosterInformation.information()
+        information = BoosterInformation.information()
         for expansion in expansions.values():
-            # todo find out how promo subsets was renamed and adjust limited data json
-            # if expansion.code in information and 'booster_expansion_collection' in information[expansion.code]:
-            #     values = information[expansion.code]['booster_expansion_collection']
-            #     expansion._booster_expansion_collection = ExpansionCollection(
-            #         main = expansion,
-            #         **{
-            #             key:
-            #                 (
-            #                     expansions[values[key][0]]
-            #                     if values[key][1] is None
-            #                     else expansions[values[key][0]].fragments[values[key][1]]
-            #                 )
-            #             for key in
-            #             values
-            #         },
-            #     )
-            # else:
-            expansion._booster_expansion_collection = ExpansionCollection(
-                main = expansion,
-                basics = expansion if expansion.block is None else expansion.block.first_expansion,
-            )
+            if expansion.code in information and 'booster_expansion_collection' in information[expansion.code]:
+                values = information[expansion.code]['booster_expansion_collection']
+                expansion._booster_expansion_collection = ExpansionCollection(
+                    main = expansion,
+                    **{
+                        key:
+                            (
+                                expansions[values[key][0]]
+                                if values[key][1] is None
+                                else expansions[values[key][0]].fragments[values[key][1]]
+                            )
+                        for key in
+                        values
+                    },
+                )
+            else:
+                try:
+                    basics = expansion if expansion.block is None else expansion.block.first_expansion
+                except ValueError:
+                    basics = expansion
+
+                expansion._booster_expansion_collection = ExpansionCollection(
+                    main = expansion,
+                    basics = basics,
+                )
 
 
 class DatabaseCreator(object):

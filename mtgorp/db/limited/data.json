@@ -13,6 +13,63 @@
       "Stone Quarry"
     ]
   },
+  "GRN": {
+    "booster_key": [
+      [
+        "rare",
+        "mythic rare"
+      ],
+      "uncommon",
+      "uncommon",
+      "uncommon",
+      "common",
+      "common",
+      "common",
+      "common",
+      "common",
+      "common",
+      "common",
+      "common",
+      "common",
+      "common",
+      "common"
+    ]
+  },
+  "AER": {
+    "booster_key": [
+      [
+        "rare",
+        "mythic rare"
+      ],
+      "uncommon",
+      "uncommon",
+      "uncommon",
+      "common",
+      "common",
+      "common",
+      "common",
+      "common",
+      "common",
+      "common",
+      "common",
+      "common",
+      [
+        "common",
+        "premium"
+      ],
+      "land"
+    ],
+    "booster_expansion_collection": {
+      "basics": [
+        "KLD",
+        null
+      ],
+      "premium": [
+        "MPS",
+        null
+      ]
+    }
+  },
   "AKH": {
     "blacklist": [
       "Gideon, Martial Paragon",
@@ -55,7 +112,7 @@
         null
       ],
       "premium": [
-        "MPS_AKH",
+        "MP2",
         0
       ]
     }
@@ -109,12 +166,12 @@
         null
       ],
       "premium": [
-        "MPS_AKH",
+        "MP2",
         1
       ]
     }
   },
-  "MPS_AKH": {
+  "MP2": {
     "fragment_dividers": [
       31
     ]

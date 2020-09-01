@@ -193,3 +193,17 @@ class ExpansionFragment(_ExpansionFragment):
     @property
     def mkm_id(self) -> t.Optional[int]:
         return self._of.mkm_id
+
+    @property
+    def name_and_code(self) -> str:
+        return self._of.name_and_code
+
+    @property
+    def expansion_type(self) -> ExpansionType:
+        return self._of.expansion_type
+
+    def __repr__(self) -> str:
+        return '{}({})'.format(
+            self.__class__.__name__,
+            self._of.code,
+        )

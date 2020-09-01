@@ -13,10 +13,15 @@ from mtgorp.models.persistent.attributes.rarities import Rarity
 from mtgorp.models.persistent.attributes.flags import Flag
 from mtgorp.models.persistent.attributes.layout import Layout
 from mtgorp.models.persistent.attributes import typeline
-from mtgorp.models.interfaces import Printing, Expansion
-from mtgorp.models.interfaces import BoosterKey as _BoosterKey
-from mtgorp.models.interfaces import BoosterMap as _BoosterMap
-from mtgorp.models.interfaces import ExpansionCollection as _ExpansionCollection
+from mtgorp.models.interfaces import (
+    Printing,
+    Expansion,
+    BoosterKey as _BoosterKey,
+    BoosterMap as _BoosterMap,
+    KeySlot as _KeySlot,
+    MapSlot as _MapSlot,
+    ExpansionCollection as _ExpansionCollection,
+)
 from mtgorp.models.limited.booster import Booster
 
 from mtgorp.tools.search.pattern import CriteriaBuilder, Criteria, Pattern
@@ -80,6 +85,12 @@ class ExpansionCollection(_ExpansionCollection):
     def __hash__(self):
         return hash(self._expansions)
 
+    def __repr__(self) -> str:
+        return '{}({})'.format(
+            self.__class__.__name__,
+            dict(self._expansions),
+        )
+
 
 class Option(object):
 
@@ -103,6 +114,13 @@ class Option(object):
             isinstance(other, self.__class__)
             and self._pattern == other._pattern
             and self._collection_key == other._collection_key
+        )
+
+    def __repr__(self) -> str:
+        return '{}({}, {})'.format(
+            self.__class__.__name__,
+            self._pattern,
+            self._collection_key,
         )
 
 
@@ -157,7 +175,7 @@ DRAFT_MATTERS_MYTHIC = Option(
 )
 
 
-class KeySlot(object):
+class KeySlot(_KeySlot):
 
     def __init__(self, options: t.Iterable[Option]):
         self._options: FrozenMultiset[Option] = (
@@ -171,13 +189,13 @@ class KeySlot(object):
             {
                 frozenset(
                     printing
-                    for printing in
-                    (
-                        expansion_collection[option.collection_key].printings
-                        if isinstance(expansion_collection, ExpansionCollection) else
-                        expansion_collection
-                    )
-                    if printing.in_booster and option.pattern.match(printing)
+                        for printing in
+                        (
+                            expansion_collection[option.collection_key].printings
+                            if isinstance(expansion_collection, ExpansionCollection) else
+                            expansion_collection
+                        )
+                        if printing.in_booster and option.pattern.match(printing)
                 ):
                     weight
                 for option, weight in
@@ -190,6 +208,12 @@ class KeySlot(object):
 
     def __eq__(self, other):
         return isinstance(other, self.__class__) and self._options == other._options
+
+    def __repr__(self) -> str:
+        return '{}({})'.format(
+            self.__class__.__name__,
+            dict(self._options.elements()),
+        )
 
 
 COMMON_SLOT = KeySlot((COMMON,))
@@ -217,7 +241,7 @@ class BoosterKey(_BoosterKey):
         )
 
     @property
-    def slots(self):
+    def slots(self) -> FrozenMultiset[KeySlot]:
         return self._slots
 
     def get_booster_map(self, expansion_collection: t.Union[ExpansionCollection, t.Collection[Printing]]) -> BoosterMap:
@@ -242,20 +266,26 @@ class BoosterKey(_BoosterKey):
         )
 
 
-class MapSlot(object):
+class MapSlot(_MapSlot):
 
     def __init__(self, options: t.Iterable[t.FrozenSet[Printing]]):
         self.options = options if isinstance(options, FrozenMultiset) else FrozenMultiset(options)
 
-    def sample(self):
+    def sample(self) -> Printing:
         return random.choice(
             multiset_choice(
                 self.options
             )
         )
 
-    def sample_slot(self):
+    def sample_slot(self) -> t.FrozenSet[Printing]:
         return multiset_choice(self.options)
+
+    def __repr__(self) -> str:
+        return '{}({})'.format(
+            self.__class__.__name__,
+            ', '.join('{}: {}'.format(len(option), multiplicity) for option, multiplicity in self.options.items()),
+        )
 
 
 class BoosterMap(_BoosterMap):
@@ -280,3 +310,8 @@ class BoosterMap(_BoosterMap):
 
         return Booster(printings)
 
+    def __repr__(self) -> str:
+        return '{}({})'.format(
+            self.__class__.__name__,
+            self.slots,
+        )

@@ -24,9 +24,7 @@ class Parser(parser.Parser):
     @classmethod
     def parse(cls, s: str) -> Layout:
         try:
-            return cls._LAYOUT_MAP[
-                s
-            ]
+            return cls._LAYOUT_MAP[s]
 
         except KeyError:
             raise LayoutParseException(f'Invalid layout "{s}"')

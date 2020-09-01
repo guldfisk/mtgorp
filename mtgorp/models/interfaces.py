@@ -364,10 +364,16 @@ class Block(ABC):
 
     @property
     @abstractmethod
+    def sets(self) -> t.Iterator[Expansion]:
+        pass
+
+    @property
+    @abstractmethod
     def expansions_chronologically(self) -> t.List[Expansion]:
         pass
 
     @property
+    @abstractmethod
     def first_expansion(self) -> Expansion:
         pass
 
@@ -431,6 +437,18 @@ class ExpansionCollection(ABC):
         pass
 
 
+class MapSlot(ABC):
+    options: FrozenMultiset[t.FrozenSet[Printing]]
+
+    @abstractmethod
+    def sample(self) -> Printing:
+        pass
+
+    @abstractmethod
+    def sample_slot(self) -> t.FrozenSet[Printing]:
+        pass
+
+
 class BoosterMap(ABC):
 
     @abstractmethod
@@ -438,7 +456,15 @@ class BoosterMap(ABC):
         pass
 
 
+class KeySlot(ABC):
+
+    @abstractmethod
+    def get_map_slot(self, expansion_collection: t.Union[ExpansionCollection, t.Collection[Printing]]) -> MapSlot:
+        pass
+
+
 class BoosterKey(ABC):
+    slots: FrozenMultiset[KeySlot]
 
     @abstractmethod
     def get_booster_map(self, expansion_collection: ExpansionCollection) -> BoosterMap:
