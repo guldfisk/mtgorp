@@ -1,19 +1,27 @@
 {
-  "IXA": {
-    "blacklist": [
-      "Huatli, Dinosaur Knight",
-      "Jace, Ingenious Mind-Mage",
-      "Castaways's Despair",
-      "Grasping Current",
-      "Jace's Sentinel",
-      "Woodland Stream",
-      "Huatli's Snubhorn",
-      "Huatli's Spurring",
-      "Sun-Blessed Mount",
-      "Stone Quarry"
+  "GRN": {
+    "booster_key": [
+      [
+        "rare",
+        "mythic rare"
+      ],
+      "uncommon",
+      "uncommon",
+      "uncommon",
+      "common",
+      "common",
+      "common",
+      "common",
+      "common",
+      "common",
+      "common",
+      "common",
+      "common",
+      "common",
+      "common"
     ]
   },
-  "GRN": {
+  "RNA": {
     "booster_key": [
       [
         "rare",
@@ -71,18 +79,6 @@
     }
   },
   "AKH": {
-    "blacklist": [
-      "Gideon, Martial Paragon",
-      "Liliana, Death Wielder",
-      "Liliana's Influence",
-      "Gideon's Resolve",
-      "Dessicated Narga",
-      "Companion of the Trials",
-      "Foul Orchard",
-      "Stone Quarry",
-      "Tattered Mummy",
-      "Graceful Cat"
-    ],
     "booster_key": [
       [
         "rare",

@@ -176,7 +176,7 @@ class _PrintingParser(object):
 
             flags = []
 
-            if raw_printing.get('timeshifted') or 'colorShifted' in raw_printing.get('frameEffects', ()):   
+            if raw_printing.get('timeshifted') or 'colorshifted' in raw_printing.get('frameEffects', ()):
                 flags.append(Flag.TIMESHIFTED)
 
             information = BoosterInformation.information()
