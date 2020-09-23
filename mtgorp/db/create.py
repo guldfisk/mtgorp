@@ -94,7 +94,7 @@ class _CardboardParser(object):
                         (),
                     )
 
-            elif raw_card_layout == Layout.TRANSFORM:
+            elif raw_card_layout == Layout.TRANSFORM or raw_card_layout == Layout.MODAL:
                 if name == raw_card['names'][0]:
                     return (
                         (name,),

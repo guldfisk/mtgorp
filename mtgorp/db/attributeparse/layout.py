@@ -19,6 +19,7 @@ class Parser(parser.Parser):
         'aftermath': Layout.AFTERMATH,
         'saga': Layout.SAGA,
         'adventure': Layout.ADVENTURE,
+        'modal_dfc': Layout.MODAL,
     }
 
     @classmethod

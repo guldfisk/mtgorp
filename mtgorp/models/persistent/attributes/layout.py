@@ -10,3 +10,4 @@ class Layout(Enum):
     MELD = 5
     SAGA = 6
     ADVENTURE = 7
+    MODAL = 8

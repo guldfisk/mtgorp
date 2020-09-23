@@ -3,13 +3,13 @@ from __future__ import annotations
 import typing as t
 
 from mtgorp.models.persistent.printing import Printing
-from mtgorp.models.serilization.serializeable import Serializeable, serialization_model, Inflator
+from mtgorp.models.serilization.serializeable import Serializeable, serialization_model, Inflator, PersistentHashable
 
 
-class PrintingSet(Serializeable):
+class PrintingSet(Serializeable, PersistentHashable):
 
     def __init__(self, printings: t.Iterable[Printing]):
-        self._printings = set(printings)
+        self._printings = frozenset(printings)
 
     def serialize(self) -> serialization_model:
         return {
@@ -31,3 +31,7 @@ class PrintingSet(Serializeable):
 
     def __iter__(self) -> t.Iterator[Printing]:
         return self._printings.__iter__()
+
+    def _calc_persistent_hash(self) -> t.Iterator[t.ByteString]:
+        for printing in sorted(self._printings, key = lambda _printing: _printing.id):
+            yield str(printing.id).encode('ASCII')

@@ -106,6 +106,10 @@ class Side(ABC):
 
 class Cardboard(ABC):
 
+    @property
+    def id(self) -> str:
+        return self.name
+
     @classmethod
     @abstractmethod
     def calc_name(cls, names) -> str:
