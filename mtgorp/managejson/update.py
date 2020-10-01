@@ -1,4 +1,5 @@
 import datetime
+import functools
 import logging
 import typing as t
 
@@ -26,6 +27,7 @@ def _get_update_db():
 
 
 def with_update_db(f: t.Callable[..., t.Any]) -> t.Callable[..., t.Any]:
+    @functools.wraps(f)
     def wrapped(*args, **kwargs):
         if not 'update_db' in kwargs:
             kwargs['update_db'] = _get_update_db()
