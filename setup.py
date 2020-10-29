@@ -9,14 +9,15 @@ def package_files(directory):
             paths.append(os.path.join('..', path, filename))
     return paths
 
+
 extra_files = package_files('mtgorp')
 
 setup(
-    name='mtgorp',
-    version='1.0',
-    packages=['mtgorp'],
-    package_data={'': extra_files},
-    install_requires=[
+    name = 'mtgorp',
+    version = '1.0',
+    packages = ['mtgorp'],
+    package_data = {'': extra_files},
+    install_requires = [
         'orp @ https://github.com/guldfisk/orp/tarball/master#egg=orp-1.0',
         'yeetlong @ https://github.com/guldfisk/yeetlong/tarball/master#egg=yeetlong-1.0',
         'lazy-property',
@@ -27,5 +28,6 @@ setup(
         'antlr4-python3-runtime',
         'ijson',
         'pickledb',
+        'sqlalchemy',
     ]
 )

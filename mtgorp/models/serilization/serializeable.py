@@ -5,11 +5,11 @@ import hashlib
 
 from abc import ABC, abstractmethod
 
-from orp.database import Model
+from orp.models import OrpBase
 
 
 compacted_value = t.Union[int, str, bool, float, None]
-serializeable_value = t.Union[compacted_value, Model, 'Serializeable']
+serializeable_value = t.Union[compacted_value, OrpBase, 'Serializeable']
 
 compacted_model = t.Union[
     compacted_value,
@@ -24,7 +24,7 @@ serialization_model = t.Union[
 ]
 
 
-M = t.TypeVar('M', bound=Model)
+M = t.TypeVar('M', bound=OrpBase)
 
 
 class Inflator(ABC):

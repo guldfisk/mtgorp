@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import functools
 import typing as t
-from abc import ABCMeta
+from abc import ABC
 
 from yeetlong.multiset import FrozenMultiset
 
@@ -10,7 +10,7 @@ import mtgorp.models.persistent.attributes.colors as cols
 from mtgorp.models.persistent.attributes.colors import Color
 
 
-class ManaCostAtom(metaclass = ABCMeta):
+class ManaCostAtom(ABC):
 
     def __init__(self, code: str, associations: t.Optional[t.AbstractSet[Color]] = None, cmc_value: int = 1):
         self._code = code
@@ -81,7 +81,7 @@ class OtherCostAtom(ManaCostAtom):
 
 class HybridCostAtom(ManaCostAtom):
 
-    def __init__(self, options: 't.AbstractSet[t.Union[ManaCost, ManaCostAtom]]'):
+    def __init__(self, options: t.AbstractSet[t.Union[ManaCost, ManaCostAtom]]):
         self._options: t.AbstractSet[ManaCost] = frozenset(self._flatten_options(options))
 
         assert len(self._options) > 1
@@ -89,16 +89,14 @@ class HybridCostAtom(ManaCostAtom):
         super(HybridCostAtom, self).__init__(
             code = '/'.join(
                 str(option)
-                for option in (
+                    for option in (
                     sorted(
                         self._options
                     )
                 )
             ),
-            associations = frozenset(
-                frozenset.union(*[option.colors for option in self._options])
-            ),
-            cmc_value = max(option.cmc for option in self._options)
+            associations = frozenset.union(*(option.colors for option in self._options)),
+            cmc_value = max(option.cmc for option in self._options),
         )
 
     @property
@@ -111,7 +109,7 @@ class HybridCostAtom(ManaCostAtom):
     def __hash__(self):
         return hash((self.__class__, self._options))
 
-    def __iter__(self) -> 't.Iterator[ManaCost]':
+    def __iter__(self) -> t.Iterator[ManaCost]:
         return self._options.__iter__()
 
     def __len__(self):
@@ -144,6 +142,7 @@ class HybridCostAtom(ManaCostAtom):
         return len(s) < len(o)
 
 
+@functools.total_ordering
 class ManaCost(object):
 
     def __init__(self, atoms: t.Iterable[ManaCostAtom] = None):
@@ -163,14 +162,14 @@ class ManaCost(object):
     def __lt__(self, other):
         return isinstance(other, ManaCost) and self._atoms < other._atoms
 
-    def __le__(self, other):
-        return isinstance(other, ManaCost) and self._atoms <= other._atoms
-
-    def __gt__(self, other):
-        return isinstance(other, ManaCost) and self._atoms > other._atoms
-
-    def __ge__(self, other):
-        return isinstance(other, ManaCost) and self._atoms >= other._atoms
+    # def __le__(self, other):
+    #     return isinstance(other, ManaCost) and self._atoms <= other._atoms
+    #
+    # def __gt__(self, other):
+    #     return isinstance(other, ManaCost) and self._atoms > other._atoms
+    #
+    # def __ge__(self, other):
+    #     return isinstance(other, ManaCost) and self._atoms >= other._atoms
 
     def __hash__(self):
         return hash((self.__class__, self._atoms))

@@ -5,10 +5,9 @@ import typing as t
 
 from abc import ABCMeta, abstractmethod, ABC
 
-from mtgorp.models.persistent.attributes.typeline import BASIC
-
 from yeetlong.multiset import Multiset
 
+from mtgorp.models.persistent.attributes.typeline import BASIC
 from mtgorp.models.collections.deck import Deck
 
 

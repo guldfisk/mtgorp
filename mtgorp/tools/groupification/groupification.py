@@ -6,8 +6,7 @@ from abc import abstractmethod, ABC
 
 from yeetlong.multiset import Multiset
 
-from mtgorp.models.persistent.cardboard import Cardboard
-from mtgorp.models.persistent.printing import Printing
+from mtgorp.models.interfaces import Cardboard, Printing
 from mtgorp.models.persistent.attributes import typeline
 from mtgorp.tools.search.pattern import Criteria, CriteriaBuilder, All, Not, Any, Contains
 from mtgorp.tools.search.extraction import ExtractionStrategy, CardboardStrategy, PrintingStrategy, TypeLineExtractor

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import typing as t
 
-from mtgorp.models.persistent.printing import Printing
+from mtgorp.models.interfaces import Printing
 from mtgorp.models.serilization.serializeable import Serializeable, serialization_model, Inflator, PersistentHashable
 
 

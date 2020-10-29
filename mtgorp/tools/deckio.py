@@ -8,13 +8,12 @@ from abc import abstractmethod, ABCMeta
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
 
-from mtgorp.db.database import CardDatabase
-
 from yeetlong.multiset import Multiset
 
+from mtgorp.db.database import CardDatabase
 from mtgorp.models.collections.deck import Deck
 from mtgorp.models.serilization.strategies.jsonid import JsonId
-from mtgorp.models.persistent.printing import Printing
+from mtgorp.models.interfaces import Printing
 from mtgorp.models.serilization.serializeable import SerializationException
 
 

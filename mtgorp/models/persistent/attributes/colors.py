@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import typing as t
 from enum import Enum
 
@@ -10,21 +12,21 @@ class Color(Enum):
     GREEN = 'G', 4
 
     @property
-    def code(self):
+    def code(self) -> str:
         return '{{{}}}'.format(self._value)
 
     @property
-    def letter_code(self):
+    def letter_code(self) -> str:
         return self._value
 
     @property
     def position(self) -> int:
         return self._position
 
-    def __lt__(self, other):
+    def __lt__(self, other) -> bool:
         return self.position < other.position
 
-    def __new__(cls, code, position):
+    def __new__(cls, code: str, position: int) -> Color:
         obj = object.__new__(cls)
         obj._value = code
         obj._position = position

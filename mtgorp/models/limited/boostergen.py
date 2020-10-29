@@ -5,8 +5,6 @@ import bisect
 import random
 import typing as t
 
-from frozendict import frozendict
-
 from yeetlong.multiset import FrozenMultiset, BaseMultiset, Multiset
 
 from mtgorp.models.persistent.attributes.rarities import Rarity
@@ -15,15 +13,13 @@ from mtgorp.models.persistent.attributes.layout import Layout
 from mtgorp.models.persistent.attributes import typeline
 from mtgorp.models.interfaces import (
     Printing,
-    Expansion,
     BoosterKey as _BoosterKey,
     BoosterMap as _BoosterMap,
     KeySlot as _KeySlot,
     MapSlot as _MapSlot,
-    ExpansionCollection as _ExpansionCollection,
+    ExpansionCollection,
 )
 from mtgorp.models.limited.booster import Booster
-
 from mtgorp.tools.search.pattern import CriteriaBuilder, Criteria, Pattern
 from mtgorp.tools.search.extraction import PrintingStrategy
 
@@ -41,55 +37,6 @@ def multiset_choice(ms: BaseMultiset):
 
 class GenerateBoosterException(Exception):
     pass
-
-
-class ExpansionCollection(_ExpansionCollection):
-
-    def __init__(
-        self,
-        main: Expansion,
-        basics: t.Optional[Expansion] = None,
-        premium: t.Optional[Expansion] = None,
-        **expansions,
-    ):
-        expansions.update(
-            {
-                'main': main,
-                'basics': main if basics is None else basics,
-                'premium': main if premium is None else premium,
-            }
-        )
-        self._expansions = frozendict(expansions)
-
-    @property
-    def main(self) -> Expansion:
-        return self._expansions['main']
-
-    @property
-    def basics(self) -> Expansion:
-        return self._expansions['basics']
-
-    @property
-    def premium(self) -> Expansion:
-        return self._expansions['premium']
-
-    def __getitem__(self, item: str) -> Expansion:
-        return self._expansions.__getitem__(item)
-
-    def __eq__(self, other) -> bool:
-        return (
-            isinstance(other, self.__class__)
-            and self._expansions == other._expansions
-        )
-
-    def __hash__(self):
-        return hash(self._expansions)
-
-    def __repr__(self) -> str:
-        return '{}({})'.format(
-            self.__class__.__name__,
-            dict(self._expansions),
-        )
 
 
 class Option(object):

@@ -2,6 +2,7 @@ import typing as t
 
 from abc import ABCMeta, abstractmethod
 
+from mtgorp.models.interfaces import Expansion, Block, Cardboard, Printing
 from mtgorp.models.persistent.attributes.layout import Layout
 from mtgorp.models.persistent.attributes.rarities import Rarity
 from mtgorp.models.persistent.attributes.flags import Flags
@@ -9,10 +10,6 @@ from mtgorp.models.persistent.attributes.typeline import TypeLine
 from mtgorp.models.persistent.attributes.manacosts import ManaCost
 from mtgorp.models.persistent.attributes.colors import Color
 from mtgorp.models.persistent.attributes.powertoughness import PTValue
-from mtgorp.models.persistent.expansion import Expansion
-from mtgorp.models.persistent.block import Block
-from mtgorp.models.persistent.cardboard import Cardboard
-from mtgorp.models.persistent.printing import Printing
 
 
 T = t.TypeVar('T')

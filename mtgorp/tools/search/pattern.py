@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import typing as t
 from abc import ABCMeta, abstractmethod, ABC
 
@@ -305,19 +307,19 @@ class Pattern(t.Generic[T]):
 
 class _NotDescriptor(object):
 
-    def __get__(self, instance, owner) -> '_CheckerBuilder':
+    def __get__(self, instance, owner) -> _CheckerBuilder:
         instance._negative = not instance._negative
         return instance
 
 
 class _CheckerBuilder(t.Generic[T]):
 
-    def __init__(self, owner: '_ExtractorBuilder[T]', checker: t.Type[AttributeMatch]):
+    def __init__(self, owner: _ExtractorBuilder[T], checker: t.Type[AttributeMatch]):
         self._owner = owner
         self._checker = checker
         self._negative = False
 
-    def __call__(self, value) -> 'Builder[T]':
+    def __call__(self, value) -> Builder[T]:
         if self._negative:
             self._owner.owner.add(Not(self._checker(self._owner.extractor, value)))
         else:
@@ -325,7 +327,7 @@ class _CheckerBuilder(t.Generic[T]):
 
         return self._owner.owner
 
-    no = _NotDescriptor()  # type: _CheckerBuilder[T]
+    no: _CheckerBuilder[T] = _NotDescriptor()
 
 
 class _CheckerDescriptor(object):
@@ -341,17 +343,17 @@ class _CheckerDescriptor(object):
 
 class _ExtractorBuilder(t.Generic[T]):
 
-    def __init__(self, owner: 'Builder[T]', extractor: t.Type[e.Extractor]):
+    def __init__(self, owner: Builder[T], extractor: t.Type[e.Extractor]):
         self.owner = owner
         self.extractor = extractor
 
-    equals = _CheckerDescriptor(Equals)  # type: _CheckerBuilder[T]
-    greater_than = _CheckerDescriptor(GreaterThan)  # type: _CheckerBuilder[T]
-    greater_than_or_equals = _CheckerDescriptor(GreaterThanOrEquals)  # type: _CheckerBuilder[T]
-    less_than = _CheckerDescriptor(LessThan)  # type: _CheckerBuilder[T]
-    less_than_or_equals = _CheckerDescriptor(LessThanOrEquals)  # type: _CheckerBuilder[T]
-    contains = _CheckerDescriptor(Contains)  # type: _CheckerBuilder[T]
-    contained_in = _CheckerDescriptor(ContainedIn)  # type: _CheckerBuilder[T]
+    equals: _CheckerBuilder[T] = _CheckerDescriptor(Equals)
+    greater_than: _CheckerBuilder[T] = _CheckerDescriptor(GreaterThan)
+    greater_than_or_equals: _CheckerBuilder[T] = _CheckerDescriptor(GreaterThanOrEquals)
+    less_than: _CheckerBuilder[T] = _CheckerDescriptor(LessThan)
+    less_than_or_equals: _CheckerBuilder[T] = _CheckerDescriptor(LessThanOrEquals)
+    contains: _CheckerBuilder[T] = _CheckerDescriptor(Contains)
+    contained_in: _CheckerBuilder[T] = _CheckerDescriptor(ContainedIn)
 
 
 class Builder(ABC, t.Generic[T]):
@@ -359,7 +361,7 @@ class Builder(ABC, t.Generic[T]):
     def __init__(self):
         self._set = set()
 
-    def add(self, checkable: Matchable) -> 'Builder[T]':
+    def add(self, checkable: Matchable) -> Builder[T]:
         self._set.add(checkable)
         return self
 

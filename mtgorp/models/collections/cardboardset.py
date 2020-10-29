@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import typing as t
 
-from mtgorp.models.persistent.cardboard import Cardboard
 from mtgorp.models.serilization.serializeable import Serializeable, serialization_model, Inflator
+from mtgorp.models.interfaces import Cardboard
 
 
 class CardboardSet(Serializeable):

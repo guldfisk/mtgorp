@@ -2,12 +2,11 @@ from __future__ import annotations
 
 import typing as t
 
-from orp.database import Model, PrimaryKey
+from orp.models import Model, PrimaryKey
 from orp.relationships import One, OneDescriptor
 
 from mtgorp.models.persistent.attributes.rarities import Rarity
 from mtgorp.models.persistent.attributes.flags import Flags
-from mtgorp.models.persistent.attributes.borders import Border
 from mtgorp.models.interfaces import Artist, Cardboard, Expansion, Face as _Face, Printing as _Printing
 
 
@@ -33,6 +32,9 @@ class Face(_Face):
     def flavor(self) -> str:
         return self._flavor
 
+    def __hash__(self) -> int:
+        return id(self)
+
     def __repr__(self) -> str:
         return '{}({}, {})'.format(
             self.__class__.__name__,
@@ -41,7 +43,7 @@ class Face(_Face):
         )
 
 
-class Printing(Model, _Printing):
+class Printing(_Printing, Model):
     primary_key = PrimaryKey('id')
     _id: int
 
@@ -97,10 +99,6 @@ class Printing(Model, _Printing):
         return self._back_face
 
     @property
-    def faces(self) -> t.Tuple[Face, Face]:
-        return self.front_face, self.back_face
-
-    @property
     def rarity(self) -> Rarity:
         return self._rarity
 
@@ -111,18 +109,3 @@ class Printing(Model, _Printing):
     @property
     def flags(self) -> Flags:
         return self._flags
-
-    @property
-    def border(self) -> t.Optional[Border]:
-        return self.expansion.border
-
-    def full_name(self) -> str:
-        return f'{self.cardboard.name}|{self.expansion.code}'
-
-    def __repr__(self):
-        return '{}({}, {}, {})'.format(
-            self.__class__.__name__,
-            self.cardboard.name,
-            self.expansion.code,
-            self._id,
-        )

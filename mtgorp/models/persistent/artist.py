@@ -1,9 +1,9 @@
 import typing as t
 
 from orp import relationships as _relationships
-from orp.database import Model, PrimaryKey
+from orp.models import Model, PrimaryKey
 
-from mtgorp.models.interfaces import Printing
+from mtgorp.models.interfaces import Face
 from mtgorp.models.interfaces import Artist as _Artist
 
 
@@ -15,9 +15,10 @@ class Artist(Model, _Artist):
         self._faces = _relationships.Many(self, '_artist')
 
     @property
+    def faces(self) -> t.AbstractSet[Face]:
+        return self._faces
+
+    @property
     def name(self) -> str:
         return self._name
 
-    @property
-    def printings(self) -> t.Tuple[Printing, ...]:
-        return tuple(face.owner for face in self._faces)

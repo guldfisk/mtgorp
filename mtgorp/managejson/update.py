@@ -2,7 +2,6 @@ import datetime
 import functools
 import logging
 import typing as t
-
 import os
 import re
 
@@ -13,7 +12,6 @@ from xml.etree import ElementTree
 import pickledb
 
 from mtgorp.db import create
-
 from mtgorp.managejson import download, paths
 
 
@@ -63,14 +61,22 @@ def get_last_db_update(update_db: pickledb.PickleDB) -> t.Optional[datetime.date
     return datetime.datetime.strptime(key, MTG_JSON_DATETIME_FORMAT)
 
 
+JUST_PICKLE = (create.update_pickle_database,)
+
+
 @with_update_db
-def regenerate_db(update_db: pickledb.PickleDB, force: bool = False) -> bool:
+def regenerate_db(
+    update_db: pickledb.PickleDB,
+    force: bool = False,
+    updaters: t.Sequence[t.Callable[[datetime.datetime], None]] = JUST_PICKLE,
+) -> bool:
     last_json_update = get_last_json_update(update_db = update_db)
     last_db_update = get_last_db_update(update_db = update_db)
 
     if not last_db_update or last_db_update < last_json_update or force:
         logging.info('updating db')
-        create.update_database(last_json_update)
+        for updater in updaters:
+            updater(last_json_update)
         update_db.set('last_db_update', last_json_update.strftime(MTG_JSON_DATETIME_FORMAT))
         logging.info('updated database')
         return True
@@ -79,9 +85,13 @@ def regenerate_db(update_db: pickledb.PickleDB, force: bool = False) -> bool:
 
 
 @with_update_db
-def check_and_update(update_db: pickledb.PickleDB, force: bool = False) -> bool:
+def check_and_update(
+    update_db: pickledb.PickleDB,
+    force: bool = False,
+    updaters: t.Sequence[t.Callable[[datetime.datetime], None]] = JUST_PICKLE,
+) -> bool:
     last_remote_update = check_rss()
-    if not last_remote_update:
+    if not last_remote_update and not force:
         return False
 
     last_json_update = get_last_json_update(update_db = update_db)
@@ -91,8 +101,10 @@ def check_and_update(update_db: pickledb.PickleDB, force: bool = False) -> bool:
         download.re_download()
         update_db.set('last_json_update', last_remote_update.strftime(MTG_JSON_DATETIME_FORMAT))
         logging.info('downloaded new json')
+    else:
+        logging.info('json up to date')
 
-    return regenerate_db(update_db = update_db, force = force)
+    return regenerate_db(update_db = update_db, force = force, updaters = updaters)
 
 
 if __name__ == '__main__':

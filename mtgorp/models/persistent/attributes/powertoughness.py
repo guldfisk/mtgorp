@@ -1,6 +1,10 @@
+from __future__ import annotations
+
+import functools
 import typing as t
 
 
+@functools.total_ordering
 class PTValue(object):
 
     def __init__(self, value: int = 0, variable: bool = False):
@@ -36,23 +40,30 @@ class PTValue(object):
             or isinstance(other, self.__class__) and self.value > other.value
         )
 
-    def __ge__(self, other):
-        return (
-            isinstance(other, int) and self.value >= other
-            or isinstance(other, self.__class__) and self.value >= other.value
-        )
+    def serialize(self) -> str:
+        return repr(self)
 
-    def __lt__(self, other):
-        return (
-            isinstance(other, int) and self.value < other
-            or isinstance(other, self.__class__) and self.value < other.value
-        )
+    @classmethod
+    def deserialize(cls, s: str) -> PTValue:
+        return cls(0, variable = True) if s == '*' else cls(int(s))
 
-    def __le__(self, other):
-        return (
-            isinstance(other, int) and self.value <= other
-            or isinstance(other, self.__class__) and self.value <= other.value
-        )
+    # def __ge__(self, other):
+    #     return (
+    #         isinstance(other, int) and self.value >= other
+    #         or isinstance(other, self.__class__) and self.value >= other.value
+    #     )
+    #
+    # def __lt__(self, other):
+    #     return (
+    #         isinstance(other, int) and self.value < other
+    #         or isinstance(other, self.__class__) and self.value < other.value
+    #     )
+    #
+    # def __le__(self, other):
+    #     return (
+    #         isinstance(other, int) and self.value <= other
+    #         or isinstance(other, self.__class__) and self.value <= other.value
+    #     )
 
 
 class PowerToughness(object):
@@ -85,3 +96,16 @@ class PowerToughness(object):
     def __iter__(self):
         yield self.power
         yield self.toughness
+
+    def serialize(self) -> str:
+        return repr(self)
+
+    @classmethod
+    def deserialize(cls, s: str) -> PowerToughness:
+        return cls(
+            *(
+                PTValue.deserialize(v)
+                for v in
+                s.split('/')
+            )
+        )

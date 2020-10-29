@@ -2,7 +2,7 @@ import typing as t
 
 from abc import abstractmethod
 
-from orp.database import Model
+from orp.database import OrpBase
 
 from mtgorp.db.database import CardDatabase
 from mtgorp.models.serilization.serializeable import (
@@ -26,7 +26,7 @@ class Strategy(Inflator):
 
     @classmethod
     def to_compacted_model(cls, serializeable: serialization_model) -> compacted_model:
-        if isinstance(serializeable, Model):
+        if isinstance(serializeable, OrpBase):
             return serializeable.primary_key
 
         if isinstance(serializeable, Serializeable):

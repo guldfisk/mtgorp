@@ -5,6 +5,9 @@ import typing as t
 import datetime
 from abc import abstractmethod, ABC
 
+from frozendict import frozendict
+
+from orp.models import OrpBase
 from yeetlong.multiset import FrozenMultiset
 
 from orp.relationships import Many
@@ -20,7 +23,11 @@ from mtgorp.models.persistent.attributes.flags import Flags
 from mtgorp.models.persistent.attributes.borders import Border
 
 
-class Artist(ABC):
+class MtgModel(OrpBase):
+    pass
+
+
+class Artist(MtgModel):
 
     @property
     @abstractmethod
@@ -29,11 +36,15 @@ class Artist(ABC):
 
     @property
     @abstractmethod
-    def printings(self) -> t.Tuple[Printing, ...]:
+    def faces(self) -> t.AbstractSet[Face]:
         pass
 
+    @property
+    def printings(self) -> t.AbstractSet[Printing]:
+        return frozenset(face.owner for face in self.faces)
 
-class Card(ABC):
+
+class Card(MtgModel):
 
     @property
     @abstractmethod
@@ -76,9 +87,8 @@ class Card(ABC):
         pass
 
     @property
-    @abstractmethod
     def cmc(self) -> int:
-        pass
+        return self.mana_cost.cmc if self.mana_cost else 0
 
     @property
     @abstractmethod
@@ -86,9 +96,11 @@ class Card(ABC):
         pass
 
     @property
-    @abstractmethod
     def cardboard(self) -> t.Optional[Cardboard]:
-        pass
+        try:
+            return self.cardboards.__iter__().__next__()
+        except StopIteration:
+            return None
 
 
 class Side(ABC):
@@ -104,16 +116,16 @@ class Side(ABC):
         pass
 
 
-class Cardboard(ABC):
+class Cardboard(MtgModel):
+    _SPLIT_SEPARATOR = ' // '
 
     @property
     def id(self) -> str:
         return self.name
 
     @classmethod
-    @abstractmethod
     def calc_name(cls, names) -> str:
-        pass
+        return cls._SPLIT_SEPARATOR.join(names)
 
     @property
     @abstractmethod
@@ -126,19 +138,29 @@ class Cardboard(ABC):
         pass
 
     @property
+    def expansions(self) -> t.AbstractSet[Expansion]:
+        return frozenset(printing.expansion for printing in self.printings)
+
+    @property
     @abstractmethod
-    def front_cards(self) -> Many[Card]:
+    def front_cards(self) -> t.Sequence[Card]:
         pass
 
     @property
     @abstractmethod
-    def back_cards(self) -> Many[Card]:
+    def back_cards(self) -> t.Sequence[Card]:
         pass
 
     @property
-    @abstractmethod
-    def cards(self) -> t.Tuple[Card, ...]:
-        pass
+    def iter_cards(self) -> t.Iterator[Card]:
+        for card in self.front_cards:
+            yield card
+        for card in self.back_cards:
+            yield card
+
+    @property
+    def cards(self) -> t.Sequence[Card]:
+        return tuple(self.iter_cards)
 
     @property
     @abstractmethod
@@ -146,40 +168,91 @@ class Cardboard(ABC):
         pass
 
     @property
-    @abstractmethod
     def front_card(self) -> Card:
-        pass
+        return self.front_cards.__iter__().__next__()
 
     @property
-    @abstractmethod
     def back_card(self) -> t.Optional[Card]:
-        pass
+        try:
+            return self.back_cards.__iter__().__next__()
+        except StopIteration:
+            return None
 
-    @property
-    @abstractmethod
-    def printing(self) -> Printing:
-        pass
+    def from_expansion(self, expansion: t.Union[Expansion, str], allow_volatile: t.Optional[bool] = False) -> Printing:
+        if allow_volatile:
+            if isinstance(expansion, Expansion):
+                for printing in self.printings:
+                    if printing.expansion == expansion:
+                        return printing
+            else:
+                for printing in self.printings:
+                    if printing.expansion.code == expansion:
+                        return printing
+        else:
+            options = []
+            if isinstance(expansion, Expansion):
+                for printing in self.printings:
+                    if printing.expansion == expansion:
+                        options.append(printing)
+            else:
+                for printing in self.printings:
+                    if printing.expansion.code == expansion:
+                        options.append(printing)
 
-    @abstractmethod
-    def from_expansion(self, expansion: t.Union[Expansion, str]) -> Printing:
-        pass
+            if len(options) > 1:
+                raise RuntimeError(
+                    f'{self} printed multiple times in {expansion}'
+                )
 
-    @abstractmethod
+            if options:
+                return options[0]
+
+        raise KeyError(
+            '{} not printed in {}'.format(
+                self,
+                expansion,
+            )
+        )
+
     def from_block(self, block: t.Union[Block, str]) -> Printing:
-        pass
+        if isinstance(block, Block):
+            for printing in self.printings:
+                if printing.expansion.block == block:
+                    return printing
+        else:
+            for printing in self.printings:
+                if printing.expansion.block is not None and printing.expansion.block.name == block:
+                    return printing
+
+        raise KeyError(
+            '{} not printed in {}'.format(
+                self,
+                block,
+            )
+        )
 
     @property
-    @abstractmethod
+    def printing(self) -> Printing:
+        return self.printings.__iter__().__next__()
+
+    @property
     def original_printing(self) -> Printing:
-        pass
+        return sorted(
+            self.printings,
+            key = lambda printing:
+            printing.expansion.release_date
+        )[0]
 
     @property
-    @abstractmethod
     def latest_printing(self) -> Printing:
-        pass
+        return sorted(
+            self.printings,
+            key = lambda printing:
+            printing.expansion.release_date
+        )[-1]
 
 
-class Face(ABC):
+class Face(MtgModel):
 
     @property
     @abstractmethod
@@ -197,7 +270,7 @@ class Face(ABC):
         pass
 
 
-class Printing(ABC):
+class Printing(MtgModel):
 
     @property
     @abstractmethod
@@ -230,9 +303,8 @@ class Printing(ABC):
         pass
 
     @property
-    @abstractmethod
     def faces(self) -> t.Tuple[Face, Face]:
-        pass
+        return self.front_face, self.back_face
 
     @property
     @abstractmethod
@@ -250,12 +322,23 @@ class Printing(ABC):
         pass
 
     @property
-    @abstractmethod
     def border(self) -> t.Optional[Border]:
-        pass
+        return self.expansion.border
+
+    def full_name(self) -> str:
+        return f'{self.cardboard.name}|{self.expansion.code}'
+
+    def __repr__(self):
+        return '{}({}, {}, {})'.format(
+            self.__class__.__name__,
+            self.cardboard.name,
+            self.expansion.code,
+            self.id,
+        )
 
 
-class Expansion(ABC):
+class Expansion(MtgModel):
+    _booster_map: t.Optional[BoosterMap]
 
     @property
     @abstractmethod
@@ -267,18 +350,29 @@ class Expansion(ABC):
     def printings(self) -> Many[Printing]:
         pass
 
-    @abstractmethod
-    def fragmentize(self, frm: t.Optional[int] = 0, to: t.Optional[int] = None) -> ExpansionFragment:
-        pass
-
-    @abstractmethod
-    def generate_booster(self) -> Booster:
-        pass
-
     @property
     @abstractmethod
-    def fragments(self) -> t.Tuple[ExpansionFragment, ...]:
+    def fragment_dividers(self) -> t.Sequence[int]:
         pass
+
+    def fragmentize(self, frm: t.Union[int, None] = 0, to: t.Union[int, None] = None) -> ExpansionFragment:
+        return ExpansionFragment(self, frm, to)
+
+    @property
+    def fragments(self) -> t.Tuple[ExpansionFragment, ...]:
+        if self.fragment_dividers:
+            fragments = []
+            indexes = (0,) + tuple(self.fragment_dividers) + (None,)
+            for i in range(len(indexes) - 1):
+                fragments.append(self.fragmentize(indexes[i], indexes[i + 1]))
+            return tuple(fragments)
+        else:
+            return self.fragmentize(0, None),
+
+    def generate_booster(self) -> Booster:
+        if getattr(self, '_booster_map', None) is None:
+            setattr(self, '_booster_map', self.booster_key.get_booster_map(self.booster_expansion_collection))
+        return self._booster_map.generate_booster()
 
     @property
     @abstractmethod
@@ -286,9 +380,8 @@ class Expansion(ABC):
         pass
 
     @property
-    @abstractmethod
     def name_and_code(self) -> str:
-        pass
+        return f'[{self.code}] {self.name}'
 
     @property
     @abstractmethod
@@ -302,7 +395,7 @@ class Expansion(ABC):
 
     @property
     @abstractmethod
-    def release_date(self) -> t.Optional[datetime.date]:
+    def release_date(self) -> t.Optional[datetime.datetime]:
         pass
 
     @property
@@ -336,25 +429,32 @@ class Expansion(ABC):
         pass
 
 
-class ExpansionFragment(Expansion):
+class ExpansionFragment(object):
+
+    def __init__(self, of: Expansion, frm: t.Union[int, None], to: t.Union[int, None]):
+        self._of = of
+        self._frm = frm
+        self._to = to
+        self._printings = set(sorted(of.printings, key = lambda printing: printing.collector_number)[frm:to])
 
     @property
-    @abstractmethod
     def of(self) -> Expansion:
-        pass
+        return self._of
 
     @property
-    @abstractmethod
     def frm(self) -> int:
-        pass
+        return self._frm
 
     @property
-    @abstractmethod
     def to(self) -> int:
-        pass
+        return self._to
+
+    @property
+    def printings(self) -> t.AbstractSet[Printing]:
+        return self._printings
 
 
-class Block(ABC):
+class Block(MtgModel):
 
     @property
     @abstractmethod
@@ -367,19 +467,19 @@ class Block(ABC):
         pass
 
     @property
-    @abstractmethod
     def sets(self) -> t.Iterator[Expansion]:
-        pass
+        return filter(lambda e: e.expansion_type == ExpansionType.SET, self.expansions)
 
     @property
-    @abstractmethod
     def expansions_chronologically(self) -> t.List[Expansion]:
-        pass
+        return sorted(self.expansions, key = lambda expansion: expansion.release_date)
 
     @property
-    @abstractmethod
     def first_expansion(self) -> Expansion:
-        pass
+        return min(
+            self.sets,
+            key = lambda expansion: expansion.release_date,
+        )
 
 
 class Booster(ABC):
@@ -411,34 +511,53 @@ class Booster(ABC):
         pass
 
 
-class ExpansionCollection(ABC):
+class ExpansionCollection(object):
+
+    def __init__(
+        self,
+        main: Expansion,
+        basics: t.Optional[Expansion] = None,
+        premium: t.Optional[Expansion] = None,
+        **expansions,
+    ):
+        expansions.update(
+            {
+                'main': main,
+                'basics': main if basics is None else basics,
+                'premium': main if premium is None else premium,
+            }
+        )
+        self._expansions = frozendict(expansions)
 
     @property
-    @abstractmethod
     def main(self) -> Expansion:
-        pass
+        return self._expansions['main']
 
     @property
-    @abstractmethod
     def basics(self) -> Expansion:
-        pass
+        return self._expansions['basics']
 
     @property
-    @abstractmethod
     def premium(self) -> Expansion:
-        pass
+        return self._expansions['premium']
 
-    @abstractmethod
     def __getitem__(self, item: str) -> Expansion:
-        pass
+        return self._expansions.__getitem__(item)
 
-    @abstractmethod
     def __eq__(self, other) -> bool:
-        pass
+        return (
+            isinstance(other, self.__class__)
+            and self._expansions == other._expansions
+        )
 
-    @abstractmethod
     def __hash__(self):
-        pass
+        return hash(self._expansions)
+
+    def __repr__(self) -> str:
+        return '{}({})'.format(
+            self.__class__.__name__,
+            dict(self._expansions),
+        )
 
 
 class MapSlot(ABC):

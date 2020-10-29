@@ -1,7 +1,4 @@
-import typing as t
-
-from mtgorp.models.persistent.attributes.expansiontype import ExpansionType
-from orp.database import Model, PrimaryKey
+from orp.models import Model, PrimaryKey
 from orp.relationships import Many
 
 from mtgorp.models.interfaces import Expansion
@@ -25,18 +22,3 @@ class Block(Model, _Block):
     @property
     def expansions(self) -> Many[Expansion]:
         return self._expansions
-
-    @property
-    def sets(self) -> t.Iterator[Expansion]:
-        return filter(lambda e: e.expansion_type == ExpansionType.SET, self._expansions)
-
-    @property
-    def expansions_chronologically(self) -> t.List[Expansion]:
-        return sorted(self.expansions, key = lambda expansion: expansion.release_date)
-
-    @property
-    def first_expansion(self) -> Expansion:
-        return min(
-            self.sets,
-            key = lambda expansion: expansion.release_date,
-        )

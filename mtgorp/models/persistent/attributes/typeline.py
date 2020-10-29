@@ -182,7 +182,7 @@ NAHIRI = CardSubType('Nahiri', (PLANESWALKER,))
 NARSET = CardSubType('Narset', (PLANESWALKER,))
 NISSA = CardSubType('Nissa', (PLANESWALKER,))
 NIXILIS = CardSubType('Nixilis', (PLANESWALKER,))
-OKO  = CardSubType('Oko', (PLANESWALKER,))
+OKO = CardSubType('Oko', (PLANESWALKER,))
 RAL = CardSubType('Ral', (PLANESWALKER,))
 ROWAN = CardSubType('Rowan', (PLANESWALKER,))
 SAHEELI = CardSubType('Saheeli', (PLANESWALKER,))
@@ -465,7 +465,6 @@ TENTACLE = CardSubType('Tentacle', (CREATURE, TRIBAL))
 OTTER = CardSubType('Otter', (CREATURE, TRIBAL))
 SHARK = CardSubType('Shark', (CREATURE, TRIBAL))
 
-
 BASIC_LAND_TYPES = (
     PLAINS,
     ISLAND,
@@ -476,10 +475,17 @@ BASIC_LAND_TYPES = (
 
 ALL_TYPES = tuple(
     member
+        for name, member in
+        inspect.getmembers(sys.modules[__name__])
+        if isinstance(member, BaseCardType)
+)
+
+ALL_TYPES_MAP = {
+    member.name: member
     for name, member in
     inspect.getmembers(sys.modules[__name__])
     if isinstance(member, BaseCardType)
-)
+}
 
 
 class TypeLine(object):
@@ -528,11 +534,11 @@ class TypeLine(object):
 
         self._repr = ' '.join(
             str(card_type)
-            for card_type in
-            itertools.chain(
-                sorted(self.super_types),
-                sorted(self.card_types),
-            )
+                for card_type in
+                itertools.chain(
+                    sorted(self.super_types),
+                    sorted(self.card_types),
+                )
         )
 
         if self.sub_types:
@@ -540,8 +546,8 @@ class TypeLine(object):
                 self._repr += TypeLine.SEPARATOR
             self._repr += ' '.join(
                 str(sub_type)
-                for sub_type in
-                sorted(self.sub_types)
+                    for sub_type in
+                    sorted(self.sub_types)
             )
 
         return self._repr
