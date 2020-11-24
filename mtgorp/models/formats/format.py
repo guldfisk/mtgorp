@@ -6,6 +6,7 @@ import typing as t
 from abc import ABCMeta, abstractmethod, ABC
 
 from yeetlong.multiset import Multiset
+from yeetlong.errors import Errors
 
 from mtgorp.models.persistent.attributes.typeline import BASIC
 from mtgorp.models.collections.deck import Deck
@@ -97,17 +98,18 @@ class Format(object, metaclass = _FormatMeta):
     validations: t.List[Validation] = []
 
     @classmethod
-    def deckcheck(cls, deck: Deck) -> t.Tuple[bool, t.List[str]]:
-        errors = list(
-            itertools.chain(
-                *(
-                    validation.validate(deck)
-                    for validation in
-                    cls.validations
+    def deckcheck(cls, deck: Deck) -> Errors:
+        return Errors(
+            list(
+                itertools.chain(
+                    *(
+                        validation.validate(deck)
+                        for validation in
+                        cls.validations
+                    )
                 )
             )
         )
-        return not bool(errors), errors
 
 
 class Highlander(Format):
