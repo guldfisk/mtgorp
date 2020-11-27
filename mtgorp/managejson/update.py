@@ -19,7 +19,7 @@ MTG_JSON_RSS_URL = 'http://mtgjson.com/atom.xml'
 MTG_JSON_DATETIME_FORMAT = '%Y-%m-%dT%H:%M:%S.%fZ'
 
 
-def _get_update_db():
+def get_update_db():
     os.makedirs(paths.APP_DATA_PATH, exist_ok = True)
     return pickledb.load(paths.UPDATE_INFO_PATH, True, sig = False)
 
@@ -28,7 +28,7 @@ def with_update_db(f: t.Callable[..., t.Any]) -> t.Callable[..., t.Any]:
     @functools.wraps(f)
     def wrapped(*args, **kwargs):
         if not 'update_db' in kwargs:
-            kwargs['update_db'] = _get_update_db()
+            kwargs['update_db'] = get_update_db()
         return f(*args, **kwargs)
 
     return wrapped
