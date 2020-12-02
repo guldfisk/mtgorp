@@ -75,7 +75,7 @@ class Parser(parser.Parser):
         frozenset(('foil mythic rare', 'foil rare', 'foil uncommon', 'foil common')): CARD_WITH_MYTHIC,
         'foil_with_mythic': CARD_WITH_MYTHIC,
         'foil': CARD,
-        frozenset(('power nine', 'foil')):  boostergen.KeySlot({
+        frozenset(('power nine', 'foil')): boostergen.KeySlot({
             boostergen.SPECIAL: 1,
             boostergen.MYTHIC: 53,
             boostergen.RARE: 371,

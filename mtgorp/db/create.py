@@ -105,6 +105,26 @@ class SqlDatabaseCreator(DatabaseCreator[SqlCardDatabase]):
         return database
 
 
+def get_sql_database_updater(
+    session_factory: t.Callable[[], Session],
+    engine: Engine,
+    all_cards_path = paths.ALL_CARDS_PATH,
+    all_sets_path = paths.ALL_SETS_PATH,
+):
+    def update_sql_database(
+        json_updated_at: t.Optional[datetime.datetime] = None,
+    ) -> SqlCardDatabase:
+        return SqlDatabaseCreator(
+            session_factory = session_factory,
+            engine = engine,
+            json_updated_at = datetime.datetime.fromtimestamp(0) if json_updated_at is None else json_updated_at,
+            all_cards_path = all_cards_path,
+            all_sets_path = all_sets_path,
+        ).create_database()
+
+    return update_sql_database
+
+
 def update_pickle_database(
     json_updated_at: t.Optional[datetime.datetime] = None,
     all_cards_path = paths.ALL_CARDS_PATH,

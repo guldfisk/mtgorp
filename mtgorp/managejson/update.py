@@ -87,7 +87,9 @@ def regenerate_db(
 @with_update_db
 def check_and_update(
     update_db: pickledb.PickleDB,
+    *,
     force: bool = False,
+    force_json_download: bool = False,
     updaters: t.Sequence[t.Callable[[datetime.datetime], None]] = JUST_PICKLE,
 ) -> bool:
     last_remote_update = check_rss()
@@ -96,8 +98,10 @@ def check_and_update(
 
     last_json_update = get_last_json_update(update_db = update_db)
 
-    if not last_json_update or last_json_update < last_remote_update:
-        logging.info('mtgjson outdated')
+    outdated_json = not last_json_update or last_json_update < last_remote_update
+
+    if outdated_json or force_json_download:
+        logging.info('forced json download' if not outdated_json else 'mtgjson outdated')
         download.re_download()
         update_db.set('last_json_update', last_remote_update.strftime(MTG_JSON_DATETIME_FORMAT))
         logging.info('downloaded new json')

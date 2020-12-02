@@ -37,16 +37,16 @@ Base = declarative_base(cls = _Base)
 class CardToCardboardFront(Base):
     __tablename__ = 'card_to_cardboard_front'
     id = Column(Integer, primary_key = True)
-    card_name = Column(String(255), ForeignKey("card.name", ondelete = 'CASCADE'))
-    cardboard_name = Column(String(255), ForeignKey("cardboard.name", ondelete = 'CASCADE'))
+    card_name = Column(String(255), ForeignKey('card.name', ondelete = 'CASCADE'))
+    cardboard_name = Column(String(255), ForeignKey('cardboard.name', ondelete = 'CASCADE'))
     index = Column(Integer)
 
 
 class CardToCardboardBack(Base):
     __tablename__ = 'card_to_cardboard_back'
     id = Column(Integer, primary_key = True)
-    card_name = Column(String(255), ForeignKey("card.name", ondelete = 'CASCADE'))
-    cardboard_name = Column(String(255), ForeignKey("cardboard.name", ondelete = 'CASCADE'))
+    card_name = Column(String(255), ForeignKey('card.name', ondelete = 'CASCADE'))
+    cardboard_name = Column(String(255), ForeignKey('cardboard.name', ondelete = 'CASCADE'))
     index = Column(Integer)
 
 

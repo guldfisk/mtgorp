@@ -7,6 +7,7 @@ import ijson
 
 from orp.database import OrpTable, O as _O, M as _M
 
+from mtgorp.db.exceptions import DbParseException
 from mtgorp.models import interfaces as i
 from mtgorp.managejson import paths
 from mtgorp.db.database import DB
@@ -37,15 +38,24 @@ C = t.TypeVar('C', bound = i.Card)
 
 class CardParser(ModelParser[C]):
 
+    def __init__(self, target: t.Type[M]):
+        super().__init__(target)
+        self._seen_cards = set()
+
     @classmethod
     def _parse_colors(cls, cols):
         return {color.Parser.parse(s) for s in cols}
 
     def parse(self, raw_card) -> C:
         try:
-            name = raw_card['name']
+            name = raw_card.get('faceName') or raw_card['name']
         except KeyError:
-            raise AttributeParseException("Cardboard has no name")
+            raise AttributeParseException('Cardboard has no name')
+
+        if name in self._seen_cards:
+            raise DbParseException('Duplicate card')
+
+        self._seen_cards.add(name)
 
         power, toughness = raw_card.get('power', None), raw_card.get('toughness', None)
 
@@ -81,14 +91,13 @@ D = t.TypeVar('D', bound = i.Cardboard)
 class CardboardParser(ModelParser[D]):
 
     @classmethod
-    def get_cardboard_card_names(cls, raw_card):
+    def get_cardboard_card_names(cls, raw_cardboard):
         try:
-            name = raw_card['name']
-            raw_card_layout = layout.Parser.parse(raw_card['layout'])
+            raw_card_layout = layout.Parser.parse(raw_cardboard[0]['layout'])
 
             if raw_card_layout == Layout.STANDARD or raw_card_layout == Layout.SAGA:
                 return (
-                    (name,),
+                    (raw_cardboard[0]['name'],),
                     (),
                 )
 
@@ -98,39 +107,44 @@ class CardboardParser(ModelParser[D]):
                 or raw_card_layout == Layout.AFTERMATH
                 or raw_card_layout == Layout.ADVENTURE
             ):
-                if name == raw_card['names'][0]:
-                    return (
-                        tuple(raw_card['names']),
-                        (),
-                    )
+                return (
+                    tuple(
+                        raw_card['faceName']
+                        for raw_card in
+                        sorted(
+                            raw_cardboard,
+                            key = lambda c: c['side']
+                        )
+                    ),
+                    (),
+                )
 
             elif raw_card_layout == Layout.TRANSFORM or raw_card_layout == Layout.MODAL:
-                if name == raw_card['names'][0]:
-                    return (
-                        (name,),
-                        (raw_card['names'][1],),
-                    )
+                return (
+                    (raw_cardboard[1]['faceName'],),
+                    (raw_cardboard[0]['faceName'],),
+                )
 
             elif raw_card_layout == Layout.MELD:
-                if name in (raw_card['names'][0], raw_card['names'][-1]):
+                if ' // ' in raw_cardboard[0]['name']:
                     return (
-                        (name,),
-                        (raw_card['names'][1],),
+                        (raw_cardboard[0]['faceName'],),
+                        (raw_cardboard[0]['name'].split(' // ')[1],),
                     )
 
-            raise AttributeParseException(f'"{name}" is not front side of layout')
+            raise AttributeParseException('"{}" is not front side of layout'.format(raw_cardboard[0]['name']))
 
         except KeyError as e:
             raise AttributeParseException(f'Invalid cardboard names "{e}"')
 
-    def parse(self, raw_card, cards: OrpTable[str, D]) -> D:
+    def parse(self, raw_cardboard, cards: OrpTable[str, D]) -> D:
         try:
-            front_names, back_names = self.get_cardboard_card_names(raw_card)
+            front_names, back_names = self.get_cardboard_card_names(raw_cardboard)
 
             return self._target(
                 front_cards = [cards[name] for name in front_names],
                 back_cards = [cards[name] for name in back_names],
-                layout = layout.Parser.parse(raw_card['layout']),
+                layout = layout.Parser.parse(raw_cardboard[0]['layout']),
             )
 
         except KeyError:
@@ -165,11 +179,11 @@ class PrintingParser(ModelParser[P]):
         self._artist_parser = artist_parser
 
     @classmethod
-    def _find_raw_printing_from_name(cls, name: str, raw_printings):
+    def _find_raw_printing_from_face_name(cls, face_name: str, raw_printings):
         for printing in raw_printings:
-            if printing.get('name', '') == name:
+            if printing.get('faceName', '') == face_name:
                 return printing
-        raise AttributeParseException(f'No printing called "{name}"')
+        raise AttributeParseException(f'No printing called "{face_name}"')
 
     def parse(
         self,
@@ -182,16 +196,13 @@ class PrintingParser(ModelParser[P]):
         try:
             name = raw_printing['name']
 
-            front_names, back_names = CardboardParser.get_cardboard_card_names(raw_printing)
-            cardboard = cardboards[
-                i.Cardboard.calc_name(front_names + back_names)
-            ]
+            cardboard: D = cardboards[name]
 
-            if name != cardboard.front_card.name:
+            if 'faceName' in raw_printing and raw_printing['faceName'] != cardboard.front_card.name:
                 raise AttributeParseException('Printing not front')
 
             if cardboard.back_card is not None:
-                raw_back_printing = self._find_raw_printing_from_name(cardboard.back_card.name, raw_printings)
+                raw_back_printing = self._find_raw_printing_from_face_name(cardboard.back_card.name, raw_printings)
                 back_artist = self._artist_parser.parse(raw_back_printing.get('artist', None), artists)
                 back_flavor = raw_back_printing.get('flavorText', None)
             else:
@@ -221,7 +232,7 @@ class PrintingParser(ModelParser[P]):
             )
 
             return self._target(
-                id = raw_printing['multiverseId'],
+                id = int(raw_printing['identifiers']['multiverseId']),
                 expansion = expansion,
                 collector_number = (
                     -1
@@ -300,8 +311,6 @@ class ExpansionParser(ModelParser[E]):
         try:
             name = raw_expansion['name']
             code = raw_expansion['code'].upper()
-            if code == 'NMS':
-                code = 'NEM'
             release_date = datetime.datetime.strptime(
                 raw_expansion['releaseDate'], '%Y-%m-%d'
             ) if 'releaseDate' in raw_expansion else None
@@ -329,8 +338,8 @@ class ExpansionParser(ModelParser[E]):
                 ),
                 border = border.Parser.parse(raw_expansion['border']) if 'border' in raw_expansion else None,
                 magic_card_info_code = raw_expansion.get('magicCardsInfoCode', None),
-                mkm_name = raw_expansion.get('mkm_name', None),
-                mkm_id = raw_expansion.get('mkm_id', None),
+                mkm_name = raw_expansion.get('mkmName', None),
+                mkm_id = raw_expansion.get('mkmId', None),
                 fragment_dividers = (
                     tuple(information[code].get('fragment_dividers', ()))
                     if code in information else
@@ -349,7 +358,7 @@ class ExpansionParser(ModelParser[E]):
                             cardboards = cardboards,
                         )
                     )
-                except AttributeParseException:
+                except DbParseException:
                     pass
 
             return expansion
@@ -412,28 +421,29 @@ class DatabaseCreator(t.Generic[DB]):
 
         card_parser = CardParser(cards_model)
 
-        for _, card in raw_cards:
-            try:
-                cards.insert(
-                    card_parser.parse(card)
-                )
-            except AttributeParseException:
-                pass
+        for _, _cards in raw_cards:
+            for card in _cards:
+                try:
+                    cards.insert(
+                        card_parser.parse(card)
+                    )
+                except DbParseException:
+                    pass
 
         return cards
 
-    def create_cardboard_table(self, raw_cards, cards):
+    def create_cardboard_table(self, raw_cardboards, cards):
         cardboards_model = self._model_parser_map[i.Cardboard]
         cardboards = self.create_table_for_model(cardboards_model)
 
         cardboard_parser = CardboardParser(cardboards_model)
 
-        for _, card in raw_cards:
+        for _, raw_cardboard in raw_cardboards:
             try:
                 cardboards.insert(
-                    cardboard_parser.parse(card, cards)
+                    cardboard_parser.parse(raw_cardboard, cards)
                 )
-            except AttributeParseException:
+            except DbParseException:
                 pass
         return cardboards
 
@@ -472,7 +482,7 @@ class DatabaseCreator(t.Generic[DB]):
                         blocks = blocks,
                     )
                 )
-            except AttributeParseException:
+            except DbParseException:
                 pass
         expansion_parser.post_parse(expansions)
         return expansions
@@ -492,12 +502,12 @@ class DatabaseCreator(t.Generic[DB]):
         ) as all_cards_file, open(
             self._all_sets_path, 'r', encoding = 'UTF-8'
         ) as all_sets_file:
-            raw_cards = ijson.kvitems(all_cards_file, '')
+            raw_cards = ijson.kvitems(all_cards_file, 'data')
 
             cards = self.create_card_table(raw_cards)
 
             all_cards_file.seek(0)
-            raw_cards = ijson.kvitems(all_cards_file, '')
+            raw_cards = ijson.kvitems(all_cards_file, 'data')
 
             cardboards = self.create_cardboard_table(raw_cards, cards)
 
@@ -505,7 +515,7 @@ class DatabaseCreator(t.Generic[DB]):
             blocks = self.create_table_for_model(self._model_parser_map[i.Block])
             printings = self.create_table_for_model(self._model_parser_map[i.Printing])
 
-            raw_expansions = ijson.kvitems(all_sets_file, '')
+            raw_expansions = ijson.kvitems(all_sets_file, 'data')
 
             expansions = self.create_expansion_table(
                 raw_expansions = raw_expansions,

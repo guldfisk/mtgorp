@@ -30,11 +30,12 @@ class Loader(t.Generic[DB]):
 
 class PickleLoader(Loader[PickleCardDatabase]):
 
+    def __init__(self, db_path: str = os.path.join(paths.APP_DATA_PATH, 'db')):
+        self._db_path = db_path
+
     def load(self) -> PickleCardDatabase:
         try:
-            return PicklePersistor(
-                os.path.join(paths.APP_DATA_PATH, 'db')
-            ).load()
+            return PicklePersistor(self._db_path).load()
         except (FileNotFoundError, EOFError, UnpicklingError):
             raise DBLoadException()
 

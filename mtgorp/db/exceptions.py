@@ -1,0 +1,2 @@
+class DbParseException(Exception):
+    pass

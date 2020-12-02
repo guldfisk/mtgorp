@@ -1,3 +1,5 @@
+from mtgorp.db.exceptions import DbParseException
 
-class AttributeParseException(Exception):
-	pass
+
+class AttributeParseException(DbParseException):
+    pass
