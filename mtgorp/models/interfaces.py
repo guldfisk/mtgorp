@@ -138,6 +138,10 @@ class Cardboard(MtgModel):
         pass
 
     @property
+    def printings_chronologically(self) -> t.Sequence[Printing]:
+        return sorted(self.printings, key = lambda p: p.expansion.release_date)
+
+    @property
     def expansions(self) -> t.AbstractSet[Expansion]:
         return frozenset(printing.expansion for printing in self.printings)
 
