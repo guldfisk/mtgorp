@@ -332,6 +332,16 @@ class Printing(MtgModel):
     def full_name(self) -> str:
         return f'{self.cardboard.name}|{self.expansion.code}'
 
+    @property
+    def alternative_printings(self) -> t.Iterator[Printing]:
+        for printing in self.cardboard.printings:
+            if printing != self:
+                yield printing
+
+    @property
+    def alternative_printings_chronologically(self) -> t.Sequence[Printing]:
+        return sorted(list(self.alternative_printings), key = lambda p: p.expansion.release_date)
+
     def __repr__(self):
         return '{}({}, {}, {})'.format(
             self.__class__.__name__,
