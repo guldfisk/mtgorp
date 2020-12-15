@@ -30,6 +30,9 @@ from mtgorp.models.persistent.orm.fields.typeline import TypeLineField
 class _Base(object):
     always_use_scoped_session = True
 
+    def __repr__(self):
+        return f'{self.__class__.__name__}({self.primary_key})'
+
 
 Base = declarative_base(cls = _Base)
 
@@ -41,6 +44,10 @@ class CardToCardboardFront(Base):
     cardboard_name = Column(String(255), ForeignKey('cardboard.name', ondelete = 'CASCADE'))
     index = Column(Integer)
 
+    @property
+    def primary_key(self) -> int:
+        return self.id
+
 
 class CardToCardboardBack(Base):
     __tablename__ = 'card_to_cardboard_back'
@@ -48,6 +55,10 @@ class CardToCardboardBack(Base):
     card_name = Column(String(255), ForeignKey('card.name', ondelete = 'CASCADE'))
     cardboard_name = Column(String(255), ForeignKey('cardboard.name', ondelete = 'CASCADE'))
     index = Column(Integer)
+
+    @property
+    def primary_key(self) -> int:
+        return self.id
 
 
 BIG = 1024 * 16

@@ -1,9 +1,11 @@
+from __future__ import annotations
+
 import itertools
 import math
 import random
 import typing as t
 
-from abc import ABC, abstractmethod
+from abc import abstractmethod, ABCMeta
 from collections import defaultdict
 
 from frozendict import frozendict
@@ -178,7 +180,19 @@ class ResultException(Exception):
     pass
 
 
-class Tournament(ABC):
+class _TournamentMeta(ABCMeta):
+    tournaments_map: t.MutableMapping[str, t.Type[Tournament]] = {}
+
+    def __new__(mcs, classname, base_classes, attributes):
+        klass = type.__new__(mcs, classname, base_classes, attributes)
+
+        if 'name' in attributes:
+            mcs.tournaments_map[attributes['name']] = klass
+
+        return klass
+
+
+class Tournament(object, metaclass = _TournamentMeta):
     name: str
     _players: t.FrozenSet[Player]
 

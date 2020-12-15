@@ -19,6 +19,10 @@ class MatchValidationError(Exception):
 
 class MatchType(ABC):
 
+    @property
+    def allows_draws(self) -> bool:
+        return False
+
     @abstractmethod
     def validate_result(self, result: CompletedMatch) -> None:
         pass
@@ -28,6 +32,10 @@ class BestOfN(MatchType):
 
     def __init__(self, n: int):
         self._n = n
+
+    @property
+    def allows_draws(self) -> bool:
+        return True
 
     @property
     def n(self) -> int:
