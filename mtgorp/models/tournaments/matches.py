@@ -50,7 +50,7 @@ class MatchType(object, metaclass = _MatchTypeMeta):
     def serialize(self) -> t.Mapping[str, t.Any]:
         return {
             'name': self.name,
-            **self._serialize_args,
+            **self._serialize_args(),
         }
 
     @classmethod
