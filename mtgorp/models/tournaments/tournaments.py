@@ -11,35 +11,38 @@ from collections import defaultdict
 from frozendict import frozendict
 
 
-class Player(object):
+# class Player(object):
+#
+#     def __init__(self, name: str):
+#         self._name = name
+#
+#     @property
+#     def name(self) -> str:
+#         return self._name
+#
+#     def __hash__(self) -> int:
+#         return hash(self._name)
+#
+#     def __eq__(self, other) -> bool:
+#         return (
+#             isinstance(other, self.__class__)
+#             and self._name == other._name
+#         )
+#
+#     def __repr__(self) -> str:
+#         return self._name
 
-    def __init__(self, name: str):
-        self._name = name
 
-    @property
-    def name(self) -> str:
-        return self._name
-
-    def __hash__(self) -> int:
-        return hash(self._name)
-
-    def __eq__(self, other) -> bool:
-        return (
-            isinstance(other, self.__class__)
-            and self._name == other._name
-        )
-
-    def __repr__(self) -> str:
-        return self._name
+P = t.TypeVar('P')
 
 
-class ScheduledMatch(object):
+class ScheduledMatch(t.Generic[P]):
 
-    def __init__(self, players: t.FrozenSet[Player]):
+    def __init__(self, players: t.FrozenSet[P]):
         self._players = players
 
     @property
-    def players(self) -> t.AbstractSet[Player]:
+    def players(self) -> t.AbstractSet[P]:
         return self._players
 
     def __hash__(self) -> int:
@@ -58,14 +61,14 @@ class ScheduledMatch(object):
         )
 
 
-class CompletedMatch(object):
+class CompletedMatch(t.Generic[P]):
 
-    def __init__(self, results: t.Mapping[Player, int], draws: int = 0):
+    def __init__(self, results: t.Mapping[P, int], draws: int = 0):
         self._results = frozendict(results)
         self._draws = draws
 
     @property
-    def results(self) -> t.Mapping[Player, int]:
+    def results(self) -> t.Mapping[P, int]:
         return self._results
 
     @property
@@ -77,7 +80,7 @@ class CompletedMatch(object):
         return sum(self.results.values()) + self.draws
 
     @property
-    def winners(self) -> t.FrozenSet[Player]:
+    def winners(self) -> t.FrozenSet[P]:
         _max_wins = max(self._results.values())
         return frozenset(
             player
@@ -87,7 +90,7 @@ class CompletedMatch(object):
         )
 
     @property
-    def winner(self) -> Player:
+    def winner(self) -> P:
         winners = self.winners
         if len(winners) > 1:
             raise RuntimeError('draw')
@@ -110,13 +113,13 @@ class CompletedMatch(object):
         )
 
 
-class Round(object):
+class Round(t.Generic[P]):
 
-    def __init__(self, matches: t.FrozenSet[ScheduledMatch]):
+    def __init__(self, matches: t.FrozenSet[ScheduledMatch[P]]):
         self._matches = matches
 
     @property
-    def matches(self) -> t.AbstractSet[ScheduledMatch]:
+    def matches(self) -> t.AbstractSet[ScheduledMatch[P]]:
         return self._matches
 
     def __hash__(self) -> int:
@@ -135,13 +138,13 @@ class Round(object):
         )
 
 
-class CompletedRound(object):
+class CompletedRound(t.Generic[P]):
 
-    def __init__(self, results: t.FrozenSet[CompletedMatch]):
+    def __init__(self, results: t.FrozenSet[CompletedMatch[P]]):
         self._results = results
 
     @property
-    def results(self) -> t.AbstractSet[CompletedMatch]:
+    def results(self) -> t.AbstractSet[CompletedMatch[P]]:
         return self._results
 
     def __hash__(self) -> int:
@@ -160,13 +163,13 @@ class CompletedRound(object):
         )
 
 
-class TournamentResult(object):
+class TournamentResult(t.Generic[P]):
 
-    def __init__(self, winners: t.FrozenSet[Player]):
+    def __init__(self, winners: t.FrozenSet[P]):
         self._winners = winners
 
     @property
-    def winners(self) -> t.FrozenSet[Player]:
+    def winners(self) -> t.FrozenSet[P]:
         return self._winners
 
     def __repr__(self) -> str:
@@ -192,9 +195,11 @@ class _TournamentMeta(ABCMeta):
         return klass
 
 
-class Tournament(object, metaclass = _TournamentMeta):
+class Tournament(t.Generic[P], metaclass = _TournamentMeta):
     name: str
-    _players: t.FrozenSet[Player]
+
+    def __init__(self, players: t.FrozenSet[P], **kwargs):
+        self._players = players
 
     @property
     @abstractmethod
@@ -207,19 +212,28 @@ class Tournament(object, metaclass = _TournamentMeta):
         pass
 
     @abstractmethod
-    def get_round(self, previous_rounds: t.Sequence[CompletedRound] = ()) -> t.Optional[Round]:
+    def get_round(self, previous_rounds: t.Sequence[CompletedRound[P]] = ()) -> t.Optional[Round[P]]:
         pass
 
     @abstractmethod
-    def get_result(self, previous_rounds: t.Sequence[CompletedRound]) -> TournamentResult:
+    def get_result(self, previous_rounds: t.Sequence[CompletedRound[P]]) -> TournamentResult[P]:
         pass
 
+    # def _serialize_args(self) -> t.Mapping[str, t.Any]:
+    #     return {}
+    #
+    # def serialize(self) -> t.Mapping[str, t.Any]:
+    #     return {
+    #         'name': self.name,
+    #         **self._serialize_args,
+    #     }
+    #
+    # def deserialize(self, values: t.Mapping[str, t.Any]) -> Tournament:
+    #     return self.tournaments_map[values['name']](**{k: v for k, v in values.items() if k != 'name'})
 
-class AllMatches(Tournament):
+
+class AllMatches(Tournament[P]):
     name = 'all_matches'
-
-    def __init__(self, players: t.FrozenSet[Player]):
-        self._players = players
 
     @property
     def allow_match_draws(self) -> bool:
@@ -229,7 +243,7 @@ class AllMatches(Tournament):
     def round_amount(self) -> int:
         return 1
 
-    def get_round(self, previous_rounds: t.Sequence[CompletedRound] = ()) -> t.Optional[Round]:
+    def get_round(self, previous_rounds: t.Sequence[CompletedRound[P]] = ()) -> t.Optional[Round[P]]:
         if previous_rounds:
             return None
         return Round(
@@ -241,7 +255,7 @@ class AllMatches(Tournament):
             )
         )
 
-    def get_result(self, previous_rounds: t.Sequence[CompletedRound]) -> TournamentResult:
+    def get_result(self, previous_rounds: t.Sequence[CompletedRound[P]]) -> TournamentResult[P]:
         try:
             _round = previous_rounds.__iter__().__next__()
         except StopIteration:
@@ -285,11 +299,11 @@ class AllMatches(Tournament):
         )
 
 
-class Swiss(Tournament):
+class Swiss(Tournament[P]):
     name = 'swiss'
 
-    def __init__(self, players: t.FrozenSet[Player], rounds: int):
-        self._players = players
+    def __init__(self, players: t.FrozenSet[P], rounds: int, **kwargs):
+        super().__init__(players, **kwargs)
         self._rounds = rounds
 
     @property
@@ -303,8 +317,8 @@ class Swiss(Tournament):
     @classmethod
     def _get_maps(
         cls,
-        rounds: t.Sequence[CompletedRound] = (),
-    ) -> t.Tuple[t.Mapping[Player, int], t.Mapping[Player, int], t.Mapping[Player, int]]:
+        rounds: t.Sequence[CompletedRound[P]] = (),
+    ) -> t.Tuple[t.Mapping[P, int], t.Mapping[P, int], t.Mapping[P, int]]:
         match_wins_map = defaultdict(int)
         game_wins_map = defaultdict(int)
         buys_map = defaultdict(int)
@@ -322,7 +336,7 @@ class Swiss(Tournament):
 
         return match_wins_map, game_wins_map, buys_map
 
-    def get_round(self, previous_rounds: t.Sequence[CompletedRound] = ()) -> t.Optional[Round]:
+    def get_round(self, previous_rounds: t.Sequence[CompletedRound[P]] = ()) -> t.Optional[Round[P]]:
         if len(previous_rounds) >= self._rounds:
             return None
 
@@ -365,7 +379,7 @@ class Swiss(Tournament):
             frozenset(matches)
         )
 
-    def get_result(self, previous_rounds: t.Sequence[CompletedRound]) -> TournamentResult:
+    def get_result(self, previous_rounds: t.Sequence[CompletedRound[P]]) -> TournamentResult[P]:
         if len(previous_rounds) < self._rounds:
             raise ResultException('tournament not complete')
 
@@ -382,11 +396,8 @@ class Swiss(Tournament):
         )
 
 
-class SingleElimination(Tournament):
+class SingleElimination(Tournament[P]):
     name = 'single_elimination'
-
-    def __init__(self, players: t.FrozenSet[Player]):
-        self._players = players
 
     @property
     def allow_match_draws(self) -> bool:
@@ -396,7 +407,7 @@ class SingleElimination(Tournament):
     def round_amount(self) -> int:
         return int(math.ceil(math.log(len(self._players), 2)))
 
-    def get_round(self, previous_rounds: t.Sequence[CompletedRound] = ()) -> t.Optional[Round]:
+    def get_round(self, previous_rounds: t.Sequence[CompletedRound[P]] = ()) -> t.Optional[Round[P]]:
         if previous_rounds and len(previous_rounds[-1].results) <= 1:
             return None
 
@@ -439,7 +450,7 @@ class SingleElimination(Tournament):
             frozenset(matches)
         )
 
-    def get_result(self, previous_rounds: t.Sequence[CompletedRound]) -> TournamentResult:
+    def get_result(self, previous_rounds: t.Sequence[CompletedRound[P]]) -> TournamentResult[P]:
         if not previous_rounds or not len(previous_rounds[-1].results) == 1:
             raise ResultException('tournament not complete')
 
