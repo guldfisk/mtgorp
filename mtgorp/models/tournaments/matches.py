@@ -9,20 +9,6 @@ from yeetlong.errors import Errors
 from mtgorp.models.tournaments.tournaments import CompletedMatch
 
 
-# class MatchValidationError(Exception):
-#
-#     def __init__(self, error: str):
-#         super().__init__()
-#         self._error = error
-#
-#     @property
-#     def error(self) -> str:
-#         return self._error
-#
-#     def __repr__(self) -> str:
-#         return self._error
-
-
 class _MatchTypeMeta(ABCMeta):
     matches_map: t.MutableMapping[str, t.Type[MatchType]] = {}
 
@@ -100,7 +86,7 @@ class FirstToN(MatchOfn):
 
     def validate_result(self, result: CompletedMatch) -> Errors:
         errors = []
-        max_wins = max(result.results.keys())
+        max_wins = max(result.results.values())
         if max_wins != self._n:
             errors.append(
                 'match not completed, leader only has {} of {} required wins.'.format(
