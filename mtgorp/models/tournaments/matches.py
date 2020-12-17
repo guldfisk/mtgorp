@@ -4,21 +4,23 @@ import typing as t
 
 from abc import abstractmethod, ABCMeta
 
+from yeetlong.errors import Errors
+
 from mtgorp.models.tournaments.tournaments import CompletedMatch
 
 
-class MatchValidationError(Exception):
-
-    def __init__(self, error: str):
-        super().__init__()
-        self._error = error
-
-    @property
-    def error(self) -> str:
-        return self._error
-
-    def __repr__(self) -> str:
-        return self._error
+# class MatchValidationError(Exception):
+#
+#     def __init__(self, error: str):
+#         super().__init__()
+#         self._error = error
+#
+#     @property
+#     def error(self) -> str:
+#         return self._error
+#
+#     def __repr__(self) -> str:
+#         return self._error
 
 
 class _MatchTypeMeta(ABCMeta):
@@ -41,7 +43,7 @@ class MatchType(object, metaclass = _MatchTypeMeta):
         return False
 
     @abstractmethod
-    def validate_result(self, result: CompletedMatch) -> None:
+    def validate_result(self, result: CompletedMatch) -> Errors:
         pass
 
     def _serialize_args(self) -> t.Mapping[str, t.Any]:
@@ -81,27 +83,31 @@ class BestOfN(MatchOfn):
     def allows_draws(self) -> bool:
         return True
 
-    def validate_result(self, result: CompletedMatch) -> None:
+    def validate_result(self, result: CompletedMatch) -> Errors:
+        errors = []
         if result.amount_completed_games != self._n:
-            raise MatchValidationError(
+            errors.append(
                 'match has completed {} games, which does not match required {}.'.format(
                     result.amount_completed_games,
                     self._n,
                 )
             )
+        return Errors(errors)
 
 
 class FirstToN(MatchOfn):
     name = 'FTN'
 
-    def validate_result(self, result: CompletedMatch) -> None:
+    def validate_result(self, result: CompletedMatch) -> Errors:
+        errors = []
         max_wins = max(result.results.keys())
         if max_wins != self._n:
-            raise MatchValidationError(
+            errors.append(
                 'match not completed, leader only has {} of {} required wins.'.format(
                     max_wins,
                     self._n,
                 )
             )
         if len(result.winners) > 1:
-            raise MatchValidationError('match cannot be a draw')
+            errors.append('match cannot be a draw')
+        return Errors(errors)
