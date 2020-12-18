@@ -198,8 +198,9 @@ class _TournamentMeta(ABCMeta):
 class Tournament(t.Generic[P], metaclass = _TournamentMeta):
     name: str
 
-    def __init__(self, players: t.FrozenSet[P], **kwargs):
+    def __init__(self, players: t.FrozenSet[P], seed_map: t.Mapping[P, float] = frozendict(), **kwargs):
         self._players = players
+        self._seed_map = seed_map
 
     @property
     @abstractmethod
@@ -302,8 +303,8 @@ class AllMatches(Tournament[P]):
 class Swiss(Tournament[P]):
     name = 'swiss'
 
-    def __init__(self, players: t.FrozenSet[P], rounds: int, **kwargs):
-        super().__init__(players, **kwargs)
+    def __init__(self, players: t.FrozenSet[P], rounds: int, seed_map: t.Mapping[P, float] = frozendict(), **kwargs):
+        super().__init__(players, seed_map, **kwargs)
         self._rounds = rounds
 
     @property
@@ -348,7 +349,11 @@ class Swiss(Tournament[P]):
 
         ranked_players = sorted(
             players,
-            key = lambda p: (match_wins_map[p], game_wins_map[p], -buys_map[p]),
+            key = (
+                lambda p: (match_wins_map[p], game_wins_map[p], -buys_map[p])
+            ) if previous_rounds else (
+                lambda p: self._seed_map.get(p, 0)
+            ),
         )
 
         matches = []
@@ -421,6 +426,12 @@ class SingleElimination(Tournament[P]):
         players = [result.winner for result in previous_rounds[-1].results] if previous_rounds else list(self._players)
 
         random.shuffle(players)
+
+        if not previous_rounds:
+            players = sorted(
+                players,
+                key = lambda p: self._seed_map.get(p, 0),
+            )
 
         matches = []
 
