@@ -4,33 +4,13 @@ import itertools
 import math
 import random
 import typing as t
-
 from abc import abstractmethod, ABCMeta
 from collections import defaultdict
 
 from frozendict import frozendict
 
-
-# class Player(object):
-#
-#     def __init__(self, name: str):
-#         self._name = name
-#
-#     @property
-#     def name(self) -> str:
-#         return self._name
-#
-#     def __hash__(self) -> int:
-#         return hash(self._name)
-#
-#     def __eq__(self, other) -> bool:
-#         return (
-#             isinstance(other, self.__class__)
-#             and self._name == other._name
-#         )
-#
-#     def __repr__(self) -> str:
-#         return self._name
+from hardcandy.schema import Schema
+from hardcandy import fields
 
 
 P = t.TypeVar('P')
@@ -197,15 +177,12 @@ class _TournamentMeta(ABCMeta):
 
 class Tournament(t.Generic[P], metaclass = _TournamentMeta):
     name: str
+    options_schema = Schema()
+    allow_match_draws: bool = False
 
     def __init__(self, players: t.FrozenSet[P], seed_map: t.Mapping[P, float] = frozendict(), **kwargs):
         self._players = players
         self._seed_map = seed_map
-
-    @property
-    @abstractmethod
-    def allow_match_draws(self) -> bool:
-        pass
 
     @property
     @abstractmethod
@@ -220,25 +197,10 @@ class Tournament(t.Generic[P], metaclass = _TournamentMeta):
     def get_result(self, previous_rounds: t.Sequence[CompletedRound[P]]) -> TournamentResult[P]:
         pass
 
-    # def _serialize_args(self) -> t.Mapping[str, t.Any]:
-    #     return {}
-    #
-    # def serialize(self) -> t.Mapping[str, t.Any]:
-    #     return {
-    #         'name': self.name,
-    #         **self._serialize_args,
-    #     }
-    #
-    # def deserialize(self, values: t.Mapping[str, t.Any]) -> Tournament:
-    #     return self.tournaments_map[values['name']](**{k: v for k, v in values.items() if k != 'name'})
-
 
 class AllMatches(Tournament[P]):
     name = 'all_matches'
-
-    @property
-    def allow_match_draws(self) -> bool:
-        return True
+    allow_match_draws: bool = True
 
     @property
     def round_amount(self) -> int:
@@ -302,14 +264,12 @@ class AllMatches(Tournament[P]):
 
 class Swiss(Tournament[P]):
     name = 'swiss'
+    options_schema = Schema({'rounds': fields.Integer(min = 1, max = 128, default = 3)})
+    allow_match_draws: bool = True
 
     def __init__(self, players: t.FrozenSet[P], rounds: int, seed_map: t.Mapping[P, float] = frozendict(), **kwargs):
         super().__init__(players, seed_map, **kwargs)
         self._rounds = rounds
-
-    @property
-    def allow_match_draws(self) -> bool:
-        return True
 
     @property
     def round_amount(self) -> int:
@@ -403,10 +363,6 @@ class Swiss(Tournament[P]):
 
 class SingleElimination(Tournament[P]):
     name = 'single_elimination'
-
-    @property
-    def allow_match_draws(self) -> bool:
-        return False
 
     @property
     def round_amount(self) -> int:

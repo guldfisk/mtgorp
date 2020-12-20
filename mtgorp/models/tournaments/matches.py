@@ -6,6 +6,9 @@ from abc import abstractmethod, ABCMeta
 
 from yeetlong.errors import Errors
 
+from hardcandy.schema import Schema
+from hardcandy import fields
+
 from mtgorp.models.tournaments.tournaments import CompletedMatch
 
 
@@ -23,10 +26,8 @@ class _MatchTypeMeta(ABCMeta):
 
 class MatchType(object, metaclass = _MatchTypeMeta):
     name: str
-
-    @property
-    def allows_draws(self) -> bool:
-        return False
+    options_schema = Schema()
+    allows_draws: bool = False
 
     @abstractmethod
     def validate_result(self, result: CompletedMatch) -> Errors:
@@ -47,6 +48,7 @@ class MatchType(object, metaclass = _MatchTypeMeta):
 
 
 class MatchOfn(MatchType):
+    options_schema = Schema({'n': fields.Integer(min = 1, max = 128, default = 3)})
 
     def __init__(self, n: int):
         self._n = n
@@ -64,10 +66,7 @@ class MatchOfn(MatchType):
 
 class BestOfN(MatchOfn):
     name = 'BON'
-
-    @property
-    def allows_draws(self) -> bool:
-        return True
+    allows_draws: bool = True
 
     def validate_result(self, result: CompletedMatch) -> Errors:
         errors = []
@@ -83,13 +82,14 @@ class BestOfN(MatchOfn):
 
 class FirstToN(MatchOfn):
     name = 'FTN'
+    options_schema = Schema({'n': fields.Integer(min = 1, max = 128, default = 2)})
 
     def validate_result(self, result: CompletedMatch) -> Errors:
         errors = []
         max_wins = max(result.results.values())
         if max_wins != self._n:
             errors.append(
-                'match not completed, leader only has {} of {} required wins.'.format(
+                'match not completed, leader has {} wins, which does not match required {}.'.format(
                     max_wins,
                     self._n,
                 )

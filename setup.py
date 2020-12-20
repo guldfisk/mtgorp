@@ -18,6 +18,7 @@ setup(
     packages = ['mtgorp'],
     package_data = {'': extra_files},
     install_requires = [
+        'hardcandy @ https://github.com/guldfisk/hardcandy/tarball/master#egg=hardcandy-1.0',
         'orp @ https://github.com/guldfisk/orp/tarball/master#egg=orp-1.0',
         'yeetlong @ https://github.com/guldfisk/yeetlong/tarball/master#egg=yeetlong-1.0',
         'lazy-property',
@@ -29,5 +30,6 @@ setup(
         'ijson',
         'pickledb',
         'sqlalchemy',
+        'frozendict',
     ]
 )
