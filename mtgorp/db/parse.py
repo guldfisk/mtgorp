@@ -91,7 +91,7 @@ D = t.TypeVar('D', bound = i.Cardboard)
 class CardboardParser(ModelParser[D]):
 
     @classmethod
-    def get_cardboard_card_names(cls, raw_cardboard):
+    def get_cardboard_card_names(cls, raw_cardboard) -> t.Tuple[t.Sequence[str], t.Sequence[str]]:
         try:
             raw_card_layout = layout.Parser.parse(raw_cardboard[0]['layout'])
 
@@ -120,9 +120,10 @@ class CardboardParser(ModelParser[D]):
                 )
 
             elif raw_card_layout == Layout.TRANSFORM or raw_card_layout == Layout.MODAL:
-                return (
-                    (raw_cardboard[0]['faceName'],),
-                    (raw_cardboard[1]['faceName'],),
+                return tuple(
+                    (name,)
+                    for name in
+                    raw_cardboard[0]['name'].split(' // ')
                 )
 
             elif raw_card_layout == Layout.MELD:
