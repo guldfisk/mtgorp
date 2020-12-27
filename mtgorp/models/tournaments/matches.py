@@ -29,6 +29,9 @@ class MatchType(object, metaclass = _MatchTypeMeta):
     options_schema = Schema()
     allows_draws: bool = False
 
+    def __init__(self, **kwargs):
+        pass
+
     @abstractmethod
     def validate_result(self, result: CompletedMatch) -> Errors:
         pass
@@ -50,7 +53,8 @@ class MatchType(object, metaclass = _MatchTypeMeta):
 class MatchOfn(MatchType):
     options_schema = Schema({'n': fields.Integer(min = 1, max = 128, default = 3)})
 
-    def __init__(self, n: int):
+    def __init__(self, n: int, **kwargs):
+        super().__init__(**kwargs)
         self._n = n
 
     @property
@@ -62,6 +66,10 @@ class MatchOfn(MatchType):
 
     def _serialize_args(self) -> t.Mapping[str, t.Any]:
         return {'n': self._n}
+
+    @abstractmethod
+    def validate_result(self, result: CompletedMatch) -> Errors:
+        pass
 
 
 class BestOfN(MatchOfn):

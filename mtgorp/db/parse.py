@@ -121,8 +121,8 @@ class CardboardParser(ModelParser[D]):
 
             elif raw_card_layout == Layout.TRANSFORM or raw_card_layout == Layout.MODAL:
                 return (
-                    (raw_cardboard[1]['faceName'],),
                     (raw_cardboard[0]['faceName'],),
+                    (raw_cardboard[1]['faceName'],),
                 )
 
             elif raw_card_layout == Layout.MELD:
