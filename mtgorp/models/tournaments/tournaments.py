@@ -7,6 +7,7 @@ import typing as t
 from abc import abstractmethod, ABCMeta
 from collections import defaultdict
 
+import more_itertools
 from frozendict import frozendict
 
 from hardcandy.schema import Schema
@@ -182,6 +183,7 @@ class Tournament(t.Generic[P], metaclass = _TournamentMeta):
 
     def __init__(self, players: t.FrozenSet[P], seed_map: t.Mapping[P, float] = frozendict(), **kwargs):
         self._players = players
+        # Low seed is higher rated
         self._seed_map = seed_map
 
     @property
@@ -194,8 +196,29 @@ class Tournament(t.Generic[P], metaclass = _TournamentMeta):
         pass
 
     @abstractmethod
-    def get_result(self, previous_rounds: t.Sequence[CompletedRound[P]]) -> TournamentResult[P]:
+    def get_ranked_players(self, previous_rounds: t.Sequence[CompletedRound[P]]) -> t.Sequence[t.Collection[P]]:
         pass
+
+    def get_result(self, previous_rounds: t.Sequence[CompletedRound[P]]) -> TournamentResult[P]:
+        return TournamentResult(
+            frozenset(
+                self.get_ranked_players(previous_rounds)[0]
+            )
+        )
+
+    def top_n(self, previous_rounds: t.Sequence[CompletedRound[P]], n: int) -> t.Sequence[P]:
+        players = []
+        for tier in more_itertools.split_when(self.get_ranked_players(previous_rounds), lambda a, b: a[1] != b[1]):
+            tier_players = [p for p, _ in tier]
+
+            if len(players) + len(tier) <= n:
+                players.extend(tier_players)
+                if len(players) == n:
+                    return players
+            else:
+                random.shuffle(tier_players)
+                players.extend(tier_players[:n - len(players)])
+                return players
 
 
 class AllMatches(Tournament[P]):
@@ -218,46 +241,74 @@ class AllMatches(Tournament[P]):
             )
         )
 
-    def get_result(self, previous_rounds: t.Sequence[CompletedRound[P]]) -> TournamentResult[P]:
+    def _rank_player_set(self, previous_round: CompletedRound[P], players: t.AbstractSet[P]) -> t.Sequence[t.Collection[P]]:
+        player_match_wins_map = defaultdict(int)
+        player_game_wins_map = defaultdict(int)
+
+        for result in previous_round.results:
+            if not result.results.keys() <= players:
+                continue
+            winners = result.winners
+            if len(winners) == 1:
+                player_match_wins_map[winners.__iter__().__next__()] += 1
+            for player, wins in result.results.items():
+                player_game_wins_map[player] += wins
+
+        ranked_players = sorted(
+            [
+                (
+                    player,
+                    (
+                        player_match_wins_map[player],
+                        player_game_wins_map[player],
+                    )
+                ) for player in
+                players
+            ],
+            key = lambda p: p[1],
+            reverse = True,
+        )
+
+        result = []
+
+        for player_group in more_itertools.split_when(ranked_players, lambda a, b: a[1] != b[1]):
+            if len(player_group) > 1:
+                players_set = frozenset(p[0] for p in player_group)
+                if players_set >= players:
+                    result.append([p for p, _ in player_group])
+                else:
+                    result.extend(self._rank_player_set(previous_round, players_set))
+            else:
+                result.append([player_group[0][0]])
+
+        return result
+
+    def get_ranked_players(self, previous_rounds: t.Sequence[CompletedRound[P]]) -> t.Sequence[t.Collection[P]]:
         try:
-            _round = previous_rounds.__iter__().__next__()
+            previous_round = previous_rounds.__iter__().__next__()
         except StopIteration:
             raise ResultException('tournament not complete')
 
-        player_wins_map = defaultdict(int)
-
-        for result in _round.results:
-            winners = result.winners
-            if len(winners) == 1:
-                player_wins_map[winners.__iter__().__next__()] += 1
-
-        max_wins = max(player_wins_map.values())
-
-        winner_candidates = [
-            player
-            for player, wins in
-            player_wins_map.items()
-            if wins == max_wins
-        ]
-
-        if len(winner_candidates) == 1:
-            return TournamentResult(frozenset(winner_candidates))
-
-        player_game_wins_map = defaultdict(int)
-
-        for result in _round.results:
-            for player, wins in result.results.items():
-                if player in winner_candidates:
-                    player_game_wins_map[player] += wins
-
-        max_game_wins = max(player_game_wins_map.values())
-
-        return TournamentResult(
-            frozenset(
-                player
-                for player, wins in
-                player_game_wins_map.items()
-                if wins == max_game_wins
+        return list(
+            itertools.chain(
+                *(
+                    [
+                        sub_tier
+                        for sub_tier in
+                        more_itertools.split_when(
+                            sorted(
+                                tier,
+                                key = lambda p: -self._seed_map.get(p, 0),
+                            ),
+                            lambda a, b: self._seed_map.get(a, 0) != self._seed_map.get(b, 0),
+                        )
+                    ]
+                    for tier in
+                    self._rank_player_set(
+                        previous_round,
+                        self._players,
+                    )
+                )
             )
         )
 
@@ -275,16 +326,15 @@ class Swiss(Tournament[P]):
     def round_amount(self) -> int:
         return self._rounds
 
-    @classmethod
-    def _get_maps(
-        cls,
-        rounds: t.Sequence[CompletedRound[P]] = (),
-    ) -> t.Tuple[t.Mapping[P, int], t.Mapping[P, int], t.Mapping[P, int]]:
+    def _get_ranked_players(
+        self,
+        previous_rounds: t.Sequence[CompletedRound[P]],
+    ) -> t.Tuple[t.Sequence[t.Tuple[P, int]], t.Mapping[P, int]]:
         match_wins_map = defaultdict(int)
         game_wins_map = defaultdict(int)
         buys_map = defaultdict(int)
 
-        for _round in rounds:
+        for _round in previous_rounds:
             for result in _round.results:
                 if len(result.results) == 1:
                     buys_map[result.results.__iter__().__next__()] += 1
@@ -295,26 +345,62 @@ class Swiss(Tournament[P]):
                 if len(winners) == 1:
                     match_wins_map[winners.__iter__().__next__()] += 1
 
-        return match_wins_map, game_wins_map, buys_map
+        opponent_match_wins_map = defaultdict(int)
+        opponent_game_win_percentage = defaultdict(int)
+
+        for _round in previous_rounds:
+            for result in _round.results:
+                if len(result.results) == 1:
+                    continue
+
+                for player, opponent in itertools.permutations(result.results.keys()):
+                    opponent_match_wins_map[player] += match_wins_map[opponent]
+                    opponent_game_win_percentage[player] += game_wins_map[opponent]
+
+        ranked_players = sorted(
+            [
+                (
+                    player,
+                    (
+                        match_wins_map[player],
+                        opponent_match_wins_map[player],
+                        game_wins_map[player],
+                        opponent_game_win_percentage[player],
+                        -buys_map[player],
+                        -self._seed_map.get(player, 0),
+                    )
+                ) for player in
+                self._players
+            ],
+            key = lambda p: p[1],
+            reverse = True,
+        )
+
+        result = []
+
+        for idx, chunk in enumerate(
+            more_itertools.split_when(
+                ranked_players,
+                lambda a, b: a[1] != b[1],
+            )
+        ):
+            for p, _ in chunk:
+                result.append((p, idx))
+
+        return result, buys_map
 
     def get_round(self, previous_rounds: t.Sequence[CompletedRound[P]] = ()) -> t.Optional[Round[P]]:
         if len(previous_rounds) >= self._rounds:
             return None
 
-        match_wins_map, game_wins_map, buys_map = self._get_maps(previous_rounds)
+        _ranked_players, buys_map = self._get_ranked_players(previous_rounds)
 
-        players = list(self._players)
+        ranked_players = []
 
-        random.shuffle(players)
-
-        ranked_players = sorted(
-            players,
-            key = (
-                lambda p: (match_wins_map[p], game_wins_map[p], -buys_map[p])
-            ) if previous_rounds else (
-                lambda p: self._seed_map.get(p, 0)
-            ),
-        )
+        for players in more_itertools.split_when(reversed(_ranked_players), lambda a, b: a[1] != b[1]):
+            random.shuffle(players)
+            for p, _ in players:
+                ranked_players.append(p)
 
         matches = []
 
@@ -344,21 +430,18 @@ class Swiss(Tournament[P]):
             frozenset(matches)
         )
 
+    def get_ranked_players(self, previous_rounds: t.Sequence[CompletedRound[P]]) -> t.Sequence[t.Collection[P]]:
+        ranked_players, _ = self._get_ranked_players(previous_rounds)
+        return [
+            [p for p, _ in tier]
+            for tier in
+            more_itertools.split_when(ranked_players, lambda a, b: a[1] != b[1])
+        ]
+
     def get_result(self, previous_rounds: t.Sequence[CompletedRound[P]]) -> TournamentResult[P]:
         if len(previous_rounds) < self._rounds:
             raise ResultException('tournament not complete')
-
-        match_wins_map, game_wins_map, buys_map = self._get_maps(previous_rounds)
-        results_map = defaultdict(list)
-
-        for player in self._players:
-            results_map[(match_wins_map[player], game_wins_map[player], -buys_map[player])].append(player)
-
-        return TournamentResult(
-            frozenset(
-                results_map[max(results_map.keys())]
-            )
-        )
+        return super().get_result(previous_rounds)
 
 
 class SingleElimination(Tournament[P]):
@@ -386,7 +469,7 @@ class SingleElimination(Tournament[P]):
         if not previous_rounds:
             players = sorted(
                 players,
-                key = lambda p: self._seed_map.get(p, 0),
+                key = lambda p: -self._seed_map.get(p, 0),
             )
 
         matches = []
@@ -417,6 +500,37 @@ class SingleElimination(Tournament[P]):
             frozenset(matches)
         )
 
+    def get_ranked_players(self, previous_rounds: t.Sequence[CompletedRound[P]]) -> t.Sequence[t.Collection[P]]:
+        match_wins_map = defaultdict(int)
+
+        for _round in previous_rounds:
+            for result in _round.results:
+                match_wins_map[result.winners.__iter__().__next__()] += 1
+
+        ranked_players = sorted(
+            [
+                (
+                    player,
+                    (
+                        match_wins_map[player],
+                        -self._seed_map.get(player, 0),
+                    )
+                ) for player in
+                self._players
+            ],
+            key = lambda p: p[1],
+            reverse = True,
+        )
+
+        return [
+            [p for p, _ in tier]
+            for tier in
+            more_itertools.split_when(
+                ranked_players,
+                lambda a, b: a[1] != b[1],
+            )
+        ]
+
     def get_result(self, previous_rounds: t.Sequence[CompletedRound[P]]) -> TournamentResult[P]:
         if not previous_rounds or not len(previous_rounds[-1].results) == 1:
             raise ResultException('tournament not complete')
@@ -428,15 +542,3 @@ class SingleElimination(Tournament[P]):
                 )
             )
         )
-
-# class DoubleElimination(Tournament):
-#     name = 'double_elimination'
-#
-#     def __init__(self, players: t.FrozenSet[Player]):
-#         self._players = players
-#
-#     def get_round(self, previous_rounds: t.Sequence[CompletedRound] = ()) -> t.Optional[Round]:
-#         pass
-#
-#     def get_result(self, previous_rounds: t.Sequence[CompletedRound]) -> TournamentResult:
-#         pass
