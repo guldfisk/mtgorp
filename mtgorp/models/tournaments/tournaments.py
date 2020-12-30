@@ -206,18 +206,19 @@ class Tournament(t.Generic[P], metaclass = _TournamentMeta):
             )
         )
 
-    def top_n(self, previous_rounds: t.Sequence[CompletedRound[P]], n: int) -> t.Sequence[P]:
+    def top_n(self, previous_rounds: t.Sequence[CompletedRound[P]], n: int, *, strict: bool = True) -> t.Sequence[P]:
         players = []
-        for tier in more_itertools.split_when(self.get_ranked_players(previous_rounds), lambda a, b: a[1] != b[1]):
-            tier_players = [p for p, _ in tier]
-
+        for tier in self.get_ranked_players(previous_rounds):
             if len(players) + len(tier) <= n:
-                players.extend(tier_players)
+                players.extend(tier)
                 if len(players) == n:
                     return players
             else:
-                random.shuffle(tier_players)
-                players.extend(tier_players[:n - len(players)])
+                if strict:
+                    raise ResultException('Not well defined top n')
+                tier = list(tier)
+                random.shuffle(tier)
+                players.extend(tier[:n - len(players)])
                 return players
 
 
