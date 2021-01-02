@@ -245,6 +245,7 @@ class AllMatches(Tournament[P]):
     def _rank_player_set(self, previous_round: CompletedRound[P], players: t.AbstractSet[P]) -> t.Sequence[t.Collection[P]]:
         player_match_wins_map = defaultdict(int)
         player_game_wins_map = defaultdict(int)
+        player_relative_score_map = defaultdict(int)
 
         for result in previous_round.results:
             if not result.results.keys() <= players:
@@ -252,8 +253,10 @@ class AllMatches(Tournament[P]):
             winners = result.winners
             if len(winners) == 1:
                 player_match_wins_map[winners.__iter__().__next__()] += 1
+            total_wins = sum(result.results.values())
             for player, wins in result.results.items():
                 player_game_wins_map[player] += wins
+                player_relative_score_map[player] += wins * 2 - total_wins
 
         ranked_players = sorted(
             [
@@ -262,6 +265,7 @@ class AllMatches(Tournament[P]):
                     (
                         player_match_wins_map[player],
                         player_game_wins_map[player],
+                        player_relative_score_map[player],
                     )
                 ) for player in
                 players
