@@ -264,8 +264,8 @@ class AllMatches(Tournament[P]):
                     player,
                     (
                         player_match_wins_map[player],
-                        player_game_wins_map[player],
                         player_relative_score_map[player],
+                        player_game_wins_map[player],
                     )
                 ) for player in
                 players
