@@ -142,7 +142,7 @@ class Cardboard(Base, i.Cardboard):
         return self.name
 
 
-class Printing(Base, i.Printing):
+class Printing(i.Printing, Base):
     __tablename__ = 'printing'
 
     def __init__(
