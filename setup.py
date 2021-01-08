@@ -31,6 +31,6 @@ setup(
         'pickledb',
         'sqlalchemy',
         'frozendict',
-        'mote_itertools',
+        'more-itertools',
     ]
 )
