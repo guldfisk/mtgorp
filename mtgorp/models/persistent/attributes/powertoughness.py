@@ -47,24 +47,6 @@ class PTValue(object):
     def deserialize(cls, s: str) -> PTValue:
         return cls(0, variable = True) if s == '*' else cls(int(s))
 
-    # def __ge__(self, other):
-    #     return (
-    #         isinstance(other, int) and self.value >= other
-    #         or isinstance(other, self.__class__) and self.value >= other.value
-    #     )
-    #
-    # def __lt__(self, other):
-    #     return (
-    #         isinstance(other, int) and self.value < other
-    #         or isinstance(other, self.__class__) and self.value < other.value
-    #     )
-    #
-    # def __le__(self, other):
-    #     return (
-    #         isinstance(other, int) and self.value <= other
-    #         or isinstance(other, self.__class__) and self.value <= other.value
-    #     )
-
 
 class PowerToughness(object):
 

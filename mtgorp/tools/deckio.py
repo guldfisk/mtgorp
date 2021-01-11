@@ -8,8 +8,9 @@ from abc import abstractmethod, ABCMeta
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
 
-from yeetlong.multiset import Multiset
+from yeetlong.multiset import Multiset, BaseMultiset
 
+from mtgorp.tools.groupification.groupification import Groupifyer, Group, STANDARD_PRINTING_GROUPIFYER
 from mtgorp.db.database import CardDatabase
 from mtgorp.models.collections.deck import Deck
 from mtgorp.models.serilization.strategies.jsonid import JsonId
@@ -33,12 +34,11 @@ class _TabModelSerializerMeta(ABCMeta):
 class DeckSerializer(object, metaclass = _TabModelSerializerMeta):
     extensions: t.Sequence[str]
 
-    def __init__(self, db: CardDatabase):
+    def __init__(self, db: CardDatabase, **kwargs):
         self._db = db
 
-    @classmethod
     @abstractmethod
-    def serialize(cls, tab_model: Deck) -> t.AnyStr:
+    def serialize(self, tab_model: Deck) -> t.AnyStr:
         pass
 
     @abstractmethod
@@ -51,22 +51,70 @@ class DecSerializer(DeckSerializer):
 
     _x_printings_pattern = re.compile('(SB:\s+)?(\d+) \[([A-Z0-9]*)\] (.*?)\s*$')
 
+    def __init__(
+        self,
+        db: CardDatabase,
+        *,
+        include_header: bool = True,
+        groupifyer: t.Optional[Groupifyer[Printing]] = STANDARD_PRINTING_GROUPIFYER,
+    ):
+        super().__init__(db)
+        self._include_header = include_header
+        self._groupifyer = groupifyer
+
     @classmethod
-    def _printings_to_line(cls, printing: Printing, multiplicity: int) -> str:
-        return '{} [{}] {}'.format(
+    def _printings_to_line(cls, printing: Printing, multiplicity: int, sideboard: bool = False) -> str:
+        return '{}{} [{}] {}'.format(
+            'SB:  ' if sideboard else '',
             multiplicity,
             printing.expansion.code,
             printing.cardboard.name.replace('//', '/'),
         )
 
     @classmethod
-    def serialize(cls, deck: Deck) -> t.AnyStr:
-        s = '// Deck file created with mtgorp'
-        for printing, multiplicity in deck.maindeck.items():
-            s += '\n' + cls._printings_to_line(printing, multiplicity)
-        for printing, multiplicity in deck.sideboard.items():
-            s += '\nSB:  ' + cls._printings_to_line(printing, multiplicity)
-        return s + '\n'
+    def _printings_to_lines(cls, printings: BaseMultiset[Printing], sideboard: bool = False) -> str:
+        return '\n'.join(
+            cls._printings_to_line(printing, multiplicity, sideboard)
+            for printing, multiplicity in
+            sorted(
+                printings.items(),
+                key = lambda p: (p[0].cardboard.name, p[0].expansion.code),
+            )
+        )
+
+    @classmethod
+    def _block_from_group(cls, group: Group[Printing]) -> str:
+        printings = Multiset(group.items)
+        return  '// {} ({})\n{}'.format(
+            group.name,
+            len(printings),
+            cls._printings_to_lines(printings),
+        )
+
+    @classmethod
+    def _get_header(cls, deck: Deck):
+        return '// Created with mtgorp\n// Maindeck: {}, Sideboard: {}\n\n'.format(
+            len(deck.maindeck),
+            len(deck.sideboard),
+        )
+
+    def serialize(self, deck: Deck) -> t.AnyStr:
+        s = ''
+        if self._include_header:
+            s += self._get_header(deck)
+        if self._groupifyer is None:
+            s += self._printings_to_lines(deck.maindeck)
+        else:
+            s += '\n\n'.join(
+                self._block_from_group(group)
+                for group in
+                self._groupifyer.groupify(deck.maindeck).groups
+            )
+
+        if deck.sideboard:
+            s += '\n\n' + self._printings_to_lines(deck.sideboard, sideboard = True)
+
+        return s
 
     def _get_printing(self, name: str, expansion_code: str) -> Printing:
         try:
@@ -105,8 +153,7 @@ class DecSerializer(DeckSerializer):
 class JsonSerializer(DeckSerializer):
     extensions = ['json', 'JSON']
 
-    @classmethod
-    def serialize(cls, deck: Deck) -> t.AnyStr:
+    def serialize(self, deck: Deck) -> t.AnyStr:
         return JsonId.serialize(deck)
 
     def deserialize(self, s: t.AnyStr) -> Deck:
@@ -116,8 +163,7 @@ class JsonSerializer(DeckSerializer):
 class CodSerializer(DeckSerializer):
     extensions = ['cod']
 
-    @classmethod
-    def serialize(cls, deck: Deck) -> t.AnyStr:
+    def serialize(self, deck: Deck) -> t.AnyStr:
         root = ElementTree.Element('cockatrice_deck', {'version': '1'})
         ElementTree.SubElement(root, 'decknames')
         ElementTree.SubElement(root, 'comments')

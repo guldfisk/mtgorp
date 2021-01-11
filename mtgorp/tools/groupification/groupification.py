@@ -4,7 +4,7 @@ import typing as t
 
 from abc import abstractmethod, ABC
 
-from yeetlong.multiset import Multiset
+from yeetlong.multiset import Multiset, FrozenMultiset
 
 from mtgorp.models.interfaces import Cardboard, Printing
 from mtgorp.models.persistent.attributes import typeline
@@ -66,28 +66,38 @@ class Groupifyer(ABC, t.Generic[T]):
         pass
 
     def groupify(self, items: t.Iterable[T]) -> Grouping[T]:
-
         items = Multiset(items)
 
         categories = []
 
         for category in self._categories:
-            matches = Multiset(category.criteria.matches(items, self._extraction_strategy))
+            matches = FrozenMultiset(category.criteria.matches(items, self._extraction_strategy))
+            if not matches:
+                continue
+
             categories.append(self._group_type()(category.name, matches))
 
             items -= matches
 
         if items and self._include_others:
-            categories.append(self._group_type()('Others', items))
+            categories.append(self._group_type()('Others', FrozenMultiset(items)))
 
         return Grouping(self._name, categories)
 
 
 class Group(t.Generic[T]):
 
-    def __init__(self, name: str, items: t.Iterable[T]):
+    def __init__(self, name: str, items: FrozenMultiset[T]):
         self._name = name
-        self._items: Multiset[T] = Multiset(items)
+        self._items = items
+
+    @property
+    def name(self) -> str:
+        return self._name
+
+    @property
+    def items(self) -> FrozenMultiset[T]:
+        return self._items
 
     @abstractmethod
     def _item_to_string(self, item: T, multiplicity: int) -> str:
@@ -95,14 +105,14 @@ class Group(t.Generic[T]):
 
     @property
     @abstractmethod
-    def _sorted_items(self) -> t.List[t.Tuple[T, int]]:
+    def sorted_items(self) -> t.List[t.Tuple[T, int]]:
         pass
 
     def _items_to_string(self) -> str:
         return '\n'.join(
             self._item_to_string(item, multiplicity)
             for item, multiplicity in
-            self._sorted_items
+            self.sorted_items
         )
 
     def __str__(self) -> str:
@@ -114,9 +124,13 @@ class Group(t.Generic[T]):
 
 class Grouping(t.Generic[T]):
 
-    def __init__(self, name: str, groups: t.Iterable[Group[T]]):
+    def __init__(self, name: str, groups: t.Sequence[Group[T]]):
         self._name = name
         self._groups = groups
+
+    @property
+    def groups(self) -> t.Sequence[Group[T]]:
+        return self._groups
 
     def __str__(self) -> str:
         return f'{self._name}: {len(self)}\n\n' + '\n\n'.join(
@@ -135,7 +149,7 @@ class CardboardGroup(Group[Cardboard]):
         return f'{multiplicity} {item.name}'
 
     @property
-    def _sorted_items(self) -> t.List[t.Tuple[Cardboard, int]]:
+    def sorted_items(self) -> t.List[t.Tuple[Cardboard, int]]:
         return sorted(self._items.items(), key = lambda item: item[0].name)
 
 
@@ -145,7 +159,7 @@ class PrintingGroup(Group[Printing]):
         return f'{multiplicity} [{"" if item.expansion is None else item.expansion.code}] {item.cardboard.name}'
 
     @property
-    def _sorted_items(self) -> t.List[t.Tuple[Printing, int]]:
+    def sorted_items(self) -> t.List[t.Tuple[Printing, int]]:
         return sorted(self._items.items(), key = lambda item: item[0].cardboard.name)
 
 
@@ -210,9 +224,9 @@ LANDS_CATEGORY = Category(
 STANDARD_PRINTING_GROUPIFYER = PrintingGroupifyer(
     'Deck',
     (
+        LANDS_CATEGORY,
         CREATURE_CATEGORY,
         INSTANT_SORCERY_CATEGORY,
         NON_CREATURE_NON_LAND_PERMANENT_CATEGORY,
-        LANDS_CATEGORY,
     ),
 )
