@@ -17,6 +17,21 @@ from hardcandy import fields
 P = t.TypeVar('P')
 
 
+def interleave(items: t.Sequence[P]) -> t.List[P]:
+    return list(
+        itertools.chain(
+            *zip(
+                items[:len(items) // 2],
+                reversed(items[len(items) // 2:])
+            ),
+        )
+    ) + (
+               [items[len(items) // 2]]
+               if len(items) & 1 else
+               []
+           )
+
+
 class ScheduledMatch(t.Generic[P]):
 
     def __init__(self, players: t.FrozenSet[P]):
@@ -398,26 +413,37 @@ class Swiss(Tournament[P]):
         if len(previous_rounds) >= self._rounds:
             return None
 
-        _ranked_players, buys_map = self._get_ranked_players(previous_rounds)
+        if not previous_rounds:
+            buys_map = defaultdict(int)
+            ranked_players = interleave(
+                sorted(
+                    self._players,
+                    key = lambda p: (self._seed_map.get(p, 0), random.random())
+                ),
+            )
+        else:
+            _ranked_players, buys_map = self._get_ranked_players(previous_rounds)
 
-        ranked_players = []
+            ranked_players = []
 
-        for players in more_itertools.split_when(reversed(_ranked_players), lambda a, b: a[1] != b[1]):
-            random.shuffle(players)
-            for p, _ in players:
-                ranked_players.append(p)
+            for players in more_itertools.split_when(reversed(_ranked_players), lambda a, b: a[1] != b[1]):
+                random.shuffle(players)
+                for p, _ in players:
+                    ranked_players.append(p)
 
         matches = []
 
         if len(ranked_players) & 1:
             min_buys = min(buys_map[player] for player in self._players)
-            for idx, player in enumerate(ranked_players):
+            for player in reversed(ranked_players):
                 if buys_map[player] == min_buys:
                     matches.append(
                         ScheduledMatch(
                             frozenset(
                                 (
-                                    ranked_players.pop(idx),
+                                    ranked_players.pop(
+                                        ranked_players.index(player)
+                                    ),
                                 )
                             )
                         )
@@ -472,22 +498,26 @@ class SingleElimination(Tournament[P]):
         random.shuffle(players)
 
         if not previous_rounds:
-            players = sorted(
-                players,
-                key = lambda p: -self._seed_map.get(p, 0),
+            players = interleave(
+                sorted(
+                    players,
+                    key = lambda p: -self._seed_map.get(p, 0),
+                )
             )
 
         matches = []
 
         if len(players) & 1:
             min_buys = min(buys_map[player] for player in self._players)
-            for idx, player in enumerate(players):
+            for player in reversed(players):
                 if buys_map[player] == min_buys:
                     matches.append(
                         ScheduledMatch(
                             frozenset(
                                 (
-                                    players.pop(idx),
+                                    players.pop(
+                                        players.index(player)
+                                    ),
                                 )
                             )
                         )
