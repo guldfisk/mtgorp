@@ -9,7 +9,7 @@ T = t.TypeVar('T')
 
 
 class PickleField(types.TypeDecorator, t.Generic[T]):
-    impl = types.BLOB
+    impl = types.LargeBinary
 
     def process_bind_param(self, value: T, dialect) -> bytes:
         return pickle.dumps(value)
