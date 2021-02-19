@@ -61,7 +61,7 @@ class CardToCardboardBack(Base):
         return self.id
 
 
-BIG = 1024 * 16
+# BIG = 1024 * 16
 
 
 class Card(Base, i.Card):
@@ -70,7 +70,7 @@ class Card(Base, i.Card):
     name = Column(String(255), primary_key = True)
 
     type_line: TypeLine = Column(TypeLineField(255), nullable = False)
-    mana_cost: ManaCost = Column(ManaCostField(BIG), nullable = True)
+    mana_cost: ManaCost = Column(ManaCostField(255), nullable = True)
     color: t.AbstractSet[Color] = Column(ColorField(63), nullable = False)
     oracle_text = Column(Text, nullable = False)
     power_toughness = Column(PowerToughnessField(15), nullable = True)

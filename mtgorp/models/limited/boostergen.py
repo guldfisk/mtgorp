@@ -5,6 +5,8 @@ import bisect
 import random
 import typing as t
 
+import numpy as np
+
 from yeetlong.multiset import FrozenMultiset, BaseMultiset, Multiset
 
 from mtgorp.models.persistent.attributes.rarities import Rarity
@@ -24,7 +26,10 @@ from mtgorp.tools.search.pattern import CriteriaBuilder, Criteria, Pattern
 from mtgorp.tools.search.extraction import PrintingStrategy
 
 
-def multiset_choice(ms: BaseMultiset):
+T = t.TypeVar('T')
+
+
+def multiset_choice(ms: BaseMultiset[T]) -> T:
     values, multiplicities = zip(*ms.items())
     cumulative_distribution = tuple(itertools.accumulate(multiplicities))
     return values[
@@ -33,6 +38,12 @@ def multiset_choice(ms: BaseMultiset):
             random.random() * cumulative_distribution[-1]
         )
     ]
+
+
+def multiset_sample(ms: BaseMultiset[T], amount: int) -> t.List[T]:
+    items, probabilities = zip(*ms.items())
+    probabilities = np.asarray(probabilities)
+    return np.random.choice(items, amount, replace = False, p = probabilities / sum(probabilities))
 
 
 class GenerateBoosterException(Exception):
@@ -134,17 +145,16 @@ class KeySlot(_KeySlot):
     def get_map_slot(self, expansion_collection: t.Union[ExpansionCollection, t.Collection[Printing]]) -> MapSlot:
         return MapSlot(
             {
-                frozenset(
+                FrozenMultiset(
                     printing
-                        for printing in
-                        (
-                            expansion_collection[option.collection_key].printings
-                            if isinstance(expansion_collection, ExpansionCollection) else
-                            expansion_collection
-                        )
-                        if printing.in_booster and option.pattern.match(printing)
-                ):
-                    weight
+                    for printing in
+                    (
+                        expansion_collection[option.collection_key].printings
+                        if isinstance(expansion_collection, ExpansionCollection) else
+                        expansion_collection
+                    )
+                    if printing.in_booster and option.pattern.match(printing)
+                ): weight
                 for option, weight in
                 self._options.items()
             }
@@ -215,17 +225,21 @@ class BoosterKey(_BoosterKey):
 
 class MapSlot(_MapSlot):
 
-    def __init__(self, options: t.Iterable[t.FrozenSet[Printing]]):
-        self.options = options if isinstance(options, FrozenMultiset) else FrozenMultiset(options)
+    def __init__(self, options: t.Iterable[FrozenMultiset[Printing]]):
+        self.options: FrozenMultiset[FrozenMultiset[Printing]] = (
+            options
+            if isinstance(options, FrozenMultiset) else
+            FrozenMultiset(options)
+        )
 
     def sample(self) -> Printing:
-        return random.choice(
+        return multiset_choice(
             multiset_choice(
                 self.options
             )
         )
 
-    def sample_slot(self) -> t.FrozenSet[Printing]:
+    def sample_slot(self) -> FrozenMultiset[Printing]:
         return multiset_choice(self.options)
 
     def __repr__(self) -> str:
@@ -238,7 +252,7 @@ class MapSlot(_MapSlot):
 class BoosterMap(_BoosterMap):
 
     def __init__(self, slots: t.Iterable[MapSlot]):
-        self.slots = slots if isinstance(slots, FrozenMultiset) else FrozenMultiset(slots)
+        self.slots: FrozenMultiset[MapSlot] = slots if isinstance(slots, FrozenMultiset) else FrozenMultiset(slots)
 
     def generate_booster(self) -> Booster:
         slots = Multiset(slot.sample_slot() for slot in self.slots)
@@ -247,7 +261,7 @@ class BoosterMap(_BoosterMap):
         for value, multiplicity in slots.items():
             try:
                 printings.update(
-                    random.sample(
+                    multiset_sample(
                         value,
                         multiplicity,
                     )

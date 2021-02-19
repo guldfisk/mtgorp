@@ -32,5 +32,6 @@ setup(
         'sqlalchemy',
         'frozendict',
         'more-itertools',
+        'numpy',
     ]
 )

@@ -49,6 +49,24 @@ class ManaCostAtom(ABC):
             return self._lt_tiebreaker(other)
         return False
 
+    @classmethod
+    def deserialize(cls, v: str) -> t.Sequence[ManaCostAtom]:
+        v = v[1:-1]
+        try:
+            return [SINGULAR_ATOM_MAP[v]]
+        except KeyError:
+            try:
+                return [ONE_GENERIC for _ in range(int(v))]
+            except ValueError:
+                return [
+                    HybridCostAtom(
+                        ManaCost(
+                            cls.deserialize(s)
+                        ) for s in
+                        v.split('/')
+                    )
+                ]
+
 
 class VariableCostAtom(ManaCostAtom):
     pass
@@ -81,7 +99,7 @@ class OtherCostAtom(ManaCostAtom):
 
 class HybridCostAtom(ManaCostAtom):
 
-    def __init__(self, options: t.AbstractSet[t.Union[ManaCost, ManaCostAtom]]):
+    def __init__(self, options: t.Iterable[t.Union[ManaCost, ManaCostAtom]]):
         self._options: t.AbstractSet[ManaCost] = frozenset(self._flatten_options(options))
 
         assert len(self._options) > 1
@@ -89,7 +107,7 @@ class HybridCostAtom(ManaCostAtom):
         super(HybridCostAtom, self).__init__(
             code = '/'.join(
                 str(option)
-                    for option in (
+                for option in (
                     sorted(
                         self._options
                     )
@@ -116,7 +134,7 @@ class HybridCostAtom(ManaCostAtom):
         return self._options.__len__()
 
     @staticmethod
-    def _flatten_options(mana_costs: t.Union[t.AbstractSet[t.Union[ManaCost, ManaCostAtom]], HybridCostAtom]):
+    def _flatten_options(mana_costs: t.Union[t.Iterable[t.Union[ManaCost, ManaCostAtom]], HybridCostAtom]):
         for option in mana_costs:
             if isinstance(option, HybridCostAtom):
                 for mana_cost in option:
@@ -162,15 +180,6 @@ class ManaCost(object):
     def __lt__(self, other):
         return isinstance(other, ManaCost) and self._atoms < other._atoms
 
-    # def __le__(self, other):
-    #     return isinstance(other, ManaCost) and self._atoms <= other._atoms
-    #
-    # def __gt__(self, other):
-    #     return isinstance(other, ManaCost) and self._atoms > other._atoms
-    #
-    # def __ge__(self, other):
-    #     return isinstance(other, ManaCost) and self._atoms >= other._atoms
-
     def __hash__(self):
         return hash((self.__class__, self._atoms))
 
@@ -194,6 +203,22 @@ class ManaCost(object):
             accumulated += '{{{}}}'.format(generics)
 
         return accumulated
+
+    @classmethod
+    def deserialize(cls, s: str) -> ManaCost:
+        o = 0
+        a = ''
+        atoms = []
+        for c in s:
+            a += c
+            if c == '{':
+                o += 1
+            elif c == '}':
+                o -= 1
+                if o == 0:
+                    atoms.extend(ManaCostAtom.deserialize(a))
+                    a = ''
+        return ManaCost(atoms)
 
     def __repr__(self) -> str:
         return self.__str__()
@@ -261,7 +286,7 @@ ONE_COLORLESS = ColorlessCostAtom('C')
 VARIABLE_GENERIC = VariableCostAtom('X', cmc_value = 0)
 ONE_SNOW = OtherCostAtom('S')
 
-SINGULAR_ATOM_MAP = {
+SINGULAR_ATOM_MAP: t.Mapping[str, ManaCostAtom] = {
     singular.code: singular for singular in (
         ONE_WHITE,
         ONE_BLUE,
