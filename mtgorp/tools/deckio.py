@@ -8,6 +8,7 @@ from abc import abstractmethod, ABCMeta
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
 
+from mtgorp.models.persistent.attributes.layout import Layout
 from yeetlong.multiset import Multiset, BaseMultiset
 
 from mtgorp.tools.groupification.groupification import Groupifyer, Group, STANDARD_PRINTING_GROUPIFYER
@@ -178,7 +179,11 @@ class CodSerializer(DeckSerializer):
                     {
                         'number': str(multiplicity),
                         'price': '0',
-                        'name': ' // '.join(card.name for card in cardboard.front_cards),
+                        'name': (
+                            cardboard.front_card.name
+                            if cardboard.layout == Layout.FLIP else
+                            ' // '.join(card.name for card in cardboard.front_cards)
+                        ),
                     },
                 )
 

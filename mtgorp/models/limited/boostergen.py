@@ -225,7 +225,7 @@ class BoosterKey(_BoosterKey):
 
 class MapSlot(_MapSlot):
 
-    def __init__(self, options: t.Iterable[FrozenMultiset[Printing]]):
+    def __init__(self, options: t.Mapping[FrozenMultiset[Printing], int]):
         self.options: FrozenMultiset[FrozenMultiset[Printing]] = (
             options
             if isinstance(options, FrozenMultiset) else
