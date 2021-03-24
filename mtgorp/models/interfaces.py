@@ -23,6 +23,9 @@ from mtgorp.models.persistent.attributes.flags import Flags
 from mtgorp.models.persistent.attributes.borders import Border
 
 
+T = t.TypeVar('T')
+
+
 class MtgModel(OrpBase):
     pass
 
@@ -496,20 +499,19 @@ class Block(MtgModel):
         )
 
 
-class Booster(ABC):
+class Booster(t.Generic[T]):
 
-    def __init__(self, printings: t.Iterable[Printing], expansion: Expansion = None):
+    def __init__(self, items: t.Iterable[T], expansion: Expansion = None):
         pass
 
     @property
     @abstractmethod
-    def printings(self) -> FrozenMultiset[Printing]:
+    def items(self) -> FrozenMultiset[T]:
         pass
 
     @property
-    @abstractmethod
-    def sorted_printings(self) -> t.List[Printing]:
-        pass
+    def printings(self) -> FrozenMultiset[T]:
+        return self.items
 
     @property
     @abstractmethod
@@ -517,11 +519,11 @@ class Booster(ABC):
         pass
 
     @abstractmethod
-    def __contains__(self, printing: Printing) -> bool:
+    def __contains__(self, printing: T) -> bool:
         pass
 
     @abstractmethod
-    def __iter__(self) -> t.Iterable[Printing]:
+    def __iter__(self) -> t.Iterable[T]:
         pass
 
 
@@ -574,22 +576,22 @@ class ExpansionCollection(object):
         )
 
 
-class MapSlot(ABC):
-    options: FrozenMultiset[t.FrozenSet[Printing]]
+class MapSlot(t.Generic[T]):
+    options: FrozenMultiset[t.FrozenSet[T]]
 
     @abstractmethod
-    def sample(self) -> Printing:
+    def sample(self) -> T:
         pass
 
     @abstractmethod
-    def sample_slot(self) -> t.FrozenSet[Printing]:
+    def sample_slot(self) -> t.FrozenSet[T]:
         pass
 
 
-class BoosterMap(ABC):
+class BoosterMap(t.Generic[T]):
 
     @abstractmethod
-    def generate_booster(self) -> Booster:
+    def generate_booster(self) -> Booster[T]:
         pass
 
 

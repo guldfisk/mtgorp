@@ -291,6 +291,9 @@ class Pattern(t.Generic[T]):
             if self._matcher.match(model, self._strategy)
         )
 
+    def matches_list(self, models: t.Iterable[T]) -> t.List[T]:
+        return list(self.matches(models))
+
     def __hash__(self):
         return hash((self.__class__, self._matcher, self._strategy))
 

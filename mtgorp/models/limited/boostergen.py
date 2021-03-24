@@ -9,10 +9,6 @@ import numpy as np
 
 from yeetlong.multiset import FrozenMultiset, BaseMultiset, Multiset
 
-from mtgorp.models.persistent.attributes.rarities import Rarity
-from mtgorp.models.persistent.attributes.flags import Flag
-from mtgorp.models.persistent.attributes.layout import Layout
-from mtgorp.models.persistent.attributes import typeline
 from mtgorp.models.interfaces import (
     Printing,
     BoosterKey as _BoosterKey,
@@ -22,8 +18,8 @@ from mtgorp.models.interfaces import (
     ExpansionCollection,
 )
 from mtgorp.models.limited.booster import Booster
-from mtgorp.tools.search.pattern import CriteriaBuilder, Criteria, Pattern
 from mtgorp.tools.search.extraction import PrintingStrategy
+from mtgorp.tools.search.pattern import Criteria, Pattern
 
 
 T = t.TypeVar('T')
@@ -82,57 +78,6 @@ class Option(object):
         )
 
 
-COMMON = Option(CriteriaBuilder().rarity.equals(Rarity.COMMON).type_line.contains.no(typeline.BASIC).all())
-UNCOMMON = Option(CriteriaBuilder().rarity.equals(Rarity.UNCOMMON).all())
-RARE = Option(CriteriaBuilder().rarity.equals(Rarity.RARE).all())
-MYTHIC = Option(CriteriaBuilder().rarity.equals(Rarity.MYTHIC).all())
-SPECIAL = Option(CriteriaBuilder().rarity.equals(Rarity.SPECIAL).all())
-TIMESHIFTED_COMMON = Option(
-    CriteriaBuilder().rarity.equals(Rarity.COMMON).flags.contains(Flag.TIMESHIFTED).all(),
-)
-TIMESHIFTED_UNCOMMON = Option(
-    CriteriaBuilder().rarity.equals(Rarity.UNCOMMON).flags.contains(Flag.TIMESHIFTED).all(),
-)
-TIMESHIFTED_RARE = Option(
-    CriteriaBuilder().rarity.equals(Rarity.RARE).flags.contains(Flag.TIMESHIFTED).all(),
-)
-TIMESHIFTED_MYTHIC = Option(
-    CriteriaBuilder().rarity.equals(Rarity.MYTHIC).flags.contains(Flag.TIMESHIFTED).all(),
-)
-DOUBLEFACED_COMMON = Option(
-    CriteriaBuilder().rarity.equals(Rarity.COMMON).layout.equals(Layout.TRANSFORM).all(),
-)
-DOUBLEFACED_UNCOMMON = Option(
-    CriteriaBuilder().rarity.equals(Rarity.UNCOMMON).layout.equals(Layout.TRANSFORM).all(),
-)
-DOUBLEFACED_RARE = Option(
-    CriteriaBuilder().rarity.equals(Rarity.RARE).layout.equals(Layout.TRANSFORM).all(),
-)
-DOUBLEFACED_MYTHIC = Option(
-    CriteriaBuilder().rarity.equals(Rarity.MYTHIC).layout.equals(Layout.TRANSFORM).all(),
-)
-PREMIUM = Option(
-    CriteriaBuilder().all(),
-    'premium',
-)
-BASIC = Option(
-    CriteriaBuilder().type_line.contains(typeline.BASIC).all(),
-    'basics',
-)
-DRAFT_MATTERS_COMMON = Option(
-    CriteriaBuilder().flags.contains(Flag.DRAFT_MATTERS).rarity.equals(Rarity.COMMON).all(),
-)
-DRAFT_MATTERS_UNCOMMON = Option(
-    CriteriaBuilder().flags.contains(Flag.DRAFT_MATTERS).rarity.equals(Rarity.UNCOMMON).all(),
-)
-DRAFT_MATTERS_RARE = Option(
-    CriteriaBuilder().flags.contains(Flag.DRAFT_MATTERS).rarity.equals(Rarity.RARE).all(),
-)
-DRAFT_MATTERS_MYTHIC = Option(
-    CriteriaBuilder().flags.contains(Flag.DRAFT_MATTERS).rarity.equals(Rarity.MYTHIC).all(),
-)
-
-
 class KeySlot(_KeySlot):
 
     def __init__(self, options: t.Iterable[Option]):
@@ -142,7 +87,7 @@ class KeySlot(_KeySlot):
             FrozenMultiset(options)
         )
 
-    def get_map_slot(self, expansion_collection: t.Union[ExpansionCollection, t.Collection[Printing]]) -> MapSlot:
+    def get_map_slot(self, expansion_collection: t.Union[ExpansionCollection, t.Collection[Printing]]) -> MapSlot[Printing]:
         return MapSlot(
             {
                 FrozenMultiset(
@@ -169,23 +114,8 @@ class KeySlot(_KeySlot):
     def __repr__(self) -> str:
         return '{}({})'.format(
             self.__class__.__name__,
-            dict(self._options.elements()),
+            self._options.dict_string(),
         )
-
-
-COMMON_SLOT = KeySlot((COMMON,))
-UNCOMMON_SLOT = KeySlot((UNCOMMON,))
-RARE_SLOT = KeySlot((RARE,))
-MYTHIC_SLOT = KeySlot((MYTHIC,))
-SPECIAL_SLOT = KeySlot((SPECIAL,))
-RARE_MYTHIC_SLOT = KeySlot(
-    {
-        RARE: 7,
-        MYTHIC: 1,
-    }
-)
-PREMIUM_SLOT = KeySlot((PREMIUM,))
-BASIC_SLOT = KeySlot((BASIC,))
 
 
 class BoosterKey(_BoosterKey):
@@ -201,7 +131,7 @@ class BoosterKey(_BoosterKey):
     def slots(self) -> FrozenMultiset[KeySlot]:
         return self._slots
 
-    def get_booster_map(self, expansion_collection: t.Union[ExpansionCollection, t.Collection[Printing]]) -> BoosterMap:
+    def get_booster_map(self, expansion_collection: t.Union[ExpansionCollection, t.Collection[Printing]]) -> BoosterMap[Printing]:
         return BoosterMap(
             {
                 slot.get_map_slot(expansion_collection): multiplicity
@@ -219,27 +149,27 @@ class BoosterKey(_BoosterKey):
     def __repr__(self):
         return '{}({})'.format(
             self.__class__.__name__,
-            self._slots.items(),
+            self._slots.dict_string(),
         )
 
 
-class MapSlot(_MapSlot):
+class MapSlot(_MapSlot[T]):
 
-    def __init__(self, options: t.Mapping[FrozenMultiset[Printing], int]):
-        self.options: FrozenMultiset[FrozenMultiset[Printing]] = (
+    def __init__(self, options: t.Mapping[FrozenMultiset[T], int]):
+        self.options: FrozenMultiset[FrozenMultiset[T]] = (
             options
             if isinstance(options, FrozenMultiset) else
             FrozenMultiset(options)
         )
 
-    def sample(self) -> Printing:
+    def sample(self) -> T:
         return multiset_choice(
             multiset_choice(
                 self.options
             )
         )
 
-    def sample_slot(self) -> FrozenMultiset[Printing]:
+    def sample_slot(self) -> FrozenMultiset[T]:
         return multiset_choice(self.options)
 
     def __repr__(self) -> str:
@@ -249,12 +179,12 @@ class MapSlot(_MapSlot):
         )
 
 
-class BoosterMap(_BoosterMap):
+class BoosterMap(_BoosterMap[T]):
 
-    def __init__(self, slots: t.Iterable[MapSlot]):
+    def __init__(self, slots: t.Iterable[MapSlot[T]]):
         self.slots: FrozenMultiset[MapSlot] = slots if isinstance(slots, FrozenMultiset) else FrozenMultiset(slots)
 
-    def generate_booster(self) -> Booster:
+    def generate_booster(self) -> Booster[T]:
         slots = Multiset(slot.sample_slot() for slot in self.slots)
         printings = Multiset()
 
@@ -274,5 +204,5 @@ class BoosterMap(_BoosterMap):
     def __repr__(self) -> str:
         return '{}({})'.format(
             self.__class__.__name__,
-            self.slots,
+            self.slots.dict_string(),
         )
