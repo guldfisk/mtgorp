@@ -50,32 +50,34 @@ class DeckSerializer(object, metaclass = _TabModelSerializerMeta):
 class DecSerializer(DeckSerializer):
     extensions = ['dec', 'mwDeck']
 
-    _x_printings_pattern = re.compile('(SB:\s+)?(\d+) \[([A-Z0-9]*)\] (.*?)\s*$')
-
     def __init__(
         self,
         db: CardDatabase,
         *,
         include_header: bool = True,
         groupifyer: t.Optional[Groupifyer[Printing]] = STANDARD_PRINTING_GROUPIFYER,
+        sideboard_groupifyer: t.Optional[Groupifyer[Printing]] = None,
+        sideboard_indicator: str = 'SB: ',
+        allow_volatile_printing_load: bool = True,
     ):
         super().__init__(db)
         self._include_header = include_header
         self._groupifyer = groupifyer
+        self._sideboard_groupifyer = sideboard_groupifyer
+        self._sideboard_indicator = sideboard_indicator
+        self._allow_volatile_printing_load = allow_volatile_printing_load
 
-    @classmethod
-    def _printings_to_line(cls, printing: Printing, multiplicity: int, sideboard: bool = False) -> str:
+    def _printings_to_line(self, printing: Printing, multiplicity: int, sideboard: bool = False) -> str:
         return '{}{} [{}] {}'.format(
-            'SB:  ' if sideboard else '',
+            self._sideboard_indicator if sideboard else '',
             multiplicity,
             printing.expansion.code,
             printing.cardboard.name.replace('//', '/'),
         )
 
-    @classmethod
-    def _printings_to_lines(cls, printings: BaseMultiset[Printing], sideboard: bool = False) -> str:
+    def _printings_to_lines(self, printings: BaseMultiset[Printing], sideboard: bool = False) -> str:
         return '\n'.join(
-            cls._printings_to_line(printing, multiplicity, sideboard)
+            self._printings_to_line(printing, multiplicity, sideboard)
             for printing, multiplicity in
             sorted(
                 printings.items(),
@@ -83,18 +85,17 @@ class DecSerializer(DeckSerializer):
             )
         )
 
-    @classmethod
-    def _block_from_group(cls, group: Group[Printing]) -> str:
+    def _block_from_group(self, group: Group[Printing], sideboard: bool = False) -> str:
         printings = Multiset(group.items)
         return  '// {} ({})\n{}'.format(
-            group.name,
+            (self._sideboard_indicator if sideboard else '') + group.name,
             len(printings),
-            cls._printings_to_lines(printings),
+            self._printings_to_lines(printings, sideboard = sideboard),
         )
 
     @classmethod
     def _get_header(cls, deck: Deck):
-        return '// Created with mtgorp\n// Maindeck: {}, Sideboard: {}\n\n'.format(
+        return '// Maindeck: {}, Sideboard: {}\n\n'.format(
             len(deck.maindeck),
             len(deck.sideboard),
         )
@@ -113,7 +114,14 @@ class DecSerializer(DeckSerializer):
             )
 
         if deck.sideboard:
-            s += '\n\n' + self._printings_to_lines(deck.sideboard, sideboard = True)
+            if self._sideboard_groupifyer is None:
+                s += '\n\n' + self._printings_to_lines(deck.sideboard, sideboard = True)
+            else:
+                s += '\n\n'.join(
+                    self._block_from_group(group, sideboard = True)
+                    for group in
+                    self._sideboard_groupifyer.groupify(deck.sideboard).groups
+                )
 
         return s
 
@@ -128,21 +136,25 @@ class DecSerializer(DeckSerializer):
         try:
             return cardboard.from_expansion(expansion_code, allow_volatile = True)
         except KeyError:
-            return cardboard.latest_printing
+            if self._allow_volatile_printing_load:
+                return cardboard.latest_printing
+            raise SerializationException('invalid expansion "{}" for cardboard "{}"'.format(expansion_code, cardboard.name))
 
     def deserialize(self, s: t.AnyStr) -> Deck:
         maindeck = Multiset()
         sideboard = Multiset()
+        pattern = re.compile('({}\s+)?(\d+) \[([A-Z0-9]*)\] (.*?)\s*$'.format(self._sideboard_indicator.rstrip()))
         for ln in s.split('\n'):
-            m = self._x_printings_pattern.match(ln)
+            m = pattern.match(ln)
             if m:
+                _, is_sideboard, qty, expansion, name = m.groups()
                 (
                     sideboard
-                    if m.group(1) else
+                    if is_sideboard else
                     maindeck
                 ).add(
-                    self._get_printing(m.group(4).replace('/', '//'), m.group(3)),
-                    int(m.group(2)),
+                    self._get_printing(name.replace('/', '//'), expansion),
+                    int(qty),
                 )
 
         return Deck(

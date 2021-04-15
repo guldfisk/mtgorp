@@ -187,14 +187,8 @@ class Cardboard(MtgModel):
 
     def from_expansion(self, expansion: t.Union[Expansion, str], allow_volatile: t.Optional[bool] = False) -> Printing:
         if allow_volatile:
-            if isinstance(expansion, Expansion):
-                for printing in self.printings:
-                    if printing.expansion == expansion:
-                        return printing
-            else:
-                for printing in self.printings:
-                    if printing.expansion.code == expansion:
-                        return printing
+            code = expansion.code if isinstance(expansion, Expansion) else expansion
+            return min((p for p in self.printings if p.expansion.code == code), key = lambda p: p.collector_number)
         else:
             options = []
             if isinstance(expansion, Expansion):
