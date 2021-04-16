@@ -186,27 +186,18 @@ class Cardboard(MtgModel):
             return None
 
     def from_expansion(self, expansion: t.Union[Expansion, str], allow_volatile: t.Optional[bool] = False) -> Printing:
+        code = expansion.code if isinstance(expansion, Expansion) else expansion
+        printings = [p for p in self.printings if p.expansion.code == code]
         if allow_volatile:
-            code = expansion.code if isinstance(expansion, Expansion) else expansion
-            return min((p for p in self.printings if p.expansion.code == code), key = lambda p: p.collector_number)
+            return min(printings, key = lambda p: p.collector_number)
         else:
-            options = []
-            if isinstance(expansion, Expansion):
-                for printing in self.printings:
-                    if printing.expansion == expansion:
-                        options.append(printing)
-            else:
-                for printing in self.printings:
-                    if printing.expansion.code == expansion:
-                        options.append(printing)
-
-            if len(options) > 1:
+            if len(printings) > 1:
                 raise RuntimeError(
                     f'{self} printed multiple times in {expansion}'
                 )
 
-            if options:
-                return options[0]
+            if printings:
+                return printings[0]
 
         raise KeyError(
             '{} not printed in {}'.format(
