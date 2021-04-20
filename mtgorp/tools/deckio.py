@@ -147,7 +147,7 @@ class DecSerializer(DeckSerializer):
         for ln in s.split('\n'):
             m = pattern.match(ln)
             if m:
-                _, is_sideboard, qty, expansion, name = m.groups()
+                is_sideboard, qty, expansion, name = m.groups()
                 (
                     sideboard
                     if is_sideboard else
