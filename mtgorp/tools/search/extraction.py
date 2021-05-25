@@ -313,11 +313,11 @@ class CardboardStrategy(ExtractionStrategy[Cardboard]):
 
     @classmethod
     def extract_name(cls, cardboard: Cardboard) -> t.Iterable[str]:
-        return cardboard.name.lower(),
+        yield cardboard.name.lower()
 
     @classmethod
     def extract_layout(cls, cardboard: Cardboard) -> t.Iterable[Layout]:
-        return cardboard.layout,
+        yield cardboard.layout
 
     @classmethod
     def extract_cmc(cls, cardboard: Cardboard) -> t.Iterable[int]:
@@ -406,11 +406,11 @@ class PrintingStrategy(ExtractionStrategy[Printing]):
 
     @classmethod
     def extract_name(cls, printing: Printing) -> t.Iterable[str]:
-        return printing.cardboard.name.lower(),
+        yield printing.cardboard.name.lower()
 
     @classmethod
     def extract_layout(cls, printing: Printing) -> t.Iterable[Layout]:
-        return printing.cardboard.layout,
+        yield printing.cardboard.layout
 
     @classmethod
     def extract_cmc(cls, printing: Printing) -> t.Iterable[int]:
@@ -418,11 +418,11 @@ class PrintingStrategy(ExtractionStrategy[Printing]):
 
     @classmethod
     def extract_rarity(cls, printing: Printing) -> t.Iterable[Rarity]:
-        return printing.rarity,
+        yield printing.rarity
 
     @classmethod
     def extract_flags(cls, printing: Printing) -> t.Iterable[Flags]:
-        return printing.flags,
+        yield printing.flags
 
     @classmethod
     def extract_type_line(cls, printing: Printing) -> t.Iterable[TypeLine]:
@@ -491,7 +491,7 @@ class PrintingStrategy(ExtractionStrategy[Printing]):
 
     @classmethod
     def extract_expansion(cls, printing: Printing) -> t.Iterable[Expansion]:
-        return printing.expansion,
+        yield printing.expansion
 
     @classmethod
     def extract_block(cls, printing: Printing) -> t.Iterable[Block]:

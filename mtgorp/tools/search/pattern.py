@@ -291,6 +291,14 @@ class Pattern(t.Generic[T]):
             if self._matcher.match(model, self._strategy)
         )
 
+    def inverse_matches(self, models: t.Iterable[T]) -> t.Iterator[T]:
+        return (
+            model
+            for model in
+            models
+            if not self._matcher.match(model, self._strategy)
+        )
+
     def matches_list(self, models: t.Iterable[T]) -> t.List[T]:
         return list(self.matches(models))
 
@@ -450,13 +458,19 @@ class CriteriaBuilder(Builder[Criteria]):
         return Any(self._set)
 
 
-class PrintingPatternBuilder(Builder[Pattern[Printing]]):
+class PrintingPattern(Pattern[Printing]):
+
+    def __init__(self, matcher: Matchable):
+        super().__init__(matcher, e.PrintingStrategy)
+
+
+class PrintingPatternBuilder(Builder[PrintingPattern]):
 
     def all(self) -> Pattern[Printing]:
-        return Pattern(All(self._set), e.PrintingStrategy)
+        return PrintingPattern(All(self._set))
 
     def any(self) -> Pattern[Printing]:
-        return Pattern(All(self._set), e.PrintingStrategy)
+        return PrintingPattern(All(self._set))
 
 
 class CardboardPatternBuilder(Builder[Pattern[Cardboard]]):
