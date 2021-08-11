@@ -12,6 +12,7 @@ from xml.etree import ElementTree
 import pickledb
 
 from mtgorp.db import create
+from mtgorp.db.database import CardDatabase
 from mtgorp.managejson import download, paths
 
 
@@ -68,20 +69,19 @@ JUST_PICKLE = (create.update_pickle_database,)
 def regenerate_db(
     update_db: pickledb.PickleDB,
     force: bool = False,
-    updaters: t.Sequence[t.Callable[[datetime.datetime], None]] = JUST_PICKLE,
-) -> bool:
+    updaters: t.Sequence[t.Callable[[datetime.datetime], CardDatabase]] = JUST_PICKLE,
+) -> t.Tuple[bool, t.Sequence[CardDatabase]]:
     last_json_update = get_last_json_update(update_db = update_db)
     last_db_update = get_last_db_update(update_db = update_db)
 
     if not last_db_update or last_db_update < last_json_update or force:
         logging.info('updating db')
-        for updater in updaters:
-            updater(last_json_update)
+        dbs = [updater(last_json_update) for updater in updaters]
         update_db.set('last_db_update', last_json_update.strftime(MTG_JSON_DATETIME_FORMAT))
         logging.info('updated database')
-        return True
+        return True, dbs
 
-    return False
+    return False, []
 
 
 @with_update_db
@@ -91,10 +91,10 @@ def check_and_update(
     force: bool = False,
     force_json_download: bool = False,
     updaters: t.Sequence[t.Callable[[datetime.datetime], None]] = JUST_PICKLE,
-) -> bool:
+) ->  t.Tuple[bool, t.Sequence[CardDatabase]]:
     last_remote_update = check_rss()
     if not last_remote_update and not force:
-        return False
+        return False, []
 
     last_json_update = get_last_json_update(update_db = update_db)
 

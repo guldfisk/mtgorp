@@ -247,6 +247,7 @@ class PrintingParser(ModelParser[P]):
                         )
                     )
                 ),
+                collector_string = collector_number or '',
                 cardboard = cardboard,
                 front_artist = self._artist_parser.parse(raw_printing.get('artist', None), artists),
                 front_flavor = raw_printing.get('flavorText', None),

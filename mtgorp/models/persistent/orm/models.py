@@ -151,6 +151,7 @@ class Printing(i.Printing, Base):
         expansion: Expansion,
         cardboard: Cardboard,
         collector_number: int,
+        collector_string: str,
         front_artist: Artist = None,
         front_flavor: str = None,
         back_artist: Artist = None,
@@ -163,6 +164,7 @@ class Printing(i.Printing, Base):
         self.expansion = expansion
         self.cardboard = cardboard
         self.collector_number = collector_number
+        self.collector_string = collector_string
         self.rarity = rarity
         self.in_booster = in_booster
         self.flags = flags
@@ -178,6 +180,7 @@ class Printing(i.Printing, Base):
     expansion = relationship('Expansion', back_populates = 'printings')
 
     collector_number = Column(Integer)
+    collector_string = Column(String(7))
 
     front_face_id = Column(Integer, ForeignKey('face.id'))
     front_face = relationship('Face', back_populates = 'front_owner', foreign_keys = [front_face_id])

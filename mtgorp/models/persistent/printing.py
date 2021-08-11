@@ -53,6 +53,7 @@ class Printing(_Printing, Model):
         expansion: Expansion,
         cardboard: Cardboard,
         collector_number: int,
+        collector_string: str,
         front_artist: Artist = None,
         front_flavor: str = None,
         back_artist: Artist = None,
@@ -65,6 +66,7 @@ class Printing(_Printing, Model):
         self._cardboard = One(self, 'printings', cardboard)
 
         self._collector_number = collector_number
+        self._collector_string = collector_string
         self._front_face = Face(
             self,
             front_artist,
@@ -89,6 +91,10 @@ class Printing(_Printing, Model):
     @property
     def collector_number(self) -> int:
         return self._collector_number
+
+    @property
+    def collector_string(self) -> str:
+        return self._collector_string
 
     @property
     def front_face(self) -> Face:

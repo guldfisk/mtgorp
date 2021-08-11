@@ -286,6 +286,11 @@ class Printing(MtgModel):
 
     @property
     @abstractmethod
+    def collector_string(self) -> str:
+        pass
+
+    @property
+    @abstractmethod
     def front_face(self) -> Face:
         pass
 
@@ -329,6 +334,10 @@ class Printing(MtgModel):
     @property
     def alternative_printings_chronologically(self) -> t.Sequence[Printing]:
         return sorted(list(self.alternative_printings), key = lambda p: p.expansion.release_date)
+
+    @property
+    def scryfall_link(self) -> str:
+        return f'https://scryfall.com/card/{self.expansion.code.lower()}/{self.collector_string}'
 
     def __repr__(self):
         return '{}({}, {}, {})'.format(

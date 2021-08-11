@@ -110,7 +110,7 @@ def get_sql_database_updater(
     engine: Engine,
     all_cards_path = paths.ALL_CARDS_PATH,
     all_sets_path = paths.ALL_SETS_PATH,
-):
+) -> t.Callable[[datetime.datetime], SqlCardDatabase]:
     def update_sql_database(
         json_updated_at: t.Optional[datetime.datetime] = None,
     ) -> SqlCardDatabase:
