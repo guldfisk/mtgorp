@@ -124,18 +124,23 @@ _CARD_TYPE_INDEX = {
     t: idx for idx, t in enumerate(CARD_TYPES)
 }
 
+BLOOD = CardSubType('Blood', (ARTIFACT,))
 CLUE = CardSubType('Clue', (ARTIFACT,))
 CONTRAPTION = CardSubType('Contraption', (ARTIFACT,))
 EQUIPMENT = CardSubType('Equipment', (ARTIFACT,))
+FOOD = CardSubType('Food', (ARTIFACT,))
 FORTIFICATION = CardSubType('Fortification', (ARTIFACT,))
+GOLD = CardSubType('Gold', (ARTIFACT,))
 TREASURE = CardSubType('Treasure', (ARTIFACT,))
 VEHICLE = CardSubType('Vehicle', (ARTIFACT,))
-GOLD = CardSubType('Gold', (ARTIFACT,))
 
 AURA = CardSubType('Aura', (ENCHANTMENT,))
 CARTOUCHE = CardSubType('Cartouche', (ENCHANTMENT,))
+CLASS = CardSubType('Class', (ENCHANTMENT,))
 CURSE = CardSubType('Curse', (ENCHANTMENT,))
+RUNE = CardSubType('Rune', (ENCHANTMENT,))
 SAGA = CardSubType('Saga', (ENCHANTMENT,))
+SHARD = CardSubType('Shard', (ENCHANTMENT,))
 SHRINE = CardSubType('Shrine', (ENCHANTMENT,))
 
 DESERT = CardSubType('Desert', (LAND,))

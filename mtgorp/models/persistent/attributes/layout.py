@@ -11,3 +11,4 @@ class Layout(Enum):
     SAGA = 6
     ADVENTURE = 7
     MODAL = 8
+    CLASS = 9

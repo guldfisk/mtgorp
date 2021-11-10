@@ -1,4 +1,5 @@
 import datetime
+import logging
 import re
 import typing as t
 from abc import abstractmethod
@@ -7,17 +8,15 @@ import ijson
 
 from orp.database import OrpTable, O as _O, M as _M
 
-from mtgorp.db.exceptions import DbParseException
-from mtgorp.models import interfaces as i
-from mtgorp.managejson import paths
-from mtgorp.db.database import DB
-from mtgorp.db.attributeparse import (
-    typeline, color, powertoughness, rarity, border, layout, boosterkey, loyalty, manacost, expansiontype
-)
+from mtgorp.db.attributeparse import typeline, color, powertoughness, rarity, border, layout, boosterkey, loyalty, manacost, expansiontype
 from mtgorp.db.attributeparse.exceptions import AttributeParseException
+from mtgorp.db.database import DB
+from mtgorp.db.exceptions import DbParseException
 from mtgorp.db.limited.boosterinformation import BoosterInformation
-from mtgorp.models.persistent.attributes.layout import Layout
+from mtgorp.managejson import paths
+from mtgorp.models import interfaces as i
 from mtgorp.models.persistent.attributes.flags import Flag, Flags
+from mtgorp.models.persistent.attributes.layout import Layout
 
 
 M = t.TypeVar('M', bound = i.MtgModel)
@@ -95,17 +94,24 @@ class CardboardParser(ModelParser[D]):
         try:
             raw_card_layout = layout.Parser.parse(raw_cardboard[0]['layout'])
 
-            if raw_card_layout == Layout.STANDARD or raw_card_layout == Layout.SAGA:
+            if raw_card_layout in (
+                Layout.STANDARD,
+                Layout.SAGA,
+                Layout.CLASS,
+            ):
                 return (
                     (raw_cardboard[0]['name'],),
                     (),
                 )
 
             elif (
-                raw_card_layout == Layout.SPLIT
-                or raw_card_layout == Layout.FLIP
-                or raw_card_layout == Layout.AFTERMATH
-                or raw_card_layout == Layout.ADVENTURE
+                raw_card_layout in
+                (
+                    Layout.SPLIT,
+                    Layout.FLIP,
+                    Layout.AFTERMATH,
+                    Layout.ADVENTURE,
+                )
             ):
                 return (
                     tuple(
@@ -119,7 +125,7 @@ class CardboardParser(ModelParser[D]):
                     (),
                 )
 
-            elif raw_card_layout == Layout.TRANSFORM or raw_card_layout == Layout.MODAL:
+            elif raw_card_layout in (Layout.TRANSFORM, Layout.MODAL):
                 return tuple(
                     (name,)
                     for name in
@@ -310,63 +316,59 @@ class ExpansionParser(ModelParser[E]):
         artists: OrpTable[str, A],
         blocks: OrpTable[str, B],
     ) -> E:
-        try:
-            name = raw_expansion['name']
-            code = raw_expansion['code'].upper()
-            release_date = datetime.datetime.strptime(
-                raw_expansion['releaseDate'], '%Y-%m-%d'
-            ) if 'releaseDate' in raw_expansion else None
+        name = raw_expansion['name']
+        code = raw_expansion['code'].upper()
+        release_date = datetime.datetime.strptime(
+            raw_expansion['releaseDate'], '%Y-%m-%d'
+        ) if 'releaseDate' in raw_expansion else None
 
-            information = BoosterInformation.information()
+        information = BoosterInformation.information()
 
-            expansion = self._target(
-                name = name,
-                code = code,
-                block = self._block_parser.parse(raw_expansion['block'], blocks) if 'block' in raw_expansion else None,
-                expansion_type = expansiontype.Parser.parse(raw_expansion.get('type')),
-                release_date = release_date,
-                booster_key = (
-                    boosterkey.Parser.parse(information[code]['booster_key'])
-                    if code in information and 'booster_key' in information[code] else
+        expansion = self._target(
+            name = name,
+            code = code,
+            block = self._block_parser.parse(raw_expansion['block'], blocks) if 'block' in raw_expansion else None,
+            expansion_type = expansiontype.Parser.parse(raw_expansion.get('type')),
+            release_date = release_date,
+            booster_key = (
+                boosterkey.Parser.parse(information[code]['booster_key'])
+                if code in information and 'booster_key' in information[code] else
+                (
+                    boosterkey.Parser.parse(raw_expansion['boosterV3'])
+                    if 'boosterV3' in raw_expansion else
                     (
-                        boosterkey.Parser.parse(raw_expansion['boosterV3'])
-                        if 'boosterV3' in raw_expansion else
-                        (
-                            self._default_booster_key_with_mythic
-                            if release_date >= self._mythic_release_date else
-                            self._default_booster_key
-                        )
+                        self._default_booster_key_with_mythic
+                        if release_date >= self._mythic_release_date else
+                        self._default_booster_key
                     )
-                ),
-                border = border.Parser.parse(raw_expansion['border']) if 'border' in raw_expansion else None,
-                magic_card_info_code = raw_expansion.get('magicCardsInfoCode', None),
-                mkm_name = raw_expansion.get('mkmName', None),
-                mkm_id = raw_expansion.get('mkmId', None),
-                fragment_dividers = (
-                    tuple(information[code].get('fragment_dividers', ()))
-                    if code in information else
-                    ()
-                ),
-            )
+                )
+            ),
+            border = border.Parser.parse(raw_expansion['border']) if 'border' in raw_expansion else None,
+            magic_card_info_code = raw_expansion.get('magicCardsInfoCode', None),
+            mkm_name = raw_expansion.get('mkmName', None),
+            mkm_id = raw_expansion.get('mkmId', None),
+            fragment_dividers = (
+                tuple(information[code].get('fragment_dividers', ()))
+                if code in information else
+                ()
+            ),
+        )
 
-            for raw_printing in raw_expansion['cards']:
-                try:
-                    printings.insert(
-                        self._printing_parser.parse(
-                            raw_printing = raw_printing,
-                            raw_printings = raw_expansion['cards'],
-                            expansion = expansion,
-                            artists = artists,
-                            cardboards = cardboards,
-                        )
+        for raw_printing in raw_expansion['cards']:
+            try:
+                printings.insert(
+                    self._printing_parser.parse(
+                        raw_printing = raw_printing,
+                        raw_printings = raw_expansion['cards'],
+                        expansion = expansion,
+                        artists = artists,
+                        cardboards = cardboards,
                     )
-                except DbParseException:
-                    pass
+                )
+            except DbParseException as e:
+                logging.info(f'failed to parse Printing {raw_printing.get("name")} [{code}] ({e})')
 
-            return expansion
-
-        except KeyError:
-            raise AttributeParseException('Key error in expansion parse: "{e}"')
+        return expansion
 
     @classmethod
     def post_parse(cls, expansions: OrpTable[str, E]):
@@ -429,8 +431,8 @@ class DatabaseCreator(t.Generic[DB]):
                     cards.insert(
                         card_parser.parse(card)
                     )
-                except DbParseException:
-                    pass
+                except DbParseException as e:
+                    logging.info(f'failed to parse Card {card.get("name")} ({e})')
 
         return cards
 
@@ -442,11 +444,10 @@ class DatabaseCreator(t.Generic[DB]):
 
         for _, raw_cardboard in raw_cardboards:
             try:
-                cardboards.insert(
-                    cardboard_parser.parse(raw_cardboard, cards)
-                )
-            except DbParseException:
-                pass
+                cardboards.insert(cardboard_parser.parse(raw_cardboard, cards))
+            except DbParseException as e:
+                logging.info(f'failed to parse Cardboard {raw_cardboard[0].get("name")} ({e})')
+
         return cardboards
 
     def create_expansion_table(
@@ -474,18 +475,15 @@ class DatabaseCreator(t.Generic[DB]):
         )
 
         for code, expansion in raw_expansions:
-            try:
-                expansions.insert(
-                    expansion_parser.parse(
-                        raw_expansion = expansion,
-                        cardboards = cardboards,
-                        printings = printings,
-                        artists = artists,
-                        blocks = blocks,
-                    )
+            expansions.insert(
+                expansion_parser.parse(
+                    raw_expansion = expansion,
+                    cardboards = cardboards,
+                    printings = printings,
+                    artists = artists,
+                    blocks = blocks,
                 )
-            except DbParseException:
-                pass
+            )
         expansion_parser.post_parse(expansions)
         return expansions
 
