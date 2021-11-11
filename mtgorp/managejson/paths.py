@@ -9,5 +9,6 @@ JSON_PATH = os.path.join(APP_DATA_PATH, 'jsons')
 
 UPDATE_INFO_PATH = os.path.join(APP_DATA_PATH, 'update_info')
 
-ALL_CARDS_PATH = os.path.join(JSON_PATH, 'allCards' + '.json')
-ALL_SETS_PATH = os.path.join(JSON_PATH, 'allSets' + '.json')
+ALL_CARDS_PATH = os.path.join(JSON_PATH, 'allCards.json')
+ALL_SETS_PATH = os.path.join(JSON_PATH, 'allSets.json')
+LOG_PATH = os.path.join(JSON_PATH, 'log.txt')

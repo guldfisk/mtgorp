@@ -219,6 +219,7 @@ YANLING = CardSubType('Yanling', (PLANESWALKER,))
 
 ADVENTURE = CardSubType('Adventure', (INSTANT, SORCERY))
 ARCANE = CardSubType('Arcane', (INSTANT, SORCERY))
+LESSON = CardSubType('Lesson', (INSTANT, SORCERY))
 TRAP = CardSubType('Trap', (INSTANT, SORCERY))
 
 ADVISOR = CardSubType('Advisor', (CREATURE, TRIBAL))

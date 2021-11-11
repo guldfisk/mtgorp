@@ -19,6 +19,8 @@ from mtgorp.models.persistent.attributes.flags import Flag, Flags
 from mtgorp.models.persistent.attributes.layout import Layout
 
 
+parse_logger = logging.Logger('mtgorp.db.parse', logging.INFO)
+
 M = t.TypeVar('M', bound = i.MtgModel)
 
 
@@ -366,7 +368,7 @@ class ExpansionParser(ModelParser[E]):
                     )
                 )
             except DbParseException as e:
-                logging.info(f'failed to parse Printing {raw_printing.get("name")} [{code}] ({e})')
+                parse_logger.info(f'failed to parse Printing {raw_printing.get("name")} [{code}] ({e})')
 
         return expansion
 
@@ -410,10 +412,12 @@ class DatabaseCreator(t.Generic[DB]):
         *,
         all_cards_path: str = paths.ALL_CARDS_PATH,
         all_sets_path: str = paths.ALL_SETS_PATH,
+        logging_path: str = paths.LOG_PATH,
     ):
         self._json_updated_at = json_updated_at
         self._all_cards_path = all_cards_path
         self._all_sets_path = all_sets_path
+        self._logging_path = logging_path
 
     @abstractmethod
     def create_table_for_model(self, model: t.Type[i.MtgModel]) -> OrpTable:
@@ -432,7 +436,7 @@ class DatabaseCreator(t.Generic[DB]):
                         card_parser.parse(card)
                     )
                 except DbParseException as e:
-                    logging.info(f'failed to parse Card {card.get("name")} ({e})')
+                    parse_logger.info(f'failed to parse Card {card.get("name")} ({e})')
 
         return cards
 
@@ -446,7 +450,7 @@ class DatabaseCreator(t.Generic[DB]):
             try:
                 cardboards.insert(cardboard_parser.parse(raw_cardboard, cards))
             except DbParseException as e:
-                logging.info(f'failed to parse Cardboard {raw_cardboard[0].get("name")} ({e})')
+                parse_logger.info(f'failed to parse Cardboard {raw_cardboard[0].get("name")} ({e})')
 
         return cardboards
 
@@ -502,36 +506,43 @@ class DatabaseCreator(t.Generic[DB]):
         ) as all_cards_file, open(
             self._all_sets_path, 'r', encoding = 'UTF-8'
         ) as all_sets_file:
-            raw_cards = ijson.kvitems(all_cards_file, 'data')
+            handler = logging.FileHandler(self._logging_path)
+            parse_logger.addHandler(handler)
 
-            cards = self.create_card_table(raw_cards)
+            try:
+                raw_cards = ijson.kvitems(all_cards_file, 'data')
 
-            all_cards_file.seek(0)
-            raw_cards = ijson.kvitems(all_cards_file, 'data')
+                cards = self.create_card_table(raw_cards)
 
-            cardboards = self.create_cardboard_table(raw_cards, cards)
+                all_cards_file.seek(0)
+                raw_cards = ijson.kvitems(all_cards_file, 'data')
 
-            artists = self.create_table_for_model(self._model_parser_map[i.Artist])
-            blocks = self.create_table_for_model(self._model_parser_map[i.Block])
-            printings = self.create_table_for_model(self._model_parser_map[i.Printing])
+                cardboards = self.create_cardboard_table(raw_cards, cards)
 
-            raw_expansions = ijson.kvitems(all_sets_file, 'data')
+                artists = self.create_table_for_model(self._model_parser_map[i.Artist])
+                blocks = self.create_table_for_model(self._model_parser_map[i.Block])
+                printings = self.create_table_for_model(self._model_parser_map[i.Printing])
 
-            expansions = self.create_expansion_table(
-                raw_expansions = raw_expansions,
-                cardboards = cardboards,
-                printings = printings,
-                artists = artists,
-                blocks = blocks,
-            )
+                raw_expansions = ijson.kvitems(all_sets_file, 'data')
 
-        return self._create_database_from_tables(
-            {
-                'cards': cards,
-                'cardboards': cardboards,
-                'printings': printings,
-                'artists': artists,
-                'blocks': blocks,
-                'expansions': expansions,
-            }
-        )
+                expansions = self.create_expansion_table(
+                    raw_expansions = raw_expansions,
+                    cardboards = cardboards,
+                    printings = printings,
+                    artists = artists,
+                    blocks = blocks,
+                )
+
+                return self._create_database_from_tables(
+                    {
+                        'cards': cards,
+                        'cardboards': cardboards,
+                        'printings': printings,
+                        'artists': artists,
+                        'blocks': blocks,
+                        'expansions': expansions,
+                    }
+                )
+
+            finally:
+                parse_logger.removeHandler(handler)
