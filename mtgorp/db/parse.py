@@ -48,6 +48,8 @@ class CardParser(ModelParser[C]):
         return {color.Parser.parse(s) for s in cols}
 
     def parse(self, raw_card) -> C:
+        parse_logger.info(f'parsing Card {raw_card.get("faceName") or raw_card.get("name")}')
+
         try:
             name = raw_card.get('faceName') or raw_card['name']
         except KeyError:
@@ -147,6 +149,8 @@ class CardboardParser(ModelParser[D]):
             raise AttributeParseException(f'Invalid cardboard names "{e}"')
 
     def parse(self, raw_cardboard, cards: OrpTable[str, D]) -> D:
+        parse_logger.info(f'parsing Cardboard {raw_cardboard[0].get("name")}')
+
         try:
             front_names, back_names = self.get_cardboard_card_names(raw_cardboard)
 
@@ -202,6 +206,8 @@ class PrintingParser(ModelParser[P]):
         artists: OrpTable[str, A],
         cardboards: OrpTable[str, D],
     ) -> P:
+        parse_logger.info(f'parsing Printing {raw_printing.get("name")} [{expansion.code}] {raw_printing.get("identifiers", {}).get("multiverseId", "no multiverseId")}')
+
         try:
             name = raw_printing['name']
 
@@ -318,6 +324,8 @@ class ExpansionParser(ModelParser[E]):
         artists: OrpTable[str, A],
         blocks: OrpTable[str, B],
     ) -> E:
+        parse_logger.info(f'parsing Expansion {raw_expansion.get("name")} [{raw_expansion.get("code").upper()}]')
+
         name = raw_expansion['name']
         code = raw_expansion['code'].upper()
         release_date = datetime.datetime.strptime(
@@ -506,7 +514,7 @@ class DatabaseCreator(t.Generic[DB]):
         ) as all_cards_file, open(
             self._all_sets_path, 'r', encoding = 'UTF-8'
         ) as all_sets_file:
-            handler = logging.FileHandler(self._logging_path)
+            handler = logging.FileHandler(self._logging_path, mode = 'w')
             parse_logger.addHandler(handler)
 
             try:

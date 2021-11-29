@@ -142,7 +142,7 @@ def update_pickle_database(
 
     previous_recursion_limit = sys.getrecursionlimit()
 
-    temp_path = os.path.join(paths.APP_DATA_PATH, '_db')
+    temp_path = os.path.join(db_path, '_db')
 
     try:
         sys.setrecursionlimit(2 ** 16)
@@ -150,7 +150,7 @@ def update_pickle_database(
     finally:
         sys.setrecursionlimit(previous_recursion_limit)
 
-    os.rename(temp_path, os.path.join(paths.APP_DATA_PATH, 'db'))
+    os.rename(temp_path, os.path.join(db_path, 'db'))
 
     return db
 

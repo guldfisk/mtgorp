@@ -87,7 +87,7 @@ class DecSerializer(DeckSerializer):
 
     def _block_from_group(self, group: Group[Printing], sideboard: bool = False) -> str:
         printings = Multiset(group.items)
-        return  '// {} ({})\n{}'.format(
+        return '// {} ({})\n{}'.format(
             (self._sideboard_indicator if sideboard else '') + group.name,
             len(printings),
             self._printings_to_lines(printings, sideboard = sideboard),
