@@ -5,11 +5,11 @@ import typing as t
 import datetime
 from abc import abstractmethod, ABC
 
-from frozendict import frozendict
+from immutabledict import immutabledict
 
-from orp.models import OrpBase
 from yeetlong.multiset import FrozenMultiset
 
+from orp.models import OrpBase
 from orp.relationships import Many
 
 from mtgorp.models.persistent.attributes.expansiontype import ExpansionType
@@ -537,7 +537,7 @@ class ExpansionCollection(object):
                 'premium': main if premium is None else premium,
             }
         )
-        self._expansions = frozendict(expansions)
+        self._expansions = immutabledict(expansions)
 
     @property
     def main(self) -> Expansion:

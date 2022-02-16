@@ -20,8 +20,7 @@ setup(
     install_requires = [
         'antlr4-python3-runtime',
         'appdirs',
-        'frozendict',
-        'frozendict',
+        'immutabledict',
         'hardcandy @ https://github.com/guldfisk/hardcandy/tarball/master#egg=hardcandy-1.0',
         'ijson',
         'lazy-property',

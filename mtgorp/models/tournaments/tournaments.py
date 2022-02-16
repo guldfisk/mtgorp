@@ -8,7 +8,7 @@ from abc import abstractmethod, ABCMeta
 from collections import defaultdict
 
 import more_itertools
-from frozendict import frozendict
+from immutabledict import immutabledict
 
 from hardcandy.schema import Schema
 from hardcandy import fields
@@ -18,18 +18,20 @@ P = t.TypeVar('P')
 
 
 def interleave(items: t.Sequence[P]) -> t.List[P]:
-    return list(
-        itertools.chain(
-            *zip(
-                items[:len(items) // 2],
-                reversed(items[len(items) // 2:])
-            ),
+    return (
+        list(
+            itertools.chain(
+                *zip(
+                    items[:len(items) // 2],
+                    reversed(items[len(items) // 2:])
+                ),
+            )
+        ) + (
+            [items[len(items) // 2]]
+            if len(items) & 1 else
+            []
         )
-    ) + (
-               [items[len(items) // 2]]
-               if len(items) & 1 else
-               []
-           )
+    )
 
 
 class ScheduledMatch(t.Generic[P]):
@@ -60,7 +62,7 @@ class ScheduledMatch(t.Generic[P]):
 class CompletedMatch(t.Generic[P]):
 
     def __init__(self, results: t.Mapping[P, int], draws: int = 0):
-        self._results = frozendict(results)
+        self._results = immutabledict(results)
         self._draws = draws
 
     @property
@@ -196,7 +198,7 @@ class Tournament(t.Generic[P], metaclass = _TournamentMeta):
     options_schema = Schema()
     allow_match_draws: bool = False
 
-    def __init__(self, players: t.FrozenSet[P], seed_map: t.Mapping[P, float] = frozendict(), **kwargs):
+    def __init__(self, players: t.FrozenSet[P], seed_map: t.Mapping[P, float] = immutabledict(), **kwargs):
         self._players = players
         # Low seed is higher rated
         self._seed_map = seed_map
@@ -338,7 +340,7 @@ class Swiss(Tournament[P]):
     options_schema = Schema({'rounds': fields.Integer(min = 1, max = 128, default = 3)})
     allow_match_draws: bool = True
 
-    def __init__(self, players: t.FrozenSet[P], rounds: int, seed_map: t.Mapping[P, float] = frozendict(), **kwargs):
+    def __init__(self, players: t.FrozenSet[P], rounds: int, seed_map: t.Mapping[P, float] = immutabledict(), **kwargs):
         super().__init__(players, seed_map, **kwargs)
         self._rounds = rounds
 
