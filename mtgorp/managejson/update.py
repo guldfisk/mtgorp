@@ -3,11 +3,8 @@ import functools
 import logging
 import typing as t
 import os
-import re
 
 import requests as r
-
-from xml.etree import ElementTree
 
 import pickledb
 
@@ -16,7 +13,7 @@ from mtgorp.db.database import CardDatabase
 from mtgorp.managejson import download, paths
 
 
-MTG_JSON_RSS_URL = 'http://mtgjson.com/atom.xml'
+MTG_JSON_VERSION_URL = 'https://mtgjson.com/api/v5/Meta.json'
 MTG_JSON_DATETIME_FORMAT = '%Y-%m-%dT%H:%M:%S.%fZ'
 
 
@@ -35,15 +32,8 @@ def with_update_db(f: t.Callable[..., t.Any]) -> t.Callable[..., t.Any]:
     return wrapped
 
 
-def check_rss(url: str = MTG_JSON_RSS_URL) -> t.Optional[datetime.datetime]:
-    rg = r.get(url)
-    root = ElementTree.fromstring(rg.text)
-
-    for child in root:
-        if re.match('.*updated$', child.tag):
-            return datetime.datetime.strptime(child.text, MTG_JSON_DATETIME_FORMAT)
-
-    return None
+def check_mtgjson_version(url: str = MTG_JSON_VERSION_URL) -> datetime.datetime:
+    return datetime.datetime.strptime(r.get(url).json()['data']['date'], '%Y-%m-%d')
 
 
 @with_update_db
@@ -91,8 +81,8 @@ def check_and_update(
     force: bool = False,
     force_json_download: bool = False,
     updaters: t.Sequence[t.Callable[[datetime.datetime], None]] = JUST_PICKLE,
-) ->  t.Tuple[bool, t.Sequence[CardDatabase]]:
-    last_remote_update = check_rss()
+) -> t.Tuple[bool, t.Sequence[CardDatabase]]:
+    last_remote_update = check_mtgjson_version()
     if not last_remote_update and not force:
         return False, []
 
