@@ -23,7 +23,7 @@ class Parser(parser.Parser):
                 *(
                     Parser.card_type_map[m.group()]
                     for m in
-                    Parser.type_matcher.finditer(s)
+                    Parser.type_matcher.finditer(s.replace("'", "’"))
                 )
             )
         except KeyError as e:
