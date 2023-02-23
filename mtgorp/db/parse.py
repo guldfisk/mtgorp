@@ -488,7 +488,7 @@ class DatabaseCreator(t.Generic[DB]):
 
         for code, expansion in raw_expansions:
             # TODO temp workaround duplicate multiverseIds in json
-            if code.upper() in ['MB1', 'CMB1', 'CMB2', 'ONE', 'ONC', 'J22']:
+            if code.upper() in ['MB1', 'CMB1', 'CMB2', 'ONE', 'ONC', 'J22', 'KLR']:
                 continue
             expansions.insert(
                 expansion_parser.parse(
