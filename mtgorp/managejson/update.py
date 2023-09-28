@@ -13,6 +13,9 @@ from mtgorp.db.database import CardDatabase
 from mtgorp.managejson import download, paths
 
 
+T = t.TypeVar('T')
+P = t.ParamSpec('P')
+
 MTG_JSON_VERSION_URL = 'https://mtgjson.com/api/v5/Meta.json'
 MTG_JSON_DATETIME_FORMAT = '%Y-%m-%dT%H:%M:%S.%fZ'
 
@@ -22,7 +25,7 @@ def get_update_db():
     return pickledb.load(paths.UPDATE_INFO_PATH, True, sig = False)
 
 
-def with_update_db(f: t.Callable[..., t.Any]) -> t.Callable[..., t.Any]:
+def with_update_db(f: t.Callable[P, T]) -> t.Callable[P, T]:
     @functools.wraps(f)
     def wrapped(*args, **kwargs):
         if not 'update_db' in kwargs:

@@ -96,10 +96,11 @@ class SqlDatabaseCreator(DatabaseCreator[SqlCardDatabase]):
 
         with self._engine.connect() as connection:
             connection.execute(
-                meta_info.insert(),
-                created_at = datetime.datetime.now(),
-                json_version = self._json_updated_at,
-                checksum = database.calc_checksum(),
+                meta_info.insert().values(
+                    created_at=datetime.datetime.now(),
+                    json_version=self._json_updated_at,
+                    checksum=database.calc_checksum(),
+                )
             )
         session.commit()
         return database
