@@ -12,6 +12,7 @@ class Parser(parser.Parser):
     _LAYOUT_MAP = {
         'normal': Layout.STANDARD,
         'leveler': Layout.STANDARD,
+        'prototype': Layout.STANDARD,
         'transform': Layout.TRANSFORM,
         'flip': Layout.FLIP,
         'meld': Layout.MELD,
