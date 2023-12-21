@@ -13,6 +13,7 @@ class Parser(parser.Parser):
         'normal': Layout.STANDARD,
         'leveler': Layout.STANDARD,
         'prototype': Layout.STANDARD,
+        'mutate': Layout.STANDARD,
         'transform': Layout.TRANSFORM,
         'flip': Layout.FLIP,
         'meld': Layout.MELD,
