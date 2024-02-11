@@ -3,8 +3,8 @@ import os
 import sys
 import typing as t
 
+from orp.database import B as _O
 from orp.database import M as _M
-from orp.database import O as _O
 from orp.database import OrpTable, PickleTable
 from orp.persist import PicklePersistor
 from orp.sql import SqlTable
