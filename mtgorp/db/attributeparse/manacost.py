@@ -1,11 +1,15 @@
 import re
-
 import typing as t
 
 import mtgorp.db.attributeparse.parser as parser
-
 from mtgorp.db.attributeparse.exceptions import AttributeParseException
-from mtgorp.models.persistent.attributes.manacosts import ManaCostAtom, HybridCostAtom, ManaCost, ONE_GENERIC, SINGULAR_ATOM_MAP
+from mtgorp.models.persistent.attributes.manacosts import (
+    ONE_GENERIC,
+    SINGULAR_ATOM_MAP,
+    HybridCostAtom,
+    ManaCost,
+    ManaCostAtom,
+)
 
 
 class ManaCostParseException(AttributeParseException):
@@ -13,10 +17,10 @@ class ManaCostParseException(AttributeParseException):
 
 
 class Parser(parser.Parser):
-    generic_matcher = re.compile('\\d+$')
-    singular_matcher = re.compile('\\w+$')
-    matcher = re.compile('[^\\s/]+')
-    atom_matcher = re.compile('{([^\\s{}]+)}')
+    generic_matcher = re.compile("\\d+$")
+    singular_matcher = re.compile("\\w+$")
+    matcher = re.compile("[^\\s/]+")
+    atom_matcher = re.compile("{([^\\s{}]+)}")
 
     @staticmethod
     def _parse_cluster_component(s: str) -> t.Iterable[ManaCostAtom]:
@@ -33,15 +37,9 @@ class Parser(parser.Parser):
 
     @staticmethod
     def _parse_cluster(s: str) -> t.Iterable[ManaCostAtom]:
-        if '/' in s:
+        if "/" in s:
             yield HybridCostAtom(
-                {
-                    ManaCost(
-                        Parser._parse_cluster_component(m.group())
-                    )
-                    for m in
-                    Parser.matcher.finditer(s)
-                }
+                {ManaCost(Parser._parse_cluster_component(m.group())) for m in Parser.matcher.finditer(s)}
             )
         else:
             for m in Parser.matcher.finditer(s):
@@ -50,10 +48,4 @@ class Parser(parser.Parser):
 
     @staticmethod
     def parse(s: str) -> ManaCost:
-        return ManaCost(
-            atom
-            for m in
-            Parser.atom_matcher.finditer(s)
-            for atom in
-            Parser._parse_cluster(m.group(1))
-        )
+        return ManaCost(atom for m in Parser.atom_matcher.finditer(s) for atom in Parser._parse_cluster(m.group(1)))

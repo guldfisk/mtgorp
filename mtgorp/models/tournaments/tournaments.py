@@ -4,38 +4,27 @@ import itertools
 import math
 import random
 import typing as t
-from abc import abstractmethod, ABCMeta
+from abc import ABCMeta, abstractmethod
 from collections import defaultdict
 
 import more_itertools
+from hardcandy import fields
+from hardcandy.schema import Schema
 from immutabledict import immutabledict
 
-from hardcandy.schema import Schema
-from hardcandy import fields
 
-
-P = t.TypeVar('P')
+P = t.TypeVar("P")
 
 
 def interleave(items: t.Sequence[P]) -> t.List[P]:
-    return (
-        list(
-            itertools.chain(
-                *zip(
-                    items[:len(items) // 2],
-                    reversed(items[len(items) // 2:])
-                ),
-            )
-        ) + (
-            [items[len(items) // 2]]
-            if len(items) & 1 else
-            []
+    return list(
+        itertools.chain(
+            *zip(items[: len(items) // 2], reversed(items[len(items) // 2 :])),
         )
-    )
+    ) + ([items[len(items) // 2]] if len(items) & 1 else [])
 
 
 class ScheduledMatch(t.Generic[P]):
-
     def __init__(self, players: t.FrozenSet[P]):
         self._players = players
 
@@ -47,20 +36,16 @@ class ScheduledMatch(t.Generic[P]):
         return hash(self._players)
 
     def __eq__(self, other) -> bool:
-        return (
-            isinstance(other, self.__class__)
-            and self._players == other._players
-        )
+        return isinstance(other, self.__class__) and self._players == other._players
 
     def __repr__(self) -> str:
-        return '{}({})'.format(
+        return "{}({})".format(
             self.__class__.__name__,
-            ', '.join(map(str, self._players)),
+            ", ".join(map(str, self._players)),
         )
 
 
 class CompletedMatch(t.Generic[P]):
-
     def __init__(self, results: t.Mapping[P, int], draws: int = 0):
         self._results = immutabledict(results)
         self._draws = draws
@@ -80,39 +65,30 @@ class CompletedMatch(t.Generic[P]):
     @property
     def winners(self) -> t.FrozenSet[P]:
         _max_wins = max(self._results.values())
-        return frozenset(
-            player
-            for player, wins in
-            self._results.items()
-            if wins == _max_wins
-        )
+        return frozenset(player for player, wins in self._results.items() if wins == _max_wins)
 
     @property
     def winner(self) -> P:
         winners = self.winners
         if len(winners) > 1:
-            raise RuntimeError('draw')
+            raise RuntimeError("draw")
         return winners.__iter__().__next__()
 
     def __hash__(self) -> int:
         return hash(self._results)
 
     def __eq__(self, other) -> bool:
-        return (
-            isinstance(other, self.__class__)
-            and self._results == other._results
-        )
+        return isinstance(other, self.__class__) and self._results == other._results
 
     def __repr__(self) -> str:
-        return '{}({}, {})'.format(
+        return "{}({}, {})".format(
             self.__class__.__name__,
-            ', '.join('{}: {}'.format(player, wins) for player, wins in self._results.items()),
+            ", ".join("{}: {}".format(player, wins) for player, wins in self._results.items()),
             self._draws,
         )
 
 
 class Round(t.Generic[P]):
-
     def __init__(self, matches: t.FrozenSet[ScheduledMatch[P]]):
         self._matches = matches
 
@@ -124,20 +100,16 @@ class Round(t.Generic[P]):
         return hash(self._matches)
 
     def __eq__(self, other) -> bool:
-        return (
-            isinstance(other, self.__class__)
-            and self._matches == other._matches
-        )
+        return isinstance(other, self.__class__) and self._matches == other._matches
 
     def __repr__(self) -> str:
-        return '{}({})'.format(
+        return "{}({})".format(
             self.__class__.__name__,
-            ', '.join(map(str, self._matches)),
+            ", ".join(map(str, self._matches)),
         )
 
 
 class CompletedRound(t.Generic[P]):
-
     def __init__(self, results: t.FrozenSet[CompletedMatch[P]]):
         self._results = results
 
@@ -149,20 +121,16 @@ class CompletedRound(t.Generic[P]):
         return hash(self._results)
 
     def __eq__(self, other) -> bool:
-        return (
-            isinstance(other, self.__class__)
-            and self._results == other._results
-        )
+        return isinstance(other, self.__class__) and self._results == other._results
 
     def __repr__(self) -> str:
-        return '{}({})'.format(
+        return "{}({})".format(
             self.__class__.__name__,
-            ', '.join(map(str, self._results)),
+            ", ".join(map(str, self._results)),
         )
 
 
 class TournamentResult(t.Generic[P]):
-
     def __init__(self, winners: t.FrozenSet[P]):
         self._winners = winners
 
@@ -171,9 +139,9 @@ class TournamentResult(t.Generic[P]):
         return self._winners
 
     def __repr__(self) -> str:
-        return '{}({})'.format(
+        return "{}({})".format(
             self.__class__.__name__,
-            ', '.join(map(str, self._winners)),
+            ", ".join(map(str, self._winners)),
         )
 
 
@@ -187,13 +155,13 @@ class _TournamentMeta(ABCMeta):
     def __new__(mcs, classname, base_classes, attributes):
         klass = type.__new__(mcs, classname, base_classes, attributes)
 
-        if 'name' in attributes:
-            mcs.tournaments_map[attributes['name']] = klass
+        if "name" in attributes:
+            mcs.tournaments_map[attributes["name"]] = klass
 
         return klass
 
 
-class Tournament(t.Generic[P], metaclass = _TournamentMeta):
+class Tournament(t.Generic[P], metaclass=_TournamentMeta):
     name: str
     options_schema = Schema()
     allow_match_draws: bool = False
@@ -217,11 +185,7 @@ class Tournament(t.Generic[P], metaclass = _TournamentMeta):
         pass
 
     def get_result(self, previous_rounds: t.Sequence[CompletedRound[P]]) -> TournamentResult[P]:
-        return TournamentResult(
-            frozenset(
-                self.get_ranked_players(previous_rounds)[0]
-            )
-        )
+        return TournamentResult(frozenset(self.get_ranked_players(previous_rounds)[0]))
 
     def top_n(self, previous_rounds: t.Sequence[CompletedRound[P]], n: int, *, strict: bool = True) -> t.Sequence[P]:
         players = []
@@ -232,15 +196,15 @@ class Tournament(t.Generic[P], metaclass = _TournamentMeta):
                     return players
             else:
                 if strict:
-                    raise ResultException('Not well defined top n')
+                    raise ResultException("Not well defined top n")
                 tier = list(tier)
                 random.shuffle(tier)
-                players.extend(tier[:n - len(players)])
+                players.extend(tier[: n - len(players)])
                 return players
 
 
 class AllMatches(Tournament[P]):
-    name = 'all_matches'
+    name = "all_matches"
     allow_match_draws: bool = True
 
     @property
@@ -251,15 +215,12 @@ class AllMatches(Tournament[P]):
         if previous_rounds:
             return None
         return Round(
-            frozenset(
-                ScheduledMatch(
-                    frozenset(players)
-                ) for players in
-                itertools.combinations(self._players, 2)
-            )
+            frozenset(ScheduledMatch(frozenset(players)) for players in itertools.combinations(self._players, 2))
         )
 
-    def _rank_player_set(self, previous_round: CompletedRound[P], players: t.AbstractSet[P]) -> t.Sequence[t.Collection[P]]:
+    def _rank_player_set(
+        self, previous_round: CompletedRound[P], players: t.AbstractSet[P]
+    ) -> t.Sequence[t.Collection[P]]:
         player_match_wins_map = defaultdict(int)
         player_game_wins_map = defaultdict(int)
         player_relative_score_map = defaultdict(int)
@@ -283,12 +244,12 @@ class AllMatches(Tournament[P]):
                         player_match_wins_map[player],
                         player_relative_score_map[player],
                         player_game_wins_map[player],
-                    )
-                ) for player in
-                players
+                    ),
+                )
+                for player in players
             ],
-            key = lambda p: p[1],
-            reverse = True,
+            key=lambda p: p[1],
+            reverse=True,
         )
 
         result = []
@@ -309,24 +270,22 @@ class AllMatches(Tournament[P]):
         try:
             previous_round = previous_rounds.__iter__().__next__()
         except StopIteration:
-            raise ResultException('tournament not complete')
+            raise ResultException("tournament not complete")
 
         return list(
             itertools.chain(
                 *(
                     [
                         sub_tier
-                        for sub_tier in
-                        more_itertools.split_when(
+                        for sub_tier in more_itertools.split_when(
                             sorted(
                                 tier,
-                                key = lambda p: -self._seed_map.get(p, 0),
+                                key=lambda p: -self._seed_map.get(p, 0),
                             ),
                             lambda a, b: self._seed_map.get(a, 0) != self._seed_map.get(b, 0),
                         )
                     ]
-                    for tier in
-                    self._rank_player_set(
+                    for tier in self._rank_player_set(
                         previous_round,
                         self._players,
                     )
@@ -336,11 +295,13 @@ class AllMatches(Tournament[P]):
 
 
 class Swiss(Tournament[P]):
-    name = 'swiss'
-    options_schema = Schema({'rounds': fields.Integer(min = 1, max = 128, default = 3)})
+    name = "swiss"
+    options_schema = Schema({"rounds": fields.Integer(min=1, max=128, default=3)})
     allow_match_draws: bool = True
 
-    def __init__(self, players: t.FrozenSet[P], rounds: int, seed_map: t.Mapping[P, float] = immutabledict(), **kwargs):
+    def __init__(
+        self, players: t.FrozenSet[P], rounds: int, seed_map: t.Mapping[P, float] = immutabledict(), **kwargs
+    ):
         super().__init__(players, seed_map, **kwargs)
         self._rounds = rounds
 
@@ -390,12 +351,12 @@ class Swiss(Tournament[P]):
                         opponent_game_win_percentage[player],
                         -buys_map[player],
                         -self._seed_map.get(player, 0),
-                    )
-                ) for player in
-                self._players
+                    ),
+                )
+                for player in self._players
             ],
-            key = lambda p: p[1],
-            reverse = True,
+            key=lambda p: p[1],
+            reverse=True,
         )
 
         result = []
@@ -418,10 +379,7 @@ class Swiss(Tournament[P]):
         if not previous_rounds:
             buys_map = defaultdict(int)
             ranked_players = interleave(
-                sorted(
-                    self._players,
-                    key = lambda p: (self._seed_map.get(p, 0), random.random())
-                ),
+                sorted(self._players, key=lambda p: (self._seed_map.get(p, 0), random.random())),
             )
         else:
             _ranked_players, buys_map = self._get_ranked_players(previous_rounds)
@@ -439,46 +397,26 @@ class Swiss(Tournament[P]):
             min_buys = min(buys_map[player] for player in self._players)
             for player in reversed(ranked_players):
                 if buys_map[player] == min_buys:
-                    matches.append(
-                        ScheduledMatch(
-                            frozenset(
-                                (
-                                    ranked_players.pop(
-                                        ranked_players.index(player)
-                                    ),
-                                )
-                            )
-                        )
-                    )
+                    matches.append(ScheduledMatch(frozenset((ranked_players.pop(ranked_players.index(player)),))))
                     break
 
         for idx in range(0, len(ranked_players), 2):
-            matches.append(
-                ScheduledMatch(
-                    frozenset(ranked_players[idx:idx + 2])
-                )
-            )
+            matches.append(ScheduledMatch(frozenset(ranked_players[idx : idx + 2])))
 
-        return Round(
-            frozenset(matches)
-        )
+        return Round(frozenset(matches))
 
     def get_ranked_players(self, previous_rounds: t.Sequence[CompletedRound[P]]) -> t.Sequence[t.Collection[P]]:
         ranked_players, _ = self._get_ranked_players(previous_rounds)
-        return [
-            [p for p, _ in tier]
-            for tier in
-            more_itertools.split_when(ranked_players, lambda a, b: a[1] != b[1])
-        ]
+        return [[p for p, _ in tier] for tier in more_itertools.split_when(ranked_players, lambda a, b: a[1] != b[1])]
 
     def get_result(self, previous_rounds: t.Sequence[CompletedRound[P]]) -> TournamentResult[P]:
         if len(previous_rounds) < self._rounds:
-            raise ResultException('tournament not complete')
+            raise ResultException("tournament not complete")
         return super().get_result(previous_rounds)
 
 
 class SingleElimination(Tournament[P]):
-    name = 'single_elimination'
+    name = "single_elimination"
 
     @property
     def round_amount(self) -> int:
@@ -503,7 +441,7 @@ class SingleElimination(Tournament[P]):
             players = interleave(
                 sorted(
                     players,
-                    key = lambda p: -self._seed_map.get(p, 0),
+                    key=lambda p: -self._seed_map.get(p, 0),
                 )
             )
 
@@ -513,29 +451,13 @@ class SingleElimination(Tournament[P]):
             min_buys = min(buys_map[player] for player in self._players)
             for player in reversed(players):
                 if buys_map[player] == min_buys:
-                    matches.append(
-                        ScheduledMatch(
-                            frozenset(
-                                (
-                                    players.pop(
-                                        players.index(player)
-                                    ),
-                                )
-                            )
-                        )
-                    )
+                    matches.append(ScheduledMatch(frozenset((players.pop(players.index(player)),))))
                     break
 
         for idx in range(0, len(players), 2):
-            matches.append(
-                ScheduledMatch(
-                    frozenset(players[idx:idx + 2])
-                )
-            )
+            matches.append(ScheduledMatch(frozenset(players[idx : idx + 2])))
 
-        return Round(
-            frozenset(matches)
-        )
+        return Round(frozenset(matches))
 
     def get_ranked_players(self, previous_rounds: t.Sequence[CompletedRound[P]]) -> t.Sequence[t.Collection[P]]:
         match_wins_map = defaultdict(int)
@@ -551,18 +473,17 @@ class SingleElimination(Tournament[P]):
                     (
                         match_wins_map[player],
                         -self._seed_map.get(player, 0),
-                    )
-                ) for player in
-                self._players
+                    ),
+                )
+                for player in self._players
             ],
-            key = lambda p: p[1],
-            reverse = True,
+            key=lambda p: p[1],
+            reverse=True,
         )
 
         return [
             [p for p, _ in tier]
-            for tier in
-            more_itertools.split_when(
+            for tier in more_itertools.split_when(
                 ranked_players,
                 lambda a, b: a[1] != b[1],
             )
@@ -570,12 +491,6 @@ class SingleElimination(Tournament[P]):
 
     def get_result(self, previous_rounds: t.Sequence[CompletedRound[P]]) -> TournamentResult[P]:
         if not previous_rounds or not len(previous_rounds[-1].results) == 1:
-            raise ResultException('tournament not complete')
+            raise ResultException("tournament not complete")
 
-        return TournamentResult(
-            frozenset(
-                (
-                    previous_rounds[-1].results.__iter__().__next__().winner,
-                )
-            )
-        )
+        return TournamentResult(frozenset((previous_rounds[-1].results.__iter__().__next__().winner,)))

@@ -1,15 +1,20 @@
 import typing as t
 
-from orp.models import PrimaryKey, Model
+from orp.models import Model, PrimaryKey
 from orp.relationships import Many
 
-from mtgorp.models.persistent.attributes import typeline, colors, manacosts, powertoughness
-from mtgorp.models.interfaces import Cardboard
 from mtgorp.models.interfaces import Card as _Card
+from mtgorp.models.interfaces import Cardboard
+from mtgorp.models.persistent.attributes import (
+    colors,
+    manacosts,
+    powertoughness,
+    typeline,
+)
 
 
 class Card(Model, _Card):
-    primary_key = PrimaryKey('name')
+    primary_key = PrimaryKey("name")
     _name: str
 
     def __init__(
@@ -21,7 +26,7 @@ class Card(Model, _Card):
         oracle_text: str = None,
         power_toughness: powertoughness.PowerToughness = None,
         loyalty: powertoughness.PTValue = None,
-        color_identity: t.AbstractSet[colors.Color] = None
+        color_identity: t.AbstractSet[colors.Color] = None,
     ):
         self._type_line = type_line
         self._mana_cost = mana_cost
@@ -30,7 +35,7 @@ class Card(Model, _Card):
         self._power_toughness = power_toughness
         self._loyalty = loyalty
         self._color_identity = color_identity
-        self._sides = Many(self, '_cards')
+        self._sides = Many(self, "_cards")
 
     @property
     def name(self) -> str:
@@ -67,4 +72,3 @@ class Card(Model, _Card):
     @property
     def cardboards(self) -> t.FrozenSet[Cardboard]:
         return frozenset(side.owner for side in self._sides)
-

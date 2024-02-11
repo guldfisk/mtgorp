@@ -1,9 +1,11 @@
 # Generated from /home/biggenerals/PycharmProjects/mtgorp/mtgorp/tools/parsing/manacost/manacost_grammar.g4 by ANTLR 4.7
 # encoding: utf-8
-from antlr4 import *
+import sys
 from io import StringIO
 from typing.io import TextIO
-import sys
+
+from antlr4 import *
+
 
 def serializedATN():
     with StringIO() as buf:
@@ -20,11 +22,11 @@ def serializedATN():
         buf.write("\3\2\2\2\25\26\f\3\2\2\26\30\5\6\4\2\27\25\3\2\2\2\30")
         buf.write("\33\3\2\2\2\31\27\3\2\2\2\31\32\3\2\2\2\32\5\3\2\2\2\33")
         buf.write("\31\3\2\2\2\34&\5\n\6\2\35\36\7\3\2\2\36\37\5\6\4\2\37")
-        buf.write(" \7\4\2\2 &\3\2\2\2!\"\7\3\2\2\"#\5\b\5\2#$\7\4\2\2$&")
+        buf.write(' \7\4\2\2 &\3\2\2\2!"\7\3\2\2"#\5\b\5\2#$\7\4\2\2$&')
         buf.write("\3\2\2\2%\34\3\2\2\2%\35\3\2\2\2%!\3\2\2\2&\7\3\2\2\2")
-        buf.write("\'\62\5\6\4\2(\62\5\4\3\2)*\5\6\4\2*+\7\5\2\2+,\5\b\5")
+        buf.write("'\62\5\6\4\2(\62\5\4\3\2)*\5\6\4\2*+\7\5\2\2+,\5\b\5")
         buf.write("\2,\62\3\2\2\2-.\5\4\3\2./\7\5\2\2/\60\5\b\5\2\60\62\3")
-        buf.write("\2\2\2\61\'\3\2\2\2\61(\3\2\2\2\61)\3\2\2\2\61-\3\2\2")
+        buf.write("\2\2\2\61'\3\2\2\2\61(\3\2\2\2\61)\3\2\2\2\61-\3\2\2")
         buf.write("\2\62\t\3\2\2\2\63>\7\6\2\2\64>\7\7\2\2\65>\7\b\2\2\66")
         buf.write(">\7\t\2\2\67>\7\n\2\28>\7\13\2\29>\7\f\2\2:>\7\r\2\2;")
         buf.write(">\7\16\2\2<>\7\17\2\2=\63\3\2\2\2=\64\3\2\2\2=\65\3\2")
@@ -33,22 +35,33 @@ def serializedATN():
         return buf.getvalue()
 
 
-class manacost_grammarParser ( Parser ):
-
+class manacost_grammarParser(Parser):
     grammarFileName = "manacost_grammar.g4"
 
     atn = ATNDeserializer().deserialize(serializedATN())
 
-    decisionsToDFA = [ DFA(ds, i) for i, ds in enumerate(atn.decisionToState) ]
+    decisionsToDFA = [DFA(ds, i) for i, ds in enumerate(atn.decisionToState)]
 
     sharedContextCache = PredictionContextCache()
 
-    literalNames = [ "<INVALID>", "'{'", "'}'", "'/'" ]
+    literalNames = ["<INVALID>", "'{'", "'}'", "'/'"]
 
-    symbolicNames = [ "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
-                      "WHITE_SYMBOL", "BLUE_SYMBOL", "BLACK_SYMBOL", "RED_SYMBOL", 
-                      "GREEN_SYMBOL", "PHYREXIAN_SYMBOL", "SNOW_SYMBOL", 
-                      "COLORLESS_SYMBOL", "GENERIC_SYMBOL", "VARIABLE_SYMBOL" ]
+    symbolicNames = [
+        "<INVALID>",
+        "<INVALID>",
+        "<INVALID>",
+        "<INVALID>",
+        "WHITE_SYMBOL",
+        "BLUE_SYMBOL",
+        "BLACK_SYMBOL",
+        "RED_SYMBOL",
+        "GREEN_SYMBOL",
+        "PHYREXIAN_SYMBOL",
+        "SNOW_SYMBOL",
+        "COLORLESS_SYMBOL",
+        "GENERIC_SYMBOL",
+        "VARIABLE_SYMBOL",
+    ]
 
     RULE_start = 0
     RULE_mana_cost = 1
@@ -56,101 +69,88 @@ class manacost_grammarParser ( Parser ):
     RULE_hybrid = 3
     RULE_mana_cost_symbol = 4
 
-    ruleNames =  [ "start", "mana_cost", "mana_cost_atom", "hybrid", "mana_cost_symbol" ]
+    ruleNames = ["start", "mana_cost", "mana_cost_atom", "hybrid", "mana_cost_symbol"]
 
     EOF = Token.EOF
-    T__0=1
-    T__1=2
-    T__2=3
-    WHITE_SYMBOL=4
-    BLUE_SYMBOL=5
-    BLACK_SYMBOL=6
-    RED_SYMBOL=7
-    GREEN_SYMBOL=8
-    PHYREXIAN_SYMBOL=9
-    SNOW_SYMBOL=10
-    COLORLESS_SYMBOL=11
-    GENERIC_SYMBOL=12
-    VARIABLE_SYMBOL=13
+    T__0 = 1
+    T__1 = 2
+    T__2 = 3
+    WHITE_SYMBOL = 4
+    BLUE_SYMBOL = 5
+    BLACK_SYMBOL = 6
+    RED_SYMBOL = 7
+    GREEN_SYMBOL = 8
+    PHYREXIAN_SYMBOL = 9
+    SNOW_SYMBOL = 10
+    COLORLESS_SYMBOL = 11
+    GENERIC_SYMBOL = 12
+    VARIABLE_SYMBOL = 13
 
-    def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
+    def __init__(self, input: TokenStream, output: TextIO = sys.stdout):
         super().__init__(input, output)
         self.checkVersion("4.7")
         self._interp = ParserATNSimulator(self, self.atn, self.decisionsToDFA, self.sharedContextCache)
         self._predicates = None
 
-
-
     class StartContext(ParserRuleContext):
-
-        def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
+        def __init__(self, parser, parent: ParserRuleContext = None, invokingState: int = -1):
             super().__init__(parent, invokingState)
             self.parser = parser
-
 
         def getRuleIndex(self):
             return manacost_grammarParser.RULE_start
 
-     
-        def copyFrom(self, ctx:ParserRuleContext):
+        def copyFrom(self, ctx: ParserRuleContext):
             super().copyFrom(ctx)
 
-
-
     class EmptyContext(StartContext):
-
-        def __init__(self, parser, ctx:ParserRuleContext): # actually a manacost_grammarParser.StartContext
+        def __init__(self, parser, ctx: ParserRuleContext):  # actually a manacost_grammarParser.StartContext
             super().__init__(parser)
             self.copyFrom(ctx)
 
         def EOF(self):
             return self.getToken(manacost_grammarParser.EOF, 0)
 
-        def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterEmpty" ):
+        def enterRule(self, listener: ParseTreeListener):
+            if hasattr(listener, "enterEmpty"):
                 listener.enterEmpty(self)
 
-        def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitEmpty" ):
+        def exitRule(self, listener: ParseTreeListener):
+            if hasattr(listener, "exitEmpty"):
                 listener.exitEmpty(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitEmpty" ):
+        def accept(self, visitor: ParseTreeVisitor):
+            if hasattr(visitor, "visitEmpty"):
                 return visitor.visitEmpty(self)
             else:
                 return visitor.visitChildren(self)
 
-
     class NonEmptyContext(StartContext):
-
-        def __init__(self, parser, ctx:ParserRuleContext): # actually a manacost_grammarParser.StartContext
+        def __init__(self, parser, ctx: ParserRuleContext):  # actually a manacost_grammarParser.StartContext
             super().__init__(parser)
             self.copyFrom(ctx)
 
         def mana_cost(self):
-            return self.getTypedRuleContext(manacost_grammarParser.Mana_costContext,0)
+            return self.getTypedRuleContext(manacost_grammarParser.Mana_costContext, 0)
 
         def EOF(self):
             return self.getToken(manacost_grammarParser.EOF, 0)
 
-        def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterNonEmpty" ):
+        def enterRule(self, listener: ParseTreeListener):
+            if hasattr(listener, "enterNonEmpty"):
                 listener.enterNonEmpty(self)
 
-        def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitNonEmpty" ):
+        def exitRule(self, listener: ParseTreeListener):
+            if hasattr(listener, "exitNonEmpty"):
                 listener.exitNonEmpty(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitNonEmpty" ):
+        def accept(self, visitor: ParseTreeVisitor):
+            if hasattr(visitor, "visitNonEmpty"):
                 return visitor.visitNonEmpty(self)
             else:
                 return visitor.visitChildren(self)
 
-
-
     def start(self):
-
         localctx = manacost_grammarParser.StartContext(self, self._ctx, self.state)
         self.enterRule(localctx, 0, self.RULE_start)
         try:
@@ -163,7 +163,19 @@ class manacost_grammarParser ( Parser ):
                 self.state = 10
                 self.match(manacost_grammarParser.EOF)
                 pass
-            elif token in [manacost_grammarParser.T__0, manacost_grammarParser.WHITE_SYMBOL, manacost_grammarParser.BLUE_SYMBOL, manacost_grammarParser.BLACK_SYMBOL, manacost_grammarParser.RED_SYMBOL, manacost_grammarParser.GREEN_SYMBOL, manacost_grammarParser.PHYREXIAN_SYMBOL, manacost_grammarParser.SNOW_SYMBOL, manacost_grammarParser.COLORLESS_SYMBOL, manacost_grammarParser.GENERIC_SYMBOL, manacost_grammarParser.VARIABLE_SYMBOL]:
+            elif token in [
+                manacost_grammarParser.T__0,
+                manacost_grammarParser.WHITE_SYMBOL,
+                manacost_grammarParser.BLUE_SYMBOL,
+                manacost_grammarParser.BLACK_SYMBOL,
+                manacost_grammarParser.RED_SYMBOL,
+                manacost_grammarParser.GREEN_SYMBOL,
+                manacost_grammarParser.PHYREXIAN_SYMBOL,
+                manacost_grammarParser.SNOW_SYMBOL,
+                manacost_grammarParser.COLORLESS_SYMBOL,
+                manacost_grammarParser.GENERIC_SYMBOL,
+                manacost_grammarParser.VARIABLE_SYMBOL,
+            ]:
                 localctx = manacost_grammarParser.NonEmptyContext(self, localctx)
                 self.enterOuterAlt(localctx, 2)
                 self.state = 11
@@ -183,75 +195,64 @@ class manacost_grammarParser ( Parser ):
         return localctx
 
     class Mana_costContext(ParserRuleContext):
-
-        def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
+        def __init__(self, parser, parent: ParserRuleContext = None, invokingState: int = -1):
             super().__init__(parent, invokingState)
             self.parser = parser
-
 
         def getRuleIndex(self):
             return manacost_grammarParser.RULE_mana_cost
 
-     
-        def copyFrom(self, ctx:ParserRuleContext):
+        def copyFrom(self, ctx: ParserRuleContext):
             super().copyFrom(ctx)
 
-
     class AtomContext(Mana_costContext):
-
-        def __init__(self, parser, ctx:ParserRuleContext): # actually a manacost_grammarParser.Mana_costContext
+        def __init__(self, parser, ctx: ParserRuleContext):  # actually a manacost_grammarParser.Mana_costContext
             super().__init__(parser)
             self.copyFrom(ctx)
 
         def mana_cost_atom(self):
-            return self.getTypedRuleContext(manacost_grammarParser.Mana_cost_atomContext,0)
+            return self.getTypedRuleContext(manacost_grammarParser.Mana_cost_atomContext, 0)
 
-
-        def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterAtom" ):
+        def enterRule(self, listener: ParseTreeListener):
+            if hasattr(listener, "enterAtom"):
                 listener.enterAtom(self)
 
-        def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitAtom" ):
+        def exitRule(self, listener: ParseTreeListener):
+            if hasattr(listener, "exitAtom"):
                 listener.exitAtom(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitAtom" ):
+        def accept(self, visitor: ParseTreeVisitor):
+            if hasattr(visitor, "visitAtom"):
                 return visitor.visitAtom(self)
             else:
                 return visitor.visitChildren(self)
 
-
     class AtomManaCostContext(Mana_costContext):
-
-        def __init__(self, parser, ctx:ParserRuleContext): # actually a manacost_grammarParser.Mana_costContext
+        def __init__(self, parser, ctx: ParserRuleContext):  # actually a manacost_grammarParser.Mana_costContext
             super().__init__(parser)
             self.copyFrom(ctx)
 
         def mana_cost(self):
-            return self.getTypedRuleContext(manacost_grammarParser.Mana_costContext,0)
+            return self.getTypedRuleContext(manacost_grammarParser.Mana_costContext, 0)
 
         def mana_cost_atom(self):
-            return self.getTypedRuleContext(manacost_grammarParser.Mana_cost_atomContext,0)
+            return self.getTypedRuleContext(manacost_grammarParser.Mana_cost_atomContext, 0)
 
-
-        def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterAtomManaCost" ):
+        def enterRule(self, listener: ParseTreeListener):
+            if hasattr(listener, "enterAtomManaCost"):
                 listener.enterAtomManaCost(self)
 
-        def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitAtomManaCost" ):
+        def exitRule(self, listener: ParseTreeListener):
+            if hasattr(listener, "exitAtomManaCost"):
                 listener.exitAtomManaCost(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitAtomManaCost" ):
+        def accept(self, visitor: ParseTreeVisitor):
+            if hasattr(visitor, "visitAtomManaCost"):
                 return visitor.visitAtomManaCost(self)
             else:
                 return visitor.visitChildren(self)
 
-
-
-    def mana_cost(self, _p:int=0):
+    def mana_cost(self, _p: int = 0):
         _parentctx = self._ctx
         _parentState = self.state
         localctx = manacost_grammarParser.Mana_costContext(self, self._ctx, _parentState)
@@ -269,23 +270,26 @@ class manacost_grammarParser ( Parser ):
             self._ctx.stop = self._input.LT(-1)
             self.state = 23
             self._errHandler.sync(self)
-            _alt = self._interp.adaptivePredict(self._input,1,self._ctx)
-            while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
-                if _alt==1:
+            _alt = self._interp.adaptivePredict(self._input, 1, self._ctx)
+            while _alt != 2 and _alt != ATN.INVALID_ALT_NUMBER:
+                if _alt == 1:
                     if self._parseListeners is not None:
                         self.triggerExitRuleEvent()
                     _prevctx = localctx
-                    localctx = manacost_grammarParser.AtomManaCostContext(self, manacost_grammarParser.Mana_costContext(self, _parentctx, _parentState))
+                    localctx = manacost_grammarParser.AtomManaCostContext(
+                        self, manacost_grammarParser.Mana_costContext(self, _parentctx, _parentState)
+                    )
                     self.pushNewRecursionContext(localctx, _startState, self.RULE_mana_cost)
                     self.state = 19
                     if not self.precpred(self._ctx, 1):
                         from antlr4.error.Errors import FailedPredicateException
+
                         raise FailedPredicateException(self, "self.precpred(self._ctx, 1)")
                     self.state = 20
-                    self.mana_cost_atom() 
+                    self.mana_cost_atom()
                 self.state = 25
                 self._errHandler.sync(self)
-                _alt = self._interp.adaptivePredict(self._input,1,self._ctx)
+                _alt = self._interp.adaptivePredict(self._input, 1, self._ctx)
 
         except RecognitionException as re:
             localctx.exception = re
@@ -296,105 +300,89 @@ class manacost_grammarParser ( Parser ):
         return localctx
 
     class Mana_cost_atomContext(ParserRuleContext):
-
-        def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
+        def __init__(self, parser, parent: ParserRuleContext = None, invokingState: int = -1):
             super().__init__(parent, invokingState)
             self.parser = parser
-
 
         def getRuleIndex(self):
             return manacost_grammarParser.RULE_mana_cost_atom
 
-     
-        def copyFrom(self, ctx:ParserRuleContext):
+        def copyFrom(self, ctx: ParserRuleContext):
             super().copyFrom(ctx)
 
-
-
     class BracedHybridContext(Mana_cost_atomContext):
-
-        def __init__(self, parser, ctx:ParserRuleContext): # actually a manacost_grammarParser.Mana_cost_atomContext
+        def __init__(self, parser, ctx: ParserRuleContext):  # actually a manacost_grammarParser.Mana_cost_atomContext
             super().__init__(parser)
             self.copyFrom(ctx)
 
         def hybrid(self):
-            return self.getTypedRuleContext(manacost_grammarParser.HybridContext,0)
+            return self.getTypedRuleContext(manacost_grammarParser.HybridContext, 0)
 
-
-        def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterBracedHybrid" ):
+        def enterRule(self, listener: ParseTreeListener):
+            if hasattr(listener, "enterBracedHybrid"):
                 listener.enterBracedHybrid(self)
 
-        def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitBracedHybrid" ):
+        def exitRule(self, listener: ParseTreeListener):
+            if hasattr(listener, "exitBracedHybrid"):
                 listener.exitBracedHybrid(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitBracedHybrid" ):
+        def accept(self, visitor: ParseTreeVisitor):
+            if hasattr(visitor, "visitBracedHybrid"):
                 return visitor.visitBracedHybrid(self)
             else:
                 return visitor.visitChildren(self)
 
-
     class SymbolContext(Mana_cost_atomContext):
-
-        def __init__(self, parser, ctx:ParserRuleContext): # actually a manacost_grammarParser.Mana_cost_atomContext
+        def __init__(self, parser, ctx: ParserRuleContext):  # actually a manacost_grammarParser.Mana_cost_atomContext
             super().__init__(parser)
             self.copyFrom(ctx)
 
         def mana_cost_symbol(self):
-            return self.getTypedRuleContext(manacost_grammarParser.Mana_cost_symbolContext,0)
+            return self.getTypedRuleContext(manacost_grammarParser.Mana_cost_symbolContext, 0)
 
-
-        def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterSymbol" ):
+        def enterRule(self, listener: ParseTreeListener):
+            if hasattr(listener, "enterSymbol"):
                 listener.enterSymbol(self)
 
-        def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitSymbol" ):
+        def exitRule(self, listener: ParseTreeListener):
+            if hasattr(listener, "exitSymbol"):
                 listener.exitSymbol(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitSymbol" ):
+        def accept(self, visitor: ParseTreeVisitor):
+            if hasattr(visitor, "visitSymbol"):
                 return visitor.visitSymbol(self)
             else:
                 return visitor.visitChildren(self)
 
-
     class BracedSymbolContext(Mana_cost_atomContext):
-
-        def __init__(self, parser, ctx:ParserRuleContext): # actually a manacost_grammarParser.Mana_cost_atomContext
+        def __init__(self, parser, ctx: ParserRuleContext):  # actually a manacost_grammarParser.Mana_cost_atomContext
             super().__init__(parser)
             self.copyFrom(ctx)
 
         def mana_cost_atom(self):
-            return self.getTypedRuleContext(manacost_grammarParser.Mana_cost_atomContext,0)
+            return self.getTypedRuleContext(manacost_grammarParser.Mana_cost_atomContext, 0)
 
-
-        def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterBracedSymbol" ):
+        def enterRule(self, listener: ParseTreeListener):
+            if hasattr(listener, "enterBracedSymbol"):
                 listener.enterBracedSymbol(self)
 
-        def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitBracedSymbol" ):
+        def exitRule(self, listener: ParseTreeListener):
+            if hasattr(listener, "exitBracedSymbol"):
                 listener.exitBracedSymbol(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitBracedSymbol" ):
+        def accept(self, visitor: ParseTreeVisitor):
+            if hasattr(visitor, "visitBracedSymbol"):
                 return visitor.visitBracedSymbol(self)
             else:
                 return visitor.visitChildren(self)
 
-
-
     def mana_cost_atom(self):
-
         localctx = manacost_grammarParser.Mana_cost_atomContext(self, self._ctx, self.state)
         self.enterRule(localctx, 4, self.RULE_mana_cost_atom)
         try:
             self.state = 35
             self._errHandler.sync(self)
-            la_ = self._interp.adaptivePredict(self._input,2,self._ctx)
+            la_ = self._interp.adaptivePredict(self._input, 2, self._ctx)
             if la_ == 1:
                 localctx = manacost_grammarParser.SymbolContext(self, localctx)
                 self.enterOuterAlt(localctx, 1)
@@ -424,7 +412,6 @@ class manacost_grammarParser ( Parser ):
                 self.match(manacost_grammarParser.T__1)
                 pass
 
-
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -434,136 +421,117 @@ class manacost_grammarParser ( Parser ):
         return localctx
 
     class HybridContext(ParserRuleContext):
-
-        def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
+        def __init__(self, parser, parent: ParserRuleContext = None, invokingState: int = -1):
             super().__init__(parent, invokingState)
             self.parser = parser
-
 
         def getRuleIndex(self):
             return manacost_grammarParser.RULE_hybrid
 
-     
-        def copyFrom(self, ctx:ParserRuleContext):
+        def copyFrom(self, ctx: ParserRuleContext):
             super().copyFrom(ctx)
 
-
-
     class HybridManaCostContext(HybridContext):
-
-        def __init__(self, parser, ctx:ParserRuleContext): # actually a manacost_grammarParser.HybridContext
+        def __init__(self, parser, ctx: ParserRuleContext):  # actually a manacost_grammarParser.HybridContext
             super().__init__(parser)
             self.copyFrom(ctx)
 
         def mana_cost(self):
-            return self.getTypedRuleContext(manacost_grammarParser.Mana_costContext,0)
+            return self.getTypedRuleContext(manacost_grammarParser.Mana_costContext, 0)
 
-
-        def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterHybridManaCost" ):
+        def enterRule(self, listener: ParseTreeListener):
+            if hasattr(listener, "enterHybridManaCost"):
                 listener.enterHybridManaCost(self)
 
-        def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitHybridManaCost" ):
+        def exitRule(self, listener: ParseTreeListener):
+            if hasattr(listener, "exitHybridManaCost"):
                 listener.exitHybridManaCost(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitHybridManaCost" ):
+        def accept(self, visitor: ParseTreeVisitor):
+            if hasattr(visitor, "visitHybridManaCost"):
                 return visitor.visitHybridManaCost(self)
             else:
                 return visitor.visitChildren(self)
 
-
     class HybridAtomContext(HybridContext):
-
-        def __init__(self, parser, ctx:ParserRuleContext): # actually a manacost_grammarParser.HybridContext
+        def __init__(self, parser, ctx: ParserRuleContext):  # actually a manacost_grammarParser.HybridContext
             super().__init__(parser)
             self.copyFrom(ctx)
 
         def mana_cost_atom(self):
-            return self.getTypedRuleContext(manacost_grammarParser.Mana_cost_atomContext,0)
+            return self.getTypedRuleContext(manacost_grammarParser.Mana_cost_atomContext, 0)
 
-
-        def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterHybridAtom" ):
+        def enterRule(self, listener: ParseTreeListener):
+            if hasattr(listener, "enterHybridAtom"):
                 listener.enterHybridAtom(self)
 
-        def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitHybridAtom" ):
+        def exitRule(self, listener: ParseTreeListener):
+            if hasattr(listener, "exitHybridAtom"):
                 listener.exitHybridAtom(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitHybridAtom" ):
+        def accept(self, visitor: ParseTreeVisitor):
+            if hasattr(visitor, "visitHybridAtom"):
                 return visitor.visitHybridAtom(self)
             else:
                 return visitor.visitChildren(self)
 
-
     class ManaCostHybridContext(HybridContext):
-
-        def __init__(self, parser, ctx:ParserRuleContext): # actually a manacost_grammarParser.HybridContext
+        def __init__(self, parser, ctx: ParserRuleContext):  # actually a manacost_grammarParser.HybridContext
             super().__init__(parser)
             self.copyFrom(ctx)
 
         def mana_cost(self):
-            return self.getTypedRuleContext(manacost_grammarParser.Mana_costContext,0)
+            return self.getTypedRuleContext(manacost_grammarParser.Mana_costContext, 0)
 
         def hybrid(self):
-            return self.getTypedRuleContext(manacost_grammarParser.HybridContext,0)
+            return self.getTypedRuleContext(manacost_grammarParser.HybridContext, 0)
 
-
-        def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterManaCostHybrid" ):
+        def enterRule(self, listener: ParseTreeListener):
+            if hasattr(listener, "enterManaCostHybrid"):
                 listener.enterManaCostHybrid(self)
 
-        def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitManaCostHybrid" ):
+        def exitRule(self, listener: ParseTreeListener):
+            if hasattr(listener, "exitManaCostHybrid"):
                 listener.exitManaCostHybrid(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitManaCostHybrid" ):
+        def accept(self, visitor: ParseTreeVisitor):
+            if hasattr(visitor, "visitManaCostHybrid"):
                 return visitor.visitManaCostHybrid(self)
             else:
                 return visitor.visitChildren(self)
 
-
     class AtomHybridContext(HybridContext):
-
-        def __init__(self, parser, ctx:ParserRuleContext): # actually a manacost_grammarParser.HybridContext
+        def __init__(self, parser, ctx: ParserRuleContext):  # actually a manacost_grammarParser.HybridContext
             super().__init__(parser)
             self.copyFrom(ctx)
 
         def mana_cost_atom(self):
-            return self.getTypedRuleContext(manacost_grammarParser.Mana_cost_atomContext,0)
+            return self.getTypedRuleContext(manacost_grammarParser.Mana_cost_atomContext, 0)
 
         def hybrid(self):
-            return self.getTypedRuleContext(manacost_grammarParser.HybridContext,0)
+            return self.getTypedRuleContext(manacost_grammarParser.HybridContext, 0)
 
-
-        def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterAtomHybrid" ):
+        def enterRule(self, listener: ParseTreeListener):
+            if hasattr(listener, "enterAtomHybrid"):
                 listener.enterAtomHybrid(self)
 
-        def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitAtomHybrid" ):
+        def exitRule(self, listener: ParseTreeListener):
+            if hasattr(listener, "exitAtomHybrid"):
                 listener.exitAtomHybrid(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitAtomHybrid" ):
+        def accept(self, visitor: ParseTreeVisitor):
+            if hasattr(visitor, "visitAtomHybrid"):
                 return visitor.visitAtomHybrid(self)
             else:
                 return visitor.visitChildren(self)
 
-
-
     def hybrid(self):
-
         localctx = manacost_grammarParser.HybridContext(self, self._ctx, self.state)
         self.enterRule(localctx, 6, self.RULE_hybrid)
         try:
             self.state = 47
             self._errHandler.sync(self)
-            la_ = self._interp.adaptivePredict(self._input,3,self._ctx)
+            la_ = self._interp.adaptivePredict(self._input, 3, self._ctx)
             if la_ == 1:
                 localctx = manacost_grammarParser.HybridAtomContext(self, localctx)
                 self.enterOuterAlt(localctx, 1)
@@ -600,7 +568,6 @@ class manacost_grammarParser ( Parser ):
                 self.hybrid()
                 pass
 
-
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -610,264 +577,257 @@ class manacost_grammarParser ( Parser ):
         return localctx
 
     class Mana_cost_symbolContext(ParserRuleContext):
-
-        def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
+        def __init__(self, parser, parent: ParserRuleContext = None, invokingState: int = -1):
             super().__init__(parent, invokingState)
             self.parser = parser
-
 
         def getRuleIndex(self):
             return manacost_grammarParser.RULE_mana_cost_symbol
 
-     
-        def copyFrom(self, ctx:ParserRuleContext):
+        def copyFrom(self, ctx: ParserRuleContext):
             super().copyFrom(ctx)
 
-
-
     class RedContext(Mana_cost_symbolContext):
-
-        def __init__(self, parser, ctx:ParserRuleContext): # actually a manacost_grammarParser.Mana_cost_symbolContext
+        def __init__(
+            self, parser, ctx: ParserRuleContext
+        ):  # actually a manacost_grammarParser.Mana_cost_symbolContext
             super().__init__(parser)
             self.copyFrom(ctx)
 
         def RED_SYMBOL(self):
             return self.getToken(manacost_grammarParser.RED_SYMBOL, 0)
 
-        def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterRed" ):
+        def enterRule(self, listener: ParseTreeListener):
+            if hasattr(listener, "enterRed"):
                 listener.enterRed(self)
 
-        def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitRed" ):
+        def exitRule(self, listener: ParseTreeListener):
+            if hasattr(listener, "exitRed"):
                 listener.exitRed(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitRed" ):
+        def accept(self, visitor: ParseTreeVisitor):
+            if hasattr(visitor, "visitRed"):
                 return visitor.visitRed(self)
             else:
                 return visitor.visitChildren(self)
 
-
     class WhiteContext(Mana_cost_symbolContext):
-
-        def __init__(self, parser, ctx:ParserRuleContext): # actually a manacost_grammarParser.Mana_cost_symbolContext
+        def __init__(
+            self, parser, ctx: ParserRuleContext
+        ):  # actually a manacost_grammarParser.Mana_cost_symbolContext
             super().__init__(parser)
             self.copyFrom(ctx)
 
         def WHITE_SYMBOL(self):
             return self.getToken(manacost_grammarParser.WHITE_SYMBOL, 0)
 
-        def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterWhite" ):
+        def enterRule(self, listener: ParseTreeListener):
+            if hasattr(listener, "enterWhite"):
                 listener.enterWhite(self)
 
-        def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitWhite" ):
+        def exitRule(self, listener: ParseTreeListener):
+            if hasattr(listener, "exitWhite"):
                 listener.exitWhite(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitWhite" ):
+        def accept(self, visitor: ParseTreeVisitor):
+            if hasattr(visitor, "visitWhite"):
                 return visitor.visitWhite(self)
             else:
                 return visitor.visitChildren(self)
 
-
     class ColorlessContext(Mana_cost_symbolContext):
-
-        def __init__(self, parser, ctx:ParserRuleContext): # actually a manacost_grammarParser.Mana_cost_symbolContext
+        def __init__(
+            self, parser, ctx: ParserRuleContext
+        ):  # actually a manacost_grammarParser.Mana_cost_symbolContext
             super().__init__(parser)
             self.copyFrom(ctx)
 
         def COLORLESS_SYMBOL(self):
             return self.getToken(manacost_grammarParser.COLORLESS_SYMBOL, 0)
 
-        def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterColorless" ):
+        def enterRule(self, listener: ParseTreeListener):
+            if hasattr(listener, "enterColorless"):
                 listener.enterColorless(self)
 
-        def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitColorless" ):
+        def exitRule(self, listener: ParseTreeListener):
+            if hasattr(listener, "exitColorless"):
                 listener.exitColorless(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitColorless" ):
+        def accept(self, visitor: ParseTreeVisitor):
+            if hasattr(visitor, "visitColorless"):
                 return visitor.visitColorless(self)
             else:
                 return visitor.visitChildren(self)
 
-
     class VariableContext(Mana_cost_symbolContext):
-
-        def __init__(self, parser, ctx:ParserRuleContext): # actually a manacost_grammarParser.Mana_cost_symbolContext
+        def __init__(
+            self, parser, ctx: ParserRuleContext
+        ):  # actually a manacost_grammarParser.Mana_cost_symbolContext
             super().__init__(parser)
             self.copyFrom(ctx)
 
         def VARIABLE_SYMBOL(self):
             return self.getToken(manacost_grammarParser.VARIABLE_SYMBOL, 0)
 
-        def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterVariable" ):
+        def enterRule(self, listener: ParseTreeListener):
+            if hasattr(listener, "enterVariable"):
                 listener.enterVariable(self)
 
-        def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitVariable" ):
+        def exitRule(self, listener: ParseTreeListener):
+            if hasattr(listener, "exitVariable"):
                 listener.exitVariable(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitVariable" ):
+        def accept(self, visitor: ParseTreeVisitor):
+            if hasattr(visitor, "visitVariable"):
                 return visitor.visitVariable(self)
             else:
                 return visitor.visitChildren(self)
 
-
     class SnowContext(Mana_cost_symbolContext):
-
-        def __init__(self, parser, ctx:ParserRuleContext): # actually a manacost_grammarParser.Mana_cost_symbolContext
+        def __init__(
+            self, parser, ctx: ParserRuleContext
+        ):  # actually a manacost_grammarParser.Mana_cost_symbolContext
             super().__init__(parser)
             self.copyFrom(ctx)
 
         def SNOW_SYMBOL(self):
             return self.getToken(manacost_grammarParser.SNOW_SYMBOL, 0)
 
-        def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterSnow" ):
+        def enterRule(self, listener: ParseTreeListener):
+            if hasattr(listener, "enterSnow"):
                 listener.enterSnow(self)
 
-        def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitSnow" ):
+        def exitRule(self, listener: ParseTreeListener):
+            if hasattr(listener, "exitSnow"):
                 listener.exitSnow(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitSnow" ):
+        def accept(self, visitor: ParseTreeVisitor):
+            if hasattr(visitor, "visitSnow"):
                 return visitor.visitSnow(self)
             else:
                 return visitor.visitChildren(self)
 
-
     class BlueContext(Mana_cost_symbolContext):
-
-        def __init__(self, parser, ctx:ParserRuleContext): # actually a manacost_grammarParser.Mana_cost_symbolContext
+        def __init__(
+            self, parser, ctx: ParserRuleContext
+        ):  # actually a manacost_grammarParser.Mana_cost_symbolContext
             super().__init__(parser)
             self.copyFrom(ctx)
 
         def BLUE_SYMBOL(self):
             return self.getToken(manacost_grammarParser.BLUE_SYMBOL, 0)
 
-        def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterBlue" ):
+        def enterRule(self, listener: ParseTreeListener):
+            if hasattr(listener, "enterBlue"):
                 listener.enterBlue(self)
 
-        def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitBlue" ):
+        def exitRule(self, listener: ParseTreeListener):
+            if hasattr(listener, "exitBlue"):
                 listener.exitBlue(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitBlue" ):
+        def accept(self, visitor: ParseTreeVisitor):
+            if hasattr(visitor, "visitBlue"):
                 return visitor.visitBlue(self)
             else:
                 return visitor.visitChildren(self)
 
-
     class GenericContext(Mana_cost_symbolContext):
-
-        def __init__(self, parser, ctx:ParserRuleContext): # actually a manacost_grammarParser.Mana_cost_symbolContext
+        def __init__(
+            self, parser, ctx: ParserRuleContext
+        ):  # actually a manacost_grammarParser.Mana_cost_symbolContext
             super().__init__(parser)
             self.copyFrom(ctx)
 
         def GENERIC_SYMBOL(self):
             return self.getToken(manacost_grammarParser.GENERIC_SYMBOL, 0)
 
-        def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterGeneric" ):
+        def enterRule(self, listener: ParseTreeListener):
+            if hasattr(listener, "enterGeneric"):
                 listener.enterGeneric(self)
 
-        def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitGeneric" ):
+        def exitRule(self, listener: ParseTreeListener):
+            if hasattr(listener, "exitGeneric"):
                 listener.exitGeneric(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitGeneric" ):
+        def accept(self, visitor: ParseTreeVisitor):
+            if hasattr(visitor, "visitGeneric"):
                 return visitor.visitGeneric(self)
             else:
                 return visitor.visitChildren(self)
 
-
     class BlackContext(Mana_cost_symbolContext):
-
-        def __init__(self, parser, ctx:ParserRuleContext): # actually a manacost_grammarParser.Mana_cost_symbolContext
+        def __init__(
+            self, parser, ctx: ParserRuleContext
+        ):  # actually a manacost_grammarParser.Mana_cost_symbolContext
             super().__init__(parser)
             self.copyFrom(ctx)
 
         def BLACK_SYMBOL(self):
             return self.getToken(manacost_grammarParser.BLACK_SYMBOL, 0)
 
-        def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterBlack" ):
+        def enterRule(self, listener: ParseTreeListener):
+            if hasattr(listener, "enterBlack"):
                 listener.enterBlack(self)
 
-        def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitBlack" ):
+        def exitRule(self, listener: ParseTreeListener):
+            if hasattr(listener, "exitBlack"):
                 listener.exitBlack(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitBlack" ):
+        def accept(self, visitor: ParseTreeVisitor):
+            if hasattr(visitor, "visitBlack"):
                 return visitor.visitBlack(self)
             else:
                 return visitor.visitChildren(self)
 
-
     class PhyrexianContext(Mana_cost_symbolContext):
-
-        def __init__(self, parser, ctx:ParserRuleContext): # actually a manacost_grammarParser.Mana_cost_symbolContext
+        def __init__(
+            self, parser, ctx: ParserRuleContext
+        ):  # actually a manacost_grammarParser.Mana_cost_symbolContext
             super().__init__(parser)
             self.copyFrom(ctx)
 
         def PHYREXIAN_SYMBOL(self):
             return self.getToken(manacost_grammarParser.PHYREXIAN_SYMBOL, 0)
 
-        def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterPhyrexian" ):
+        def enterRule(self, listener: ParseTreeListener):
+            if hasattr(listener, "enterPhyrexian"):
                 listener.enterPhyrexian(self)
 
-        def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitPhyrexian" ):
+        def exitRule(self, listener: ParseTreeListener):
+            if hasattr(listener, "exitPhyrexian"):
                 listener.exitPhyrexian(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitPhyrexian" ):
+        def accept(self, visitor: ParseTreeVisitor):
+            if hasattr(visitor, "visitPhyrexian"):
                 return visitor.visitPhyrexian(self)
             else:
                 return visitor.visitChildren(self)
 
-
     class GreenContext(Mana_cost_symbolContext):
-
-        def __init__(self, parser, ctx:ParserRuleContext): # actually a manacost_grammarParser.Mana_cost_symbolContext
+        def __init__(
+            self, parser, ctx: ParserRuleContext
+        ):  # actually a manacost_grammarParser.Mana_cost_symbolContext
             super().__init__(parser)
             self.copyFrom(ctx)
 
         def GREEN_SYMBOL(self):
             return self.getToken(manacost_grammarParser.GREEN_SYMBOL, 0)
 
-        def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterGreen" ):
+        def enterRule(self, listener: ParseTreeListener):
+            if hasattr(listener, "enterGreen"):
                 listener.enterGreen(self)
 
-        def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitGreen" ):
+        def exitRule(self, listener: ParseTreeListener):
+            if hasattr(listener, "exitGreen"):
                 listener.exitGreen(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitGreen" ):
+        def accept(self, visitor: ParseTreeVisitor):
+            if hasattr(visitor, "visitGreen"):
                 return visitor.visitGreen(self)
             else:
                 return visitor.visitChildren(self)
 
-
-
     def mana_cost_symbol(self):
-
         localctx = manacost_grammarParser.Mana_cost_symbolContext(self, self._ctx, self.state)
         self.enterRule(localctx, 8, self.RULE_mana_cost_symbol)
         try:
@@ -945,9 +905,7 @@ class manacost_grammarParser ( Parser ):
             self.exitRule()
         return localctx
 
-
-
-    def sempred(self, localctx:RuleContext, ruleIndex:int, predIndex:int):
+    def sempred(self, localctx: RuleContext, ruleIndex: int, predIndex: int):
         if self._predicates == None:
             self._predicates = dict()
         self._predicates[1] = self.mana_cost_sempred
@@ -957,11 +915,6 @@ class manacost_grammarParser ( Parser ):
         else:
             return pred(localctx, predIndex)
 
-    def mana_cost_sempred(self, localctx:Mana_costContext, predIndex:int):
-            if predIndex == 0:
-                return self.precpred(self._ctx, 1)
-         
-
-
-
-
+    def mana_cost_sempred(self, localctx: Mana_costContext, predIndex: int):
+        if predIndex == 0:
+            return self.precpred(self._ctx, 1)

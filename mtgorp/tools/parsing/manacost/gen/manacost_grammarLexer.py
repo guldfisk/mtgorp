@@ -1,8 +1,9 @@
 # Generated from /home/biggenerals/PycharmProjects/mtgorp/mtgorp/tools/parsing/manacost/manacost_grammar.g4 by ANTLR 4.7
-from antlr4 import *
+import sys
 from io import StringIO
 from typing.io import TextIO
-import sys
+
+from antlr4 import *
 
 
 def serializedATN():
@@ -19,11 +20,11 @@ def serializedATN():
         buf.write("\3\2\2\2\2\t\3\2\2\2\2\13\3\2\2\2\2\r\3\2\2\2\2\17\3\2")
         buf.write("\2\2\2\21\3\2\2\2\2\23\3\2\2\2\2\25\3\2\2\2\2\27\3\2\2")
         buf.write("\2\2\31\3\2\2\2\2\33\3\2\2\2\3\35\3\2\2\2\5\37\3\2\2\2")
-        buf.write("\7!\3\2\2\2\t#\3\2\2\2\13%\3\2\2\2\r\'\3\2\2\2\17)\3\2")
+        buf.write("\7!\3\2\2\2\t#\3\2\2\2\13%\3\2\2\2\r'\3\2\2\2\17)\3\2")
         buf.write("\2\2\21+\3\2\2\2\23-\3\2\2\2\25/\3\2\2\2\27\61\3\2\2\2")
         buf.write("\31\64\3\2\2\2\338\3\2\2\2\35\36\7}\2\2\36\4\3\2\2\2\37")
-        buf.write(" \7\177\2\2 \6\3\2\2\2!\"\7\61\2\2\"\b\3\2\2\2#$\t\2\2")
-        buf.write("\2$\n\3\2\2\2%&\t\3\2\2&\f\3\2\2\2\'(\t\4\2\2(\16\3\2")
+        buf.write(' \7\177\2\2 \6\3\2\2\2!"\7\61\2\2"\b\3\2\2\2#$\t\2\2')
+        buf.write("\2$\n\3\2\2\2%&\t\3\2\2&\f\3\2\2\2'(\t\4\2\2(\16\3\2")
         buf.write("\2\2)*\t\5\2\2*\20\3\2\2\2+,\t\6\2\2,\22\3\2\2\2-.\t\7")
         buf.write("\2\2.\24\3\2\2\2/\60\t\b\2\2\60\26\3\2\2\2\61\62\t\t\2")
         buf.write("\2\62\30\3\2\2\2\63\65\t\n\2\2\64\63\3\2\2\2\65\66\3\2")
@@ -33,10 +34,9 @@ def serializedATN():
 
 
 class manacost_grammarLexer(Lexer):
-
     atn = ATNDeserializer().deserialize(serializedATN())
 
-    decisionsToDFA = [ DFA(ds, i) for i, ds in enumerate(atn.decisionToState) ]
+    decisionsToDFA = [DFA(ds, i) for i, ds in enumerate(atn.decisionToState)]
 
     T__0 = 1
     T__1 = 2
@@ -52,29 +52,47 @@ class manacost_grammarLexer(Lexer):
     GENERIC_SYMBOL = 12
     VARIABLE_SYMBOL = 13
 
-    channelNames = [ u"DEFAULT_TOKEN_CHANNEL", u"HIDDEN" ]
+    channelNames = ["DEFAULT_TOKEN_CHANNEL", "HIDDEN"]
 
-    modeNames = [ "DEFAULT_MODE" ]
+    modeNames = ["DEFAULT_MODE"]
 
-    literalNames = [ "<INVALID>",
-            "'{'", "'}'", "'/'" ]
+    literalNames = ["<INVALID>", "'{'", "'}'", "'/'"]
 
-    symbolicNames = [ "<INVALID>",
-            "WHITE_SYMBOL", "BLUE_SYMBOL", "BLACK_SYMBOL", "RED_SYMBOL", 
-            "GREEN_SYMBOL", "PHYREXIAN_SYMBOL", "SNOW_SYMBOL", "COLORLESS_SYMBOL", 
-            "GENERIC_SYMBOL", "VARIABLE_SYMBOL" ]
+    symbolicNames = [
+        "<INVALID>",
+        "WHITE_SYMBOL",
+        "BLUE_SYMBOL",
+        "BLACK_SYMBOL",
+        "RED_SYMBOL",
+        "GREEN_SYMBOL",
+        "PHYREXIAN_SYMBOL",
+        "SNOW_SYMBOL",
+        "COLORLESS_SYMBOL",
+        "GENERIC_SYMBOL",
+        "VARIABLE_SYMBOL",
+    ]
 
-    ruleNames = [ "T__0", "T__1", "T__2", "WHITE_SYMBOL", "BLUE_SYMBOL", 
-                  "BLACK_SYMBOL", "RED_SYMBOL", "GREEN_SYMBOL", "PHYREXIAN_SYMBOL", 
-                  "SNOW_SYMBOL", "COLORLESS_SYMBOL", "GENERIC_SYMBOL", "VARIABLE_SYMBOL" ]
+    ruleNames = [
+        "T__0",
+        "T__1",
+        "T__2",
+        "WHITE_SYMBOL",
+        "BLUE_SYMBOL",
+        "BLACK_SYMBOL",
+        "RED_SYMBOL",
+        "GREEN_SYMBOL",
+        "PHYREXIAN_SYMBOL",
+        "SNOW_SYMBOL",
+        "COLORLESS_SYMBOL",
+        "GENERIC_SYMBOL",
+        "VARIABLE_SYMBOL",
+    ]
 
     grammarFileName = "manacost_grammar.g4"
 
-    def __init__(self, input=None, output:TextIO = sys.stdout):
+    def __init__(self, input=None, output: TextIO = sys.stdout):
         super().__init__(input, output)
         self.checkVersion("4.7")
         self._interp = LexerATNSimulator(self, self.atn, self.decisionsToDFA, PredictionContextCache())
         self._actions = None
         self._predicates = None
-
-

@@ -1,5 +1,4 @@
 from mtgorp.models.persistent.attributes.layout import Layout
-
 from mtgorp.tools.parsing.exceptions import ParseException
 
 
@@ -8,9 +7,7 @@ class LayoutParseException(ParseException):
 
 
 class LayoutParser(object):
-    layout_map = {
-        t.name.lower(): t for t in Layout
-    }
+    layout_map = {t.name.lower(): t for t in Layout}
 
     @classmethod
     def _unique_rarity(cls, s: str) -> Layout:

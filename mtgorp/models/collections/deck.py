@@ -5,12 +5,16 @@ from abc import abstractmethod
 
 from yeetlong.multiset import FrozenMultiset
 
-from mtgorp.models.interfaces import Printing, Cardboard
-from mtgorp.models.serilization.serializeable import Serializeable, serialization_model, Inflator
+from mtgorp.models.interfaces import Cardboard, Printing
+from mtgorp.models.serilization.serializeable import (
+    Inflator,
+    Serializeable,
+    serialization_model,
+)
 
 
 Deckable = t.Union[Printing, Cardboard]
-D = t.TypeVar('D', bound = Deckable)
+D = t.TypeVar("D", bound=Deckable)
 
 
 class BaseDeck(t.Generic[D], Serializeable):
@@ -22,19 +26,13 @@ class BaseDeck(t.Generic[D], Serializeable):
         sideboard: t.Union[t.Iterable[D], t.Iterable[t.Tuple[D, int]], None] = None,
     ):
         self._maindeck: FrozenMultiset[D] = (
-            maindeck
-            if isinstance(maindeck, FrozenMultiset)
-            else FrozenMultiset(maindeck)
+            maindeck if isinstance(maindeck, FrozenMultiset) else FrozenMultiset(maindeck)
         )
 
         self._sideboard: FrozenMultiset[D] = (
-            (
-                sideboard
-                if isinstance(sideboard, FrozenMultiset) else
-                FrozenMultiset(sideboard)
-            )
-            if sideboard is not None else
-            FrozenMultiset()
+            (sideboard if isinstance(sideboard, FrozenMultiset) else FrozenMultiset(sideboard))
+            if sideboard is not None
+            else FrozenMultiset()
         )
 
     @property
@@ -63,12 +61,12 @@ class BaseDeck(t.Generic[D], Serializeable):
         return hash(self.seventy_five)
 
     def __repr__(self) -> str:
-        return f'{self.__class__.__name__}({len(self._maindeck)}, {len(self._sideboard)})'
+        return f"{self.__class__.__name__}({len(self._maindeck)}, {len(self._sideboard)})"
 
     def serialize(self) -> serialization_model:
         return {
-            'maindeck': list(self._maindeck),
-            'sideboard': list(self._sideboard),
+            "maindeck": list(self._maindeck),
+            "sideboard": list(self._sideboard),
         }
 
     @classmethod
@@ -78,22 +76,20 @@ class BaseDeck(t.Generic[D], Serializeable):
 
 
 class CardboardDeck(BaseDeck[Cardboard]):
-
     @classmethod
     def deserialize(cls, value: serialization_model, inflator: Inflator) -> BaseDeck:
         return cls(
-            inflator.inflate_all(Cardboard, value['maindeck']),
-            inflator.inflate_all(Cardboard, value.get('sideboard', ())),
+            inflator.inflate_all(Cardboard, value["maindeck"]),
+            inflator.inflate_all(Cardboard, value.get("sideboard", ())),
         )
 
 
 class Deck(BaseDeck[Printing]):
-
     @classmethod
     def deserialize(cls, value: serialization_model, inflator: Inflator) -> Deck:
         return cls(
-            inflator.inflate_all(Printing, value['maindeck']),
-            inflator.inflate_all(Printing, value.get('sideboard', ())),
+            inflator.inflate_all(Printing, value["maindeck"]),
+            inflator.inflate_all(Printing, value.get("sideboard", ())),
         )
 
     @property

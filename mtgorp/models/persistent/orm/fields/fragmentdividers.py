@@ -9,12 +9,12 @@ class FragmentDividersField(types.TypeDecorator):
     def process_bind_param(self, value: t.Optional[t.Sequence[int]], dialect) -> t.Optional[str]:
         if value is None:
             return None
-        return ','.join(map(str, value))
+        return ",".join(map(str, value))
 
     def process_result_value(self, value: t.Optional[str], dialect) -> t.Optional[t.Sequence[int]]:
         if not value:
             return None
-        return tuple(map(int, value.split(',')))
+        return tuple(map(int, value.split(",")))
 
     def process_literal_param(self, value, dialect):
         pass

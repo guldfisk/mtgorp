@@ -1,7 +1,10 @@
 import typing as t
 
-from mtgorp.models.persistent.attributes.typeline import TypeLine, ALL_TYPES, BaseCardType
-
+from mtgorp.models.persistent.attributes.typeline import (
+    ALL_TYPES,
+    BaseCardType,
+    TypeLine,
+)
 from mtgorp.tools.parsing.exceptions import ParseException
 
 
@@ -10,9 +13,7 @@ class TypeParseException(ParseException):
 
 
 class TypeLineParser(object):
-    type_map = {
-        t.name.lower(): t for t in ALL_TYPES
-    }
+    type_map = {t.name.lower(): t for t in ALL_TYPES}
 
     @classmethod
     def _unique_type(cls, s: str) -> BaseCardType:

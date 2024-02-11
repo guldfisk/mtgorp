@@ -1,19 +1,18 @@
 from __future__ import annotations
 
 import typing as t
-from abc import ABCMeta, abstractmethod, ABC
+from abc import ABC, ABCMeta, abstractmethod
 
 from mtgorp.models.interfaces import Cardboard, Printing
 from mtgorp.tools.search import extraction as e
 
 
-T = t.TypeVar('T')
+T = t.TypeVar("T")
 
 searchable = t.Union[Cardboard, Printing]
 
 
 class Matchable(object):
-
     @abstractmethod
     def match(self, model: searchable, strategy: t.Type[e.ExtractionStrategy]) -> bool:
         pass
@@ -26,33 +25,26 @@ class Matchable(object):
         pass
 
 
-class AttributeMatch(Matchable, metaclass = ABCMeta):
-
+class AttributeMatch(Matchable, metaclass=ABCMeta):
     def __init__(self, extractor: t.Type[e.Extractor], value: t.Union[t.Type[e.Extractor], t.Any]):
         self._extractor = extractor
         self._value = value
         self.__check = (
             self._check_value_is_extractor
-            if isinstance(value, type) and issubclass(value, e.Extractor) else
-            self._check_value
+            if isinstance(value, type) and issubclass(value, e.Extractor)
+            else self._check_value
         )
 
     def __eq__(self, other):
         return (
-            isinstance(other, self.__class__)
-            and self._extractor == other._extractor
-            and self._value == other._value
+            isinstance(other, self.__class__) and self._extractor == other._extractor and self._value == other._value
         )
 
     def __hash__(self):
         return hash((self.__class__, self._extractor, self._value))
 
     def match(self, model: searchable, strategy: t.Type[e.ExtractionStrategy]) -> bool:
-        return any(
-            self.__check(extracted, model)
-            for extracted in
-            self._extractor.extract(model, strategy)
-        )
+        return any(self.__check(extracted, model) for extracted in self._extractor.extract(model, strategy))
 
     def __check(self, remote, model: searchable) -> bool:
         pass
@@ -62,10 +54,7 @@ class AttributeMatch(Matchable, metaclass = ABCMeta):
 
     def _check_value_is_extractor(self, remote, model: searchable) -> bool:
         return any(
-            extracted is not None
-            and self._check(extracted, remote)
-            for extracted in
-            self._value.extract(model)
+            extracted is not None and self._check(extracted, remote) for extracted in self._value.extract(model)
         )
 
     @classmethod
@@ -74,117 +63,103 @@ class AttributeMatch(Matchable, metaclass = ABCMeta):
         pass
 
     def __repr__(self) -> str:
-        return '{}({}, {})'.format(
+        return "{}({}, {})".format(
             self.__class__.__name__,
             self._extractor.__name__,
-            (
-                self._value.__name__
-                if isinstance(self._value, type) else
-                self._value
-            ),
+            (self._value.__name__ if isinstance(self._value, type) else self._value),
         )
 
 
 class Equals(AttributeMatch):
-
     @classmethod
     def _check(cls, own, remote) -> bool:
         return own == remote
 
     def explain(self) -> str:
-        return '{} = {}'.format(
+        return "{} = {}".format(
             self._extractor.explain(),
             self._value,
         )
 
 
 class GreaterThan(AttributeMatch):
-
     @classmethod
     def _check(cls, own, remote) -> bool:
         return remote > own
 
     def explain(self) -> str:
-        return '{} > {}'.format(
+        return "{} > {}".format(
             self._extractor.explain(),
             self._value,
         )
 
 
 class GreaterThanOrEquals(AttributeMatch):
-
     @classmethod
     def _check(cls, own, remote) -> bool:
         return remote >= own
 
     def explain(self) -> str:
-        return '{} >= {}'.format(
+        return "{} >= {}".format(
             self._extractor.explain(),
             self._value,
         )
 
 
 class LessThan(AttributeMatch):
-
     @classmethod
     def _check(cls, own, remote) -> bool:
         return remote < own
 
     def explain(self) -> str:
-        return '{} < {}'.format(
+        return "{} < {}".format(
             self._extractor.explain(),
             self._value,
         )
 
 
 class LessThanOrEquals(AttributeMatch):
-
     @classmethod
     def _check(cls, own, remote) -> bool:
         return remote <= own
 
     def explain(self) -> str:
-        return '{} <= {}'.format(
+        return "{} <= {}".format(
             self._extractor.explain(),
             self._value,
         )
 
 
 class Contains(AttributeMatch):
-
     @classmethod
     def _check(cls, own, remote) -> bool:
         return own in remote
 
     def explain(self) -> str:
-        return '{} contains {}'.format(
+        return "{} contains {}".format(
             self._extractor.explain(),
             self._value,
         )
 
 
 class ContainedIn(AttributeMatch):
-
     @classmethod
     def _check(cls, own, remote) -> bool:
         return remote in own
 
     def explain(self) -> str:
-        return '{} contained in {}'.format(
+        return "{} contained in {}".format(
             self._extractor.explain(),
             self._value,
         )
 
 
-class Criteria(Matchable, metaclass = ABCMeta):
-
+class Criteria(Matchable, metaclass=ABCMeta):
     def __init__(self, checkables: t.AbstractSet[Matchable]):
         self._matchables = frozenset(checkables)
 
     def _and(self, checkable: Matchable):
-        return self.__class__(
-            self._matchables | frozenset((checkable,))
-        )
+        return self.__class__(self._matchables | frozenset((checkable,)))
 
     @abstractmethod
     def match(self, model: searchable, strategy: t.Type[e.ExtractionStrategy]) -> bool:
@@ -198,53 +173,38 @@ class Criteria(Matchable, metaclass = ABCMeta):
         return (model for model in models if self.match(model, strategy))
 
     def __eq__(self, other):
-        return (
-            isinstance(other, self.__class__)
-            and self._matchables == other._matchables
-        )
+        return isinstance(other, self.__class__) and self._matchables == other._matchables
 
     def __hash__(self):
         return hash((self.__class__, self._matchables))
 
     def __repr__(self):
-        return '{}({})'.format(
-            self.__class__.__name__,
-            ', '.join(map(str, self._matchables))
-        )
+        return "{}({})".format(self.__class__.__name__, ", ".join(map(str, self._matchables)))
 
 
 class All(Criteria):
-
     def match(self, model: searchable, strategy: t.Type[e.ExtractionStrategy]) -> bool:
         return all(check.match(model, strategy) for check in self._matchables)
 
     def explain(self) -> str:
-        return ' and '.join(
-            '(' + matchable.explain() + ')'
-            if isinstance(matchable, Criteria) else
-            matchable.explain()
-            for matchable in
-            self._matchables
+        return " and ".join(
+            "(" + matchable.explain() + ")" if isinstance(matchable, Criteria) else matchable.explain()
+            for matchable in self._matchables
         )
 
 
 class Any(Criteria):
-
     def match(self, model: searchable, strategy: t.Type[e.ExtractionStrategy]) -> bool:
         return any(check.match(model, strategy) for check in self._matchables)
 
     def explain(self) -> str:
-        return ' or '.join(
-            '(' + matchable.explain() + ')'
-            if isinstance(matchable, Criteria) else
-            matchable.explain()
-            for matchable in
-            self._matchables
+        return " or ".join(
+            "(" + matchable.explain() + ")" if isinstance(matchable, Criteria) else matchable.explain()
+            for matchable in self._matchables
         )
 
 
 class Not(Matchable):
-
     def __init__(self, wrapping: Matchable):
         self._wrapping = wrapping
 
@@ -252,26 +212,22 @@ class Not(Matchable):
         return not self._wrapping.match(model, strategy)
 
     def explain(self) -> str:
-        return 'not {}'.format(self._wrapping.explain())
+        return "not {}".format(self._wrapping.explain())
 
     def __hash__(self):
         return hash((self.__class__, self._wrapping))
 
     def __eq__(self, other):
-        return (
-            isinstance(other, self.__class__)
-            and self._wrapping == other._wrapping
-        )
+        return isinstance(other, self.__class__) and self._wrapping == other._wrapping
 
     def __repr__(self):
-        return '{}({})'.format(
+        return "{}({})".format(
             self.__class__.__name__,
             self._wrapping,
         )
 
 
 class Pattern(t.Generic[T]):
-
     def __init__(self, matcher: Matchable, strategy: t.Type[e.ExtractionStrategy[T]]):
         self._matcher = matcher
         self._strategy = strategy
@@ -284,20 +240,10 @@ class Pattern(t.Generic[T]):
         return self._matcher.match(model, self._strategy)
 
     def matches(self, models: t.Iterable[T]) -> t.Iterator[T]:
-        return (
-            model
-            for model in
-            models
-            if self._matcher.match(model, self._strategy)
-        )
+        return (model for model in models if self._matcher.match(model, self._strategy))
 
     def inverse_matches(self, models: t.Iterable[T]) -> t.Iterator[T]:
-        return (
-            model
-            for model in
-            models
-            if not self._matcher.match(model, self._strategy)
-        )
+        return (model for model in models if not self._matcher.match(model, self._strategy))
 
     def matches_list(self, models: t.Iterable[T]) -> t.List[T]:
         return list(self.matches(models))
@@ -307,24 +253,20 @@ class Pattern(t.Generic[T]):
 
     def __eq__(self, other: object) -> bool:
         return (
-            isinstance(other, self.__class__)
-            and self._matcher == other._matcher
-            and self._strategy == other._strategy
+            isinstance(other, self.__class__) and self._matcher == other._matcher and self._strategy == other._strategy
         )
 
     def __repr__(self):
-        return f'{self.__class__.__name__}({self._matcher}, {self._strategy.__name__})'
+        return f"{self.__class__.__name__}({self._matcher}, {self._strategy.__name__})"
 
 
 class _NotDescriptor(object):
-
     def __get__(self, instance, owner) -> _CheckerBuilder:
         instance._negative = not instance._negative
         return instance
 
 
 class _CheckerBuilder(t.Generic[T]):
-
     def __init__(self, owner: _ExtractorBuilder[T], checker: t.Type[AttributeMatch]):
         self._owner = owner
         self._checker = checker
@@ -342,7 +284,6 @@ class _CheckerBuilder(t.Generic[T]):
 
 
 class _CheckerDescriptor(object):
-
     def __init__(self, checker: t.Type[AttributeMatch]):
         self.checker = checker
 
@@ -353,7 +294,6 @@ class _CheckerDescriptor(object):
 
 
 class _ExtractorBuilder(t.Generic[T]):
-
     def __init__(self, owner: Builder[T], extractor: t.Type[e.Extractor]):
         self.owner = owner
         self.extractor = extractor
@@ -368,7 +308,6 @@ class _ExtractorBuilder(t.Generic[T]):
 
 
 class Builder(ABC, t.Generic[T]):
-
     def __init__(self):
         self._set = set()
 
@@ -450,7 +389,6 @@ class Builder(ABC, t.Generic[T]):
 
 
 class CriteriaBuilder(Builder[Criteria]):
-
     def all(self) -> Criteria:
         return All(self._set)
 
@@ -459,13 +397,11 @@ class CriteriaBuilder(Builder[Criteria]):
 
 
 class PrintingPattern(Pattern[Printing]):
-
     def __init__(self, matcher: Matchable):
         super().__init__(matcher, e.PrintingStrategy)
 
 
 class PrintingPatternBuilder(Builder[PrintingPattern]):
-
     def all(self) -> Pattern[Printing]:
         return PrintingPattern(All(self._set))
 
@@ -474,7 +410,6 @@ class PrintingPatternBuilder(Builder[PrintingPattern]):
 
 
 class CardboardPatternBuilder(Builder[Pattern[Cardboard]]):
-
     def all(self) -> Pattern[Cardboard]:
         return Pattern(All(self._set), e.CardboardStrategy)
 

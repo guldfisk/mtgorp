@@ -2,21 +2,20 @@ import datetime
 import typing as t
 from abc import abstractmethod
 
-from sqlalchemy import MetaData, Table, Column, DateTime, Integer, LargeBinary, select
+from orp.database import OrpDatabase, OrpTable, PickleDatabase, PickleTable
+from orp.sql import SqlDatabase, SqlTable
+from sqlalchemy import Column, DateTime, Integer, LargeBinary, MetaData, Table, select
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
-from orp.database import OrpDatabase, OrpTable, PickleDatabase, PickleTable
-from orp.sql import SqlDatabase, SqlTable
-
+from mtgorp.models import interfaces as i
 from mtgorp.models.persistent.artist import Artist
 from mtgorp.models.persistent.block import Block
 from mtgorp.models.persistent.card import Card
 from mtgorp.models.persistent.cardboard import Cardboard
 from mtgorp.models.persistent.expansion import Expansion
-from mtgorp.models.persistent.printing import Printing
-from mtgorp.models import interfaces as i
 from mtgorp.models.persistent.orm import models as models
+from mtgorp.models.persistent.printing import Printing
 
 
 class CardDatabase(OrpDatabase):
@@ -57,11 +56,10 @@ class CardDatabase(OrpDatabase):
         pass
 
 
-DB = t.TypeVar('DB', bound = CardDatabase)
+DB = t.TypeVar("DB", bound=CardDatabase)
 
 
 class PickleCardDatabase(PickleDatabase, CardDatabase):
-
     def __init__(
         self,
         cards: PickleTable[str, Card],
@@ -101,17 +99,16 @@ class PickleCardDatabase(PickleDatabase, CardDatabase):
 metadata = MetaData()
 
 meta_info = Table(
-    'meta',
+    "meta",
     metadata,
-    Column('version', Integer, primary_key = True),
-    Column('created_at', DateTime),
-    Column('checksum', LargeBinary(256)),
-    Column('json_version', DateTime),
+    Column("version", Integer, primary_key=True),
+    Column("created_at", DateTime),
+    Column("checksum", LargeBinary(256)),
+    Column("json_version", DateTime),
 )
 
 
 class SqlCardDatabase(SqlDatabase, CardDatabase):
-
     def __init__(
         self,
         cards: SqlTable[str, models.Card],

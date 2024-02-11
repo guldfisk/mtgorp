@@ -1,22 +1,20 @@
 import typing as t
-
 from abc import ABCMeta, abstractmethod
 
-from mtgorp.models.interfaces import Expansion, Block, Cardboard, Printing
-from mtgorp.models.persistent.attributes.layout import Layout
-from mtgorp.models.persistent.attributes.rarities import Rarity
-from mtgorp.models.persistent.attributes.flags import Flags
-from mtgorp.models.persistent.attributes.typeline import TypeLine
-from mtgorp.models.persistent.attributes.manacosts import ManaCost
+from mtgorp.models.interfaces import Block, Cardboard, Expansion, Printing
 from mtgorp.models.persistent.attributes.colors import Color
+from mtgorp.models.persistent.attributes.flags import Flags
+from mtgorp.models.persistent.attributes.layout import Layout
+from mtgorp.models.persistent.attributes.manacosts import ManaCost
 from mtgorp.models.persistent.attributes.powertoughness import PTValue
+from mtgorp.models.persistent.attributes.rarities import Rarity
+from mtgorp.models.persistent.attributes.typeline import TypeLine
 
 
-T = t.TypeVar('T')
+T = t.TypeVar("T")
 
 
-class ExtractionStrategy(t.Generic[T], metaclass = ABCMeta):
-
+class ExtractionStrategy(t.Generic[T], metaclass=ABCMeta):
     @classmethod
     @abstractmethod
     def extract_name(cls, extractable: T) -> t.Iterable[str]:
@@ -103,7 +101,7 @@ class ExtractionStrategy(t.Generic[T], metaclass = ABCMeta):
         pass
 
 
-class Extractor(t.Generic[T], metaclass = ABCMeta):
+class Extractor(t.Generic[T], metaclass=ABCMeta):
     extraction_type = None
 
     @classmethod
@@ -126,7 +124,7 @@ class NameExtractor(Extractor[str]):
 
     @classmethod
     def explain(cls) -> str:
-        return 'name'
+        return "name"
 
 
 class LayoutExtractor(Extractor[Layout]):
@@ -138,7 +136,7 @@ class LayoutExtractor(Extractor[Layout]):
 
     @classmethod
     def explain(cls) -> str:
-        return 'layout'
+        return "layout"
 
 
 class CmcExtractor(Extractor[int]):
@@ -150,7 +148,7 @@ class CmcExtractor(Extractor[int]):
 
     @classmethod
     def explain(cls) -> str:
-        return 'cmc'
+        return "cmc"
 
 
 class RarityExtractor(Extractor[Rarity]):
@@ -162,7 +160,7 @@ class RarityExtractor(Extractor[Rarity]):
 
     @classmethod
     def explain(cls) -> str:
-        return 'rarity'
+        return "rarity"
 
 
 class FlagsExtractor(Extractor[Flags]):
@@ -174,7 +172,7 @@ class FlagsExtractor(Extractor[Flags]):
 
     @classmethod
     def explain(cls) -> str:
-        return 'flags'
+        return "flags"
 
 
 class TypeLineExtractor(Extractor[TypeLine]):
@@ -186,7 +184,7 @@ class TypeLineExtractor(Extractor[TypeLine]):
 
     @classmethod
     def explain(cls) -> str:
-        return 'type line'
+        return "type line"
 
 
 class ManaCostExtractor(Extractor[ManaCost]):
@@ -198,7 +196,7 @@ class ManaCostExtractor(Extractor[ManaCost]):
 
     @classmethod
     def explain(cls) -> str:
-        return 'mana cost'
+        return "mana cost"
 
 
 class ColorExtractor(Extractor[t.AbstractSet[Color]]):
@@ -210,7 +208,7 @@ class ColorExtractor(Extractor[t.AbstractSet[Color]]):
 
     @classmethod
     def explain(cls) -> str:
-        return 'colors'
+        return "colors"
 
 
 class OracleExtractor(Extractor[str]):
@@ -222,7 +220,7 @@ class OracleExtractor(Extractor[str]):
 
     @classmethod
     def explain(cls) -> str:
-        return 'oracle text'
+        return "oracle text"
 
 
 class FlavorExtractor(Extractor[str]):
@@ -234,7 +232,7 @@ class FlavorExtractor(Extractor[str]):
 
     @classmethod
     def explain(cls) -> str:
-        return 'flavor text'
+        return "flavor text"
 
 
 class PowerExtractor(Extractor[PTValue]):
@@ -246,7 +244,7 @@ class PowerExtractor(Extractor[PTValue]):
 
     @classmethod
     def explain(cls) -> str:
-        return 'power'
+        return "power"
 
 
 class ToughnessExtractor(Extractor[PTValue]):
@@ -258,7 +256,7 @@ class ToughnessExtractor(Extractor[PTValue]):
 
     @classmethod
     def explain(cls) -> str:
-        return 'toughness'
+        return "toughness"
 
 
 class LoyaltyExtractor(Extractor[PTValue]):
@@ -270,7 +268,7 @@ class LoyaltyExtractor(Extractor[PTValue]):
 
     @classmethod
     def explain(cls) -> str:
-        return 'loyalty'
+        return "loyalty"
 
 
 class ArtistExtractor(Extractor[str]):
@@ -282,7 +280,7 @@ class ArtistExtractor(Extractor[str]):
 
     @classmethod
     def explain(cls) -> str:
-        return 'artist name'
+        return "artist name"
 
 
 class ExpansionExtractor(Extractor[Expansion]):
@@ -294,7 +292,7 @@ class ExpansionExtractor(Extractor[Expansion]):
 
     @classmethod
     def explain(cls) -> str:
-        return 'expansion'
+        return "expansion"
 
 
 class BlockExtractor(Extractor[Block]):
@@ -306,11 +304,10 @@ class BlockExtractor(Extractor[Block]):
 
     @classmethod
     def explain(cls) -> str:
-        return 'block'
+        return "block"
 
 
 class CardboardStrategy(ExtractionStrategy[Cardboard]):
-
     @classmethod
     def extract_name(cls, cardboard: Cardboard) -> t.Iterable[str]:
         yield cardboard.name.lower()
@@ -357,21 +354,11 @@ class CardboardStrategy(ExtractionStrategy[Cardboard]):
 
     @classmethod
     def extract_power(cls, cardboard: Cardboard) -> t.Iterable[PTValue]:
-        return (
-            card.power_toughness.power
-            for card in
-            cardboard.cards
-            if card.power_toughness is not None
-        )
+        return (card.power_toughness.power for card in cardboard.cards if card.power_toughness is not None)
 
     @classmethod
     def extract_toughness(cls, cardboard: Cardboard) -> t.Iterable[PTValue]:
-        return (
-            card.power_toughness.toughness
-            for card in
-            cardboard.cards
-            if card.power_toughness is not None
-        )
+        return (card.power_toughness.toughness for card in cardboard.cards if card.power_toughness is not None)
 
     @classmethod
     def extract_loyalty(cls, cardboard: Cardboard) -> t.Iterable[PTValue]:
@@ -381,10 +368,8 @@ class CardboardStrategy(ExtractionStrategy[Cardboard]):
     def extract_artist(cls, cardboard: Cardboard) -> t.Iterable[str]:
         return (
             face.artist.name.lower()
-            for printing in
-            cardboard.printings
-            for face in
-            printing.faces
+            for printing in cardboard.printings
+            for face in printing.faces
             if face.artist is None
         )
 
@@ -394,16 +379,10 @@ class CardboardStrategy(ExtractionStrategy[Cardboard]):
 
     @classmethod
     def extract_block(cls, cardboard: Cardboard) -> t.Iterable[Block]:
-        return (
-            printing.expansion.block
-            for printing in
-            cardboard.printings
-            if printing.expansion is not None
-        )
+        return (printing.expansion.block for printing in cardboard.printings if printing.expansion is not None)
 
 
 class PrintingStrategy(ExtractionStrategy[Printing]):
-
     @classmethod
     def extract_name(cls, printing: Printing) -> t.Iterable[str]:
         yield printing.cardboard.name.lower()
@@ -430,12 +409,7 @@ class PrintingStrategy(ExtractionStrategy[Printing]):
 
     @classmethod
     def extract_mana_cost(cls, printing: Printing) -> t.Iterable[ManaCost]:
-        return (
-            card.mana_cost
-            for card in
-            printing.cardboard.cards
-            if card.mana_cost is not None
-        )
+        return (card.mana_cost for card in printing.cardboard.cards if card.mana_cost is not None)
 
     @classmethod
     def extract_color(cls, printing: Printing) -> t.Iterable[t.AbstractSet[Color]]:
@@ -455,39 +429,21 @@ class PrintingStrategy(ExtractionStrategy[Printing]):
 
     @classmethod
     def extract_power(cls, printing: Printing) -> t.Iterable[PTValue]:
-        return (
-            card.power_toughness.power
-            for card in
-            printing.cardboard.cards
-            if card.power_toughness is not None
-        )
+        return (card.power_toughness.power for card in printing.cardboard.cards if card.power_toughness is not None)
 
     @classmethod
     def extract_toughness(cls, printing: Printing) -> t.Iterable[PTValue]:
         return (
-            card.power_toughness.toughness
-            for card in
-            printing.cardboard.cards
-            if card.power_toughness is not None
+            card.power_toughness.toughness for card in printing.cardboard.cards if card.power_toughness is not None
         )
 
     @classmethod
     def extract_loyalty(cls, printing: Printing) -> t.Iterable[PTValue]:
-        return (
-            card.loyalty
-            for card in
-            printing.cardboard.cards
-            if card.loyalty is not None
-        )
+        return (card.loyalty for card in printing.cardboard.cards if card.loyalty is not None)
 
     @classmethod
     def extract_artist(cls, printing: Printing) -> t.Iterable[str]:
-        return (
-            face.artist.name.lower()
-            for face in
-            printing.faces
-            if face.artist is not None
-        )
+        return (face.artist.name.lower() for face in printing.faces if face.artist is not None)
 
     @classmethod
     def extract_expansion(cls, printing: Printing) -> t.Iterable[Expansion]:

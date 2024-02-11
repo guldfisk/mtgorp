@@ -3,16 +3,18 @@ from __future__ import annotations
 import datetime
 import typing as t
 
-from orp.models import PrimaryKey, Model
+from orp.models import Model, PrimaryKey
 from orp.relationships import Many, One, OneDescriptor
 
-from mtgorp.models.persistent.attributes.expansiontype import ExpansionType
+from mtgorp.models.interfaces import Block, BoosterKey
+from mtgorp.models.interfaces import Expansion as _Expansion
+from mtgorp.models.interfaces import ExpansionCollection, Printing
 from mtgorp.models.persistent.attributes.borders import Border
-from mtgorp.models.interfaces import Block, BoosterKey, ExpansionCollection, Printing, Expansion as _Expansion
+from mtgorp.models.persistent.attributes.expansiontype import ExpansionType
 
 
 class Expansion(Model, _Expansion):
-    primary_key = PrimaryKey('code')
+    primary_key = PrimaryKey("code")
     _code: str
 
     def __init__(
@@ -31,7 +33,7 @@ class Expansion(Model, _Expansion):
         fragment_dividers: t.Tuple[int, ...] = (),
     ):
         self._name = name
-        self._block = One(self, 'expansions', block)
+        self._block = One(self, "expansions", block)
         self._expansion_type = expansion_type
         self._release_date = release_date
         self._booster_key = booster_key
@@ -43,9 +45,9 @@ class Expansion(Model, _Expansion):
         self._fragment_dividers = fragment_dividers
         self._booster_map = None
 
-        self._printings = Many(self, '_expansion')
+        self._printings = Many(self, "_expansion")
 
-    block: Block = OneDescriptor('_block')
+    block: Block = OneDescriptor("_block")
 
     @property
     def printings(self) -> Many[Printing]:

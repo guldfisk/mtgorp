@@ -1,9 +1,9 @@
 # Generated from /home/phdk/PycharmProjects/mtgorp/mtgorp/tools/parsing/search/search_grammar.g4 by ANTLR 4.7.2
-from antlr4 import *
+import sys
 from io import StringIO
 from typing.io import TextIO
-import sys
 
+from antlr4 import *
 
 
 def serializedATN():
@@ -14,7 +14,7 @@ def serializedATN():
         buf.write("\4\16\t\16\4\17\t\17\4\20\t\20\4\21\t\21\4\22\t\22\4\23")
         buf.write("\t\23\4\24\t\24\4\25\t\25\4\26\t\26\4\27\t\27\4\30\t\30")
         buf.write("\4\31\t\31\4\32\t\32\4\33\t\33\4\34\t\34\4\35\t\35\4\36")
-        buf.write("\t\36\4\37\t\37\4 \t \4!\t!\4\"\t\"\4#\t#\3\2\3\2\3\3")
+        buf.write('\t\36\4\37\t\37\4 \t \4!\t!\4"\t"\4#\t#\3\2\3\2\3\3')
         buf.write("\3\3\3\4\3\4\3\5\3\5\3\6\3\6\3\6\3\7\3\7\3\b\3\b\3\t\3")
         buf.write("\t\3\n\3\n\3\n\3\13\3\13\3\f\3\f\3\f\3\r\3\r\3\16\3\16")
         buf.write("\3\16\3\16\3\16\3\16\3\16\3\16\3\16\5\16l\n\16\3\17\3")
@@ -45,18 +45,18 @@ def serializedATN():
         buf.write("\n\36\3\37\3\37\3\37\3\37\3\37\3\37\3\37\3\37\3\37\3\37")
         buf.write("\3\37\3\37\3\37\3\37\3\37\3\37\3\37\3\37\3\37\3\37\5\37")
         buf.write("\u0175\n\37\3 \6 \u0178\n \r \16 \u0179\3!\3!\7!\u017e")
-        buf.write("\n!\f!\16!\u0181\13!\3!\3!\3\"\6\"\u0186\n\"\r\"\16\"")
+        buf.write('\n!\f!\16!\u0181\13!\3!\3!\3"\6"\u0186\n"\r"\16"')
         buf.write("\u0187\3#\3#\3#\3#\2\2$\3\3\5\4\7\5\t\6\13\7\r\b\17\t")
         buf.write("\21\n\23\13\25\f\27\r\31\16\33\17\35\20\37\21!\22#\23")
-        buf.write("%\24\'\25)\26+\27-\30/\31\61\32\63\33\65\34\67\359\36")
-        buf.write(";\37= ?!A\"C#E$\3\2\13\4\2PPpp\4\2VVvv\4\2OOoo\4\2QQq")
+        buf.write("%\24'\25)\26+\27-\30/\31\61\32\63\33\65\34\67\359\36")
+        buf.write(';\37= ?!A"C#E$\3\2\13\4\2PPpp\4\2VVvv\4\2OOoo\4\2QQq')
         buf.write("q\4\2GGgg\3\2\62;\3\2$$\r\2)),/\61<C\\c}\177\177\u00e2")
         buf.write("\u00e4\u00eb\u00eb\u00ef\u00ef\u00f8\u00f8\u00fc\u00fd")
-        buf.write("\5\2\13\f\17\17\"\"\2\u01ac\2\3\3\2\2\2\2\5\3\2\2\2\2")
+        buf.write('\5\2\13\f\17\17""\2\u01ac\2\3\3\2\2\2\2\5\3\2\2\2\2')
         buf.write("\7\3\2\2\2\2\t\3\2\2\2\2\13\3\2\2\2\2\r\3\2\2\2\2\17\3")
         buf.write("\2\2\2\2\21\3\2\2\2\2\23\3\2\2\2\2\25\3\2\2\2\2\27\3\2")
         buf.write("\2\2\2\31\3\2\2\2\2\33\3\2\2\2\2\35\3\2\2\2\2\37\3\2\2")
-        buf.write("\2\2!\3\2\2\2\2#\3\2\2\2\2%\3\2\2\2\2\'\3\2\2\2\2)\3\2")
+        buf.write("\2\2!\3\2\2\2\2#\3\2\2\2\2%\3\2\2\2\2'\3\2\2\2\2)\3\2")
         buf.write("\2\2\2+\3\2\2\2\2-\3\2\2\2\2/\3\2\2\2\2\61\3\2\2\2\2\63")
         buf.write("\3\2\2\2\2\65\3\2\2\2\2\67\3\2\2\2\29\3\2\2\2\2;\3\2\2")
         buf.write("\2\2=\3\2\2\2\2?\3\2\2\2\2A\3\2\2\2\2C\3\2\2\2\2E\3\2")
@@ -64,7 +64,7 @@ def serializedATN():
         buf.write("\2\2\2\rR\3\2\2\2\17T\3\2\2\2\21V\3\2\2\2\23X\3\2\2\2")
         buf.write("\25[\3\2\2\2\27]\3\2\2\2\31`\3\2\2\2\33k\3\2\2\2\35r\3")
         buf.write("\2\2\2\37\u0085\3\2\2\2!\u0091\3\2\2\2#\u00a0\3\2\2\2")
-        buf.write("%\u00b0\3\2\2\2\'\u00c9\3\2\2\2)\u00d9\3\2\2\2+\u00e7")
+        buf.write("%\u00b0\3\2\2\2'\u00c9\3\2\2\2)\u00d9\3\2\2\2+\u00e7")
         buf.write("\3\2\2\2-\u00ef\3\2\2\2/\u00fd\3\2\2\2\61\u010b\3\2\2")
         buf.write("\2\63\u0117\3\2\2\2\65\u0125\3\2\2\2\67\u013a\3\2\2\2")
         buf.write("9\u0146\3\2\2\2;\u015e\3\2\2\2=\u0174\3\2\2\2?\u0177\3")
@@ -87,7 +87,7 @@ def serializedATN():
         buf.write("\u008a\7n\2\2\u008a\u008b\7q\2\2\u008b\u0092\7t\2\2\u008c")
         buf.write("\u008d\7E\2\2\u008d\u008e\7Q\2\2\u008e\u008f\7N\2\2\u008f")
         buf.write("\u0090\7Q\2\2\u0090\u0092\7T\2\2\u0091\u0087\3\2\2\2\u0091")
-        buf.write("\u008c\3\2\2\2\u0092\"\3\2\2\2\u0093\u00a1\t\5\2\2\u0094")
+        buf.write('\u008c\3\2\2\2\u0092"\3\2\2\2\u0093\u00a1\t\5\2\2\u0094')
         buf.write("\u0095\7q\2\2\u0095\u0096\7t\2\2\u0096\u0097\7c\2\2\u0097")
         buf.write("\u0098\7e\2\2\u0098\u0099\7n\2\2\u0099\u00a1\7g\2\2\u009a")
         buf.write("\u009b\7Q\2\2\u009b\u009c\7T\2\2\u009c\u009d\7C\2\2\u009d")
@@ -188,10 +188,9 @@ def serializedATN():
 
 
 class search_grammarLexer(Lexer):
-
     atn = ATNDeserializer().deserialize(serializedATN())
 
-    decisionsToDFA = [ DFA(ds, i) for i, ds in enumerate(atn.decisionToState) ]
+    decisionsToDFA = [DFA(ds, i) for i, ds in enumerate(atn.decisionToState)]
 
     T__0 = 1
     T__1 = 2
@@ -228,38 +227,81 @@ class search_grammarLexer(Lexer):
     VALUE = 33
     WHITESPACE = 34
 
-    channelNames = [ u"DEFAULT_TOKEN_CHANNEL", u"HIDDEN" ]
+    channelNames = ["DEFAULT_TOKEN_CHANNEL", "HIDDEN"]
 
-    modeNames = [ "DEFAULT_MODE" ]
+    modeNames = ["DEFAULT_MODE"]
 
-    literalNames = [ "<INVALID>",
-            "'!'", "'('", "')'", "'&'", "'||'", "'='", "';'", "'<'", "'<='", 
-            "'>'", "'>='", "'@'" ]
+    literalNames = ["<INVALID>", "'!'", "'('", "')'", "'&'", "'||'", "'='", "';'", "'<'", "'<='", "'>'", "'>='", "'@'"]
 
-    symbolicNames = [ "<INVALID>",
-            "DYNAMIC_VALUE", "NAME_CODE", "TYPE_CODE", "MANA_CODE", "COLOR_CODE", 
-            "ORACLE_CODE", "POWER_CODE", "TOUGHNESS_CODE", "LOYALTY_CODE", 
-            "ARTIST_CODE", "CMC_CODE", "RARITY_CODE", "LAYOUT_CODE", "FLAGS_CODE", 
-            "FLAVOR_CODE", "EXPANSION_CODE", "BLOCK_CODE", "CARDBOARD_CODE", 
-            "PRINTING_CODE", "UNSIGNED_INTEGER", "QUOTED_VALUE", "VALUE", 
-            "WHITESPACE" ]
+    symbolicNames = [
+        "<INVALID>",
+        "DYNAMIC_VALUE",
+        "NAME_CODE",
+        "TYPE_CODE",
+        "MANA_CODE",
+        "COLOR_CODE",
+        "ORACLE_CODE",
+        "POWER_CODE",
+        "TOUGHNESS_CODE",
+        "LOYALTY_CODE",
+        "ARTIST_CODE",
+        "CMC_CODE",
+        "RARITY_CODE",
+        "LAYOUT_CODE",
+        "FLAGS_CODE",
+        "FLAVOR_CODE",
+        "EXPANSION_CODE",
+        "BLOCK_CODE",
+        "CARDBOARD_CODE",
+        "PRINTING_CODE",
+        "UNSIGNED_INTEGER",
+        "QUOTED_VALUE",
+        "VALUE",
+        "WHITESPACE",
+    ]
 
-    ruleNames = [ "T__0", "T__1", "T__2", "T__3", "T__4", "T__5", "T__6", 
-                  "T__7", "T__8", "T__9", "T__10", "DYNAMIC_VALUE", "NAME_CODE", 
-                  "TYPE_CODE", "MANA_CODE", "COLOR_CODE", "ORACLE_CODE", 
-                  "POWER_CODE", "TOUGHNESS_CODE", "LOYALTY_CODE", "ARTIST_CODE", 
-                  "CMC_CODE", "RARITY_CODE", "LAYOUT_CODE", "FLAGS_CODE", 
-                  "FLAVOR_CODE", "EXPANSION_CODE", "BLOCK_CODE", "CARDBOARD_CODE", 
-                  "PRINTING_CODE", "UNSIGNED_INTEGER", "QUOTED_VALUE", "VALUE", 
-                  "WHITESPACE" ]
+    ruleNames = [
+        "T__0",
+        "T__1",
+        "T__2",
+        "T__3",
+        "T__4",
+        "T__5",
+        "T__6",
+        "T__7",
+        "T__8",
+        "T__9",
+        "T__10",
+        "DYNAMIC_VALUE",
+        "NAME_CODE",
+        "TYPE_CODE",
+        "MANA_CODE",
+        "COLOR_CODE",
+        "ORACLE_CODE",
+        "POWER_CODE",
+        "TOUGHNESS_CODE",
+        "LOYALTY_CODE",
+        "ARTIST_CODE",
+        "CMC_CODE",
+        "RARITY_CODE",
+        "LAYOUT_CODE",
+        "FLAGS_CODE",
+        "FLAVOR_CODE",
+        "EXPANSION_CODE",
+        "BLOCK_CODE",
+        "CARDBOARD_CODE",
+        "PRINTING_CODE",
+        "UNSIGNED_INTEGER",
+        "QUOTED_VALUE",
+        "VALUE",
+        "WHITESPACE",
+    ]
 
     grammarFileName = "search_grammar.g4"
 
-    def __init__(self, input=None, output:TextIO = sys.stdout):
+    def __init__(self, input=None, output: TextIO = sys.stdout):
         super().__init__(input, output)
         self.checkVersion("4.7.2")
         self._interp = LexerATNSimulator(self, self.atn, self.decisionsToDFA, PredictionContextCache())
         self._actions = None
         self._predicates = None
-
-

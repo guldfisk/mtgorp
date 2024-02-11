@@ -5,7 +5,7 @@ from abc import abstractmethod
 import sqlalchemy.types as types
 
 
-T = t.TypeVar('T')
+T = t.TypeVar("T")
 
 
 class PickleField(types.TypeDecorator, t.Generic[T]):

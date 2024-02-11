@@ -1,9 +1,8 @@
 import re
 
 import mtgorp.db.attributeparse.parser as parser
-
 from mtgorp.db.attributeparse.exceptions import AttributeParseException
-from mtgorp.models.persistent.attributes.powertoughness import PTValue, PowerToughness
+from mtgorp.models.persistent.attributes.powertoughness import PowerToughness, PTValue
 
 
 class PowerToughnessParseException(AttributeParseException):
@@ -11,13 +10,13 @@ class PowerToughnessParseException(AttributeParseException):
 
 
 class Parser(parser.Parser):
-    matcher = re.compile('([^/]+)/([^/]+)')
-    value_matcher = re.compile('-?\\d+')
+    matcher = re.compile("([^/]+)/([^/]+)")
+    value_matcher = re.compile("-?\\d+")
 
     @staticmethod
     def parse_pt_value(s: str) -> PTValue:
         try:
-            return PTValue(variable = True) if '*' in s else int(s)
+            return PTValue(variable=True) if "*" in s else int(s)
         except ValueError:
             raise PowerToughnessParseException()
 

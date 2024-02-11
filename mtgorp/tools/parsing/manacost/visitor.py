@@ -1,23 +1,23 @@
 from mtgorp.models.persistent.attributes import manacosts as m
-
-from mtgorp.tools.parsing.manacost.gen.manacost_grammarParser import manacost_grammarParser
-from mtgorp.tools.parsing.manacost.gen.manacost_grammarVisitor import manacost_grammarVisitor
+from mtgorp.tools.parsing.manacost.gen.manacost_grammarParser import (
+    manacost_grammarParser,
+)
+from mtgorp.tools.parsing.manacost.gen.manacost_grammarVisitor import (
+    manacost_grammarVisitor,
+)
 
 
 class HybridBuilder(list):
-
     def __repr__(self):
-        return f'{self.__class__.__name__}({super().__repr__()})'
+        return f"{self.__class__.__name__}({super().__repr__()})"
 
 
 class ManaCostBuilder(list):
-
     def __repr__(self):
-        return f'{self.__class__.__name__}({super().__repr__()})'
+        return f"{self.__class__.__name__}({super().__repr__()})"
 
 
 class ManaCostVisitor(manacost_grammarVisitor):
-
     def visitEmpty(self, ctx: manacost_grammarParser.EmptyContext):
         return ManaCostBuilder([])
 

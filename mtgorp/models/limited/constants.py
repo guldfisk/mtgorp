@@ -1,4 +1,4 @@
-from mtgorp.models.limited.boostergen import Option, KeySlot
+from mtgorp.models.limited.boostergen import KeySlot, Option
 from mtgorp.models.persistent.attributes import typeline
 from mtgorp.models.persistent.attributes.flags import Flag
 from mtgorp.models.persistent.attributes.layout import Layout
@@ -37,11 +37,11 @@ DOUBLEFACED_MYTHIC = Option(
 )
 PREMIUM = Option(
     CriteriaBuilder().all(),
-    'premium',
+    "premium",
 )
 BASIC = Option(
     CriteriaBuilder().type_line.contains(typeline.BASIC).all(),
-    'basics',
+    "basics",
 )
 DRAFT_MATTERS_COMMON = Option(
     CriteriaBuilder().flags.contains(Flag.DRAFT_MATTERS).rarity.equals(Rarity.COMMON).all(),

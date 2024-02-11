@@ -1,6 +1,6 @@
 import sqlalchemy.types as types
 
-from mtgorp.models.persistent.attributes.typeline import TypeLine, ALL_TYPES_MAP
+from mtgorp.models.persistent.attributes.typeline import ALL_TYPES_MAP, TypeLine
 
 
 class TypeLineField(types.TypeDecorator):
@@ -10,7 +10,7 @@ class TypeLineField(types.TypeDecorator):
         return str(value)
 
     def process_result_value(self, value: str, dialect):
-        return TypeLine(*(ALL_TYPES_MAP[_t] for _t in value.split(' ') if _t != '—'))
+        return TypeLine(*(ALL_TYPES_MAP[_t] for _t in value.split(" ") if _t != "—"))
 
     def process_literal_param(self, value, dialect):
         pass

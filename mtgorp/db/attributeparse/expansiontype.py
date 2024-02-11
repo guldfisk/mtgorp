@@ -1,13 +1,12 @@
 import mtgorp.db.attributeparse.parser as parser
-
 from mtgorp.models.persistent.attributes.expansiontype import ExpansionType
 
 
 class Parser(parser.Parser):
     _EXPANSION_TYPE_MAP = {
-        'core': ExpansionType.SET,
-        'expansion': ExpansionType.SET,
-        'funny': ExpansionType.FUNNY,
+        "core": ExpansionType.SET,
+        "expansion": ExpansionType.SET,
+        "funny": ExpansionType.FUNNY,
     }
 
     @classmethod

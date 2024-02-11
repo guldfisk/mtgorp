@@ -1,15 +1,14 @@
 from __future__ import annotations
 
-import typing as t
 import hashlib
-
+import typing as t
 from abc import ABC, abstractmethod
 
 from orp.models import OrpBase
 
 
 compacted_value = t.Union[int, str, bool, float, None]
-serializeable_value = t.Union[compacted_value, OrpBase, 'Serializeable']
+serializeable_value = t.Union[compacted_value, OrpBase, "Serializeable"]
 
 compacted_model = t.Union[
     compacted_value,
@@ -24,11 +23,10 @@ serialization_model = t.Union[
 ]
 
 
-M = t.TypeVar('M', bound=OrpBase)
+M = t.TypeVar("M", bound=OrpBase)
 
 
 class Inflator(ABC):
-
     @abstractmethod
     def inflate(self, model_type: t.Type[M], key: t.Any) -> M:
         pass
@@ -42,7 +40,6 @@ class SerializationException(Exception):
 
 
 class Serializeable(ABC):
-
     @abstractmethod
     def serialize(self) -> serialization_model:
         pass
@@ -62,19 +59,18 @@ class Serializeable(ABC):
 
 
 class PersistentHashable(ABC):
-    
     @abstractmethod
     def _calc_persistent_hash(self) -> t.Iterator[t.ByteString]:
         pass
-    
+
     def persistent_hash(self) -> str:
-        if hasattr(self, '_persistent_hash'):
-            return getattr(self, '_persistent_hash')
+        if hasattr(self, "_persistent_hash"):
+            return getattr(self, "_persistent_hash")
 
         hasher = hashlib.sha512()
         for s in self._calc_persistent_hash():
             hasher.update(s)
 
-        setattr(self, '_persistent_hash', hasher.hexdigest())
+        setattr(self, "_persistent_hash", hasher.hexdigest())
 
-        return getattr(self, '_persistent_hash')
+        return getattr(self, "_persistent_hash")

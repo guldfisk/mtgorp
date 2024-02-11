@@ -1,29 +1,26 @@
 from __future__ import annotations
 
-import typing as t
-
 import datetime
-from abc import abstractmethod, ABC
+import typing as t
+from abc import ABC, abstractmethod
 
 from immutabledict import immutabledict
-
-from yeetlong.multiset import FrozenMultiset
-
 from orp.models import OrpBase
 from orp.relationships import Many
+from yeetlong.multiset import FrozenMultiset
 
-from mtgorp.models.persistent.attributes.expansiontype import ExpansionType
-from mtgorp.models.persistent.attributes.typeline import TypeLine
-from mtgorp.models.persistent.attributes.manacosts import ManaCost
-from mtgorp.models.persistent.attributes.colors import Color
-from mtgorp.models.persistent.attributes.powertoughness import PTValue, PowerToughness
-from mtgorp.models.persistent.attributes.layout import Layout
-from mtgorp.models.persistent.attributes.rarities import Rarity
-from mtgorp.models.persistent.attributes.flags import Flags
 from mtgorp.models.persistent.attributes.borders import Border
+from mtgorp.models.persistent.attributes.colors import Color
+from mtgorp.models.persistent.attributes.expansiontype import ExpansionType
+from mtgorp.models.persistent.attributes.flags import Flags
+from mtgorp.models.persistent.attributes.layout import Layout
+from mtgorp.models.persistent.attributes.manacosts import ManaCost
+from mtgorp.models.persistent.attributes.powertoughness import PowerToughness, PTValue
+from mtgorp.models.persistent.attributes.rarities import Rarity
+from mtgorp.models.persistent.attributes.typeline import TypeLine
 
 
-T = t.TypeVar('T')
+T = t.TypeVar("T")
 
 
 class MtgModel(OrpBase):
@@ -31,7 +28,6 @@ class MtgModel(OrpBase):
 
 
 class Artist(MtgModel):
-
     @property
     @abstractmethod
     def name(self) -> str:
@@ -48,7 +44,6 @@ class Artist(MtgModel):
 
 
 class Card(MtgModel):
-
     @property
     @abstractmethod
     def name(self) -> str:
@@ -107,7 +102,6 @@ class Card(MtgModel):
 
 
 class Side(ABC):
-
     @property
     @abstractmethod
     def owner(self) -> Cardboard:
@@ -120,7 +114,7 @@ class Side(ABC):
 
 
 class Cardboard(MtgModel):
-    _SPLIT_SEPARATOR = ' // '
+    _SPLIT_SEPARATOR = " // "
 
     @property
     def id(self) -> str:
@@ -142,7 +136,7 @@ class Cardboard(MtgModel):
 
     @property
     def printings_chronologically(self) -> t.Sequence[Printing]:
-        return sorted(self.printings, key = lambda p: p.expansion.release_date)
+        return sorted(self.printings, key=lambda p: p.expansion.release_date)
 
     @property
     def expansions(self) -> t.AbstractSet[Expansion]:
@@ -189,18 +183,16 @@ class Cardboard(MtgModel):
         code = expansion.code if isinstance(expansion, Expansion) else expansion
         printings = [p for p in self.printings if p.expansion.code == code]
         if allow_volatile:
-            return min(printings, key = lambda p: p.collector_number)
+            return min(printings, key=lambda p: p.collector_number)
         else:
             if len(printings) > 1:
-                raise RuntimeError(
-                    f'{self} printed multiple times in {expansion}'
-                )
+                raise RuntimeError(f"{self} printed multiple times in {expansion}")
 
             if printings:
                 return printings[0]
 
         raise KeyError(
-            '{} not printed in {}'.format(
+            "{} not printed in {}".format(
                 self,
                 expansion,
             )
@@ -217,7 +209,7 @@ class Cardboard(MtgModel):
                     return printing
 
         raise KeyError(
-            '{} not printed in {}'.format(
+            "{} not printed in {}".format(
                 self,
                 block,
             )
@@ -229,23 +221,14 @@ class Cardboard(MtgModel):
 
     @property
     def original_printing(self) -> Printing:
-        return sorted(
-            self.printings,
-            key = lambda printing:
-            printing.expansion.release_date
-        )[0]
+        return sorted(self.printings, key=lambda printing: printing.expansion.release_date)[0]
 
     @property
     def latest_printing(self) -> Printing:
-        return sorted(
-            self.printings,
-            key = lambda printing:
-            printing.expansion.release_date
-        )[-1]
+        return sorted(self.printings, key=lambda printing: printing.expansion.release_date)[-1]
 
 
 class Face(MtgModel):
-
     @property
     @abstractmethod
     def artist(self) -> Artist:
@@ -263,7 +246,6 @@ class Face(MtgModel):
 
 
 class Printing(MtgModel):
-
     @property
     @abstractmethod
     def cardboard(self) -> Cardboard:
@@ -323,7 +305,7 @@ class Printing(MtgModel):
         return self.expansion.border
 
     def full_name(self) -> str:
-        return f'{self.cardboard.name}|{self.expansion.code}'
+        return f"{self.cardboard.name}|{self.expansion.code}"
 
     @property
     def alternative_printings(self) -> t.Iterator[Printing]:
@@ -333,14 +315,14 @@ class Printing(MtgModel):
 
     @property
     def alternative_printings_chronologically(self) -> t.Sequence[Printing]:
-        return sorted(list(self.alternative_printings), key = lambda p: p.expansion.release_date)
+        return sorted(list(self.alternative_printings), key=lambda p: p.expansion.release_date)
 
     @property
     def scryfall_link(self) -> str:
-        return f'https://scryfall.com/card/{self.expansion.code.lower()}/{self.collector_string}'
+        return f"https://scryfall.com/card/{self.expansion.code.lower()}/{self.collector_string}"
 
     def __repr__(self):
-        return '{}({}, {}, {})'.format(
+        return "{}({}, {}, {})".format(
             self.__class__.__name__,
             self.cardboard.name,
             self.expansion.code,
@@ -378,11 +360,11 @@ class Expansion(MtgModel):
                 fragments.append(self.fragmentize(indexes[i], indexes[i + 1]))
             return tuple(fragments)
         else:
-            return self.fragmentize(0, None),
+            return (self.fragmentize(0, None),)
 
     def generate_booster(self) -> Booster:
-        if getattr(self, '_booster_map', None) is None:
-            setattr(self, '_booster_map', self.booster_key.get_booster_map(self.booster_expansion_collection))
+        if getattr(self, "_booster_map", None) is None:
+            setattr(self, "_booster_map", self.booster_key.get_booster_map(self.booster_expansion_collection))
         return self._booster_map.generate_booster()
 
     @property
@@ -392,7 +374,7 @@ class Expansion(MtgModel):
 
     @property
     def name_and_code(self) -> str:
-        return f'[{self.code}] {self.name}'
+        return f"[{self.code}] {self.name}"
 
     @property
     @abstractmethod
@@ -441,12 +423,11 @@ class Expansion(MtgModel):
 
 
 class ExpansionFragment(object):
-
     def __init__(self, of: Expansion, frm: t.Union[int, None], to: t.Union[int, None]):
         self._of = of
         self._frm = frm
         self._to = to
-        self._printings = set(sorted(of.printings, key = lambda printing: printing.collector_number)[frm:to])
+        self._printings = set(sorted(of.printings, key=lambda printing: printing.collector_number)[frm:to])
 
     @property
     def of(self) -> Expansion:
@@ -466,7 +447,6 @@ class ExpansionFragment(object):
 
 
 class Block(MtgModel):
-
     @property
     @abstractmethod
     def name(self) -> str:
@@ -483,18 +463,17 @@ class Block(MtgModel):
 
     @property
     def expansions_chronologically(self) -> t.List[Expansion]:
-        return sorted(self.expansions, key = lambda expansion: expansion.release_date)
+        return sorted(self.expansions, key=lambda expansion: expansion.release_date)
 
     @property
     def first_expansion(self) -> Expansion:
         return min(
             self.sets,
-            key = lambda expansion: expansion.release_date,
+            key=lambda expansion: expansion.release_date,
         )
 
 
 class Booster(t.Generic[T]):
-
     def __init__(self, items: t.Iterable[T], expansion: Expansion = None):
         pass
 
@@ -522,7 +501,6 @@ class Booster(t.Generic[T]):
 
 
 class ExpansionCollection(object):
-
     def __init__(
         self,
         main: Expansion,
@@ -532,39 +510,36 @@ class ExpansionCollection(object):
     ):
         expansions.update(
             {
-                'main': main,
-                'basics': main if basics is None else basics,
-                'premium': main if premium is None else premium,
+                "main": main,
+                "basics": main if basics is None else basics,
+                "premium": main if premium is None else premium,
             }
         )
         self._expansions = immutabledict(expansions)
 
     @property
     def main(self) -> Expansion:
-        return self._expansions['main']
+        return self._expansions["main"]
 
     @property
     def basics(self) -> Expansion:
-        return self._expansions['basics']
+        return self._expansions["basics"]
 
     @property
     def premium(self) -> Expansion:
-        return self._expansions['premium']
+        return self._expansions["premium"]
 
     def __getitem__(self, item: str) -> Expansion:
         return self._expansions.__getitem__(item)
 
     def __eq__(self, other) -> bool:
-        return (
-            isinstance(other, self.__class__)
-            and self._expansions == other._expansions
-        )
+        return isinstance(other, self.__class__) and self._expansions == other._expansions
 
     def __hash__(self):
         return hash(self._expansions)
 
     def __repr__(self) -> str:
-        return '{}({})'.format(
+        return "{}({})".format(
             self.__class__.__name__,
             dict(self._expansions),
         )
@@ -583,14 +558,12 @@ class MapSlot(t.Generic[T]):
 
 
 class BoosterMap(t.Generic[T]):
-
     @abstractmethod
     def generate_booster(self) -> Booster[T]:
         pass
 
 
 class KeySlot(ABC):
-
     @abstractmethod
     def get_map_slot(self, expansion_collection: t.Union[ExpansionCollection, t.Collection[Printing]]) -> MapSlot:
         pass

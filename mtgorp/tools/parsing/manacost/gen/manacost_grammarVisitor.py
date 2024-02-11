@@ -1,5 +1,7 @@
 # Generated from /home/biggenerals/PycharmProjects/mtgorp/mtgorp/tools/parsing/manacost/manacost_grammar.g4 by ANTLR 4.7
 from antlr4 import *
+
+
 if __name__ is not None and "." in __name__:
     from .manacost_grammarParser import manacost_grammarParser
 else:
@@ -7,112 +9,91 @@ else:
 
 # This class defines a complete generic visitor for a parse tree produced by manacost_grammarParser.
 
+
 class manacost_grammarVisitor(ParseTreeVisitor):
-
     # Visit a parse tree produced by manacost_grammarParser#Empty.
-    def visitEmpty(self, ctx:manacost_grammarParser.EmptyContext):
+    def visitEmpty(self, ctx: manacost_grammarParser.EmptyContext):
         return self.visitChildren(ctx)
-
 
     # Visit a parse tree produced by manacost_grammarParser#NonEmpty.
-    def visitNonEmpty(self, ctx:manacost_grammarParser.NonEmptyContext):
+    def visitNonEmpty(self, ctx: manacost_grammarParser.NonEmptyContext):
         return self.visitChildren(ctx)
-
 
     # Visit a parse tree produced by manacost_grammarParser#Atom.
-    def visitAtom(self, ctx:manacost_grammarParser.AtomContext):
+    def visitAtom(self, ctx: manacost_grammarParser.AtomContext):
         return self.visitChildren(ctx)
-
 
     # Visit a parse tree produced by manacost_grammarParser#AtomManaCost.
-    def visitAtomManaCost(self, ctx:manacost_grammarParser.AtomManaCostContext):
+    def visitAtomManaCost(self, ctx: manacost_grammarParser.AtomManaCostContext):
         return self.visitChildren(ctx)
-
 
     # Visit a parse tree produced by manacost_grammarParser#Symbol.
-    def visitSymbol(self, ctx:manacost_grammarParser.SymbolContext):
+    def visitSymbol(self, ctx: manacost_grammarParser.SymbolContext):
         return self.visitChildren(ctx)
-
 
     # Visit a parse tree produced by manacost_grammarParser#BracedSymbol.
-    def visitBracedSymbol(self, ctx:manacost_grammarParser.BracedSymbolContext):
+    def visitBracedSymbol(self, ctx: manacost_grammarParser.BracedSymbolContext):
         return self.visitChildren(ctx)
-
 
     # Visit a parse tree produced by manacost_grammarParser#BracedHybrid.
-    def visitBracedHybrid(self, ctx:manacost_grammarParser.BracedHybridContext):
+    def visitBracedHybrid(self, ctx: manacost_grammarParser.BracedHybridContext):
         return self.visitChildren(ctx)
-
 
     # Visit a parse tree produced by manacost_grammarParser#HybridAtom.
-    def visitHybridAtom(self, ctx:manacost_grammarParser.HybridAtomContext):
+    def visitHybridAtom(self, ctx: manacost_grammarParser.HybridAtomContext):
         return self.visitChildren(ctx)
-
 
     # Visit a parse tree produced by manacost_grammarParser#HybridManaCost.
-    def visitHybridManaCost(self, ctx:manacost_grammarParser.HybridManaCostContext):
+    def visitHybridManaCost(self, ctx: manacost_grammarParser.HybridManaCostContext):
         return self.visitChildren(ctx)
-
 
     # Visit a parse tree produced by manacost_grammarParser#AtomHybrid.
-    def visitAtomHybrid(self, ctx:manacost_grammarParser.AtomHybridContext):
+    def visitAtomHybrid(self, ctx: manacost_grammarParser.AtomHybridContext):
         return self.visitChildren(ctx)
-
 
     # Visit a parse tree produced by manacost_grammarParser#ManaCostHybrid.
-    def visitManaCostHybrid(self, ctx:manacost_grammarParser.ManaCostHybridContext):
+    def visitManaCostHybrid(self, ctx: manacost_grammarParser.ManaCostHybridContext):
         return self.visitChildren(ctx)
-
 
     # Visit a parse tree produced by manacost_grammarParser#White.
-    def visitWhite(self, ctx:manacost_grammarParser.WhiteContext):
+    def visitWhite(self, ctx: manacost_grammarParser.WhiteContext):
         return self.visitChildren(ctx)
-
 
     # Visit a parse tree produced by manacost_grammarParser#Blue.
-    def visitBlue(self, ctx:manacost_grammarParser.BlueContext):
+    def visitBlue(self, ctx: manacost_grammarParser.BlueContext):
         return self.visitChildren(ctx)
-
 
     # Visit a parse tree produced by manacost_grammarParser#Black.
-    def visitBlack(self, ctx:manacost_grammarParser.BlackContext):
+    def visitBlack(self, ctx: manacost_grammarParser.BlackContext):
         return self.visitChildren(ctx)
-
 
     # Visit a parse tree produced by manacost_grammarParser#Red.
-    def visitRed(self, ctx:manacost_grammarParser.RedContext):
+    def visitRed(self, ctx: manacost_grammarParser.RedContext):
         return self.visitChildren(ctx)
-
 
     # Visit a parse tree produced by manacost_grammarParser#Green.
-    def visitGreen(self, ctx:manacost_grammarParser.GreenContext):
+    def visitGreen(self, ctx: manacost_grammarParser.GreenContext):
         return self.visitChildren(ctx)
-
 
     # Visit a parse tree produced by manacost_grammarParser#Phyrexian.
-    def visitPhyrexian(self, ctx:manacost_grammarParser.PhyrexianContext):
+    def visitPhyrexian(self, ctx: manacost_grammarParser.PhyrexianContext):
         return self.visitChildren(ctx)
-
 
     # Visit a parse tree produced by manacost_grammarParser#Snow.
-    def visitSnow(self, ctx:manacost_grammarParser.SnowContext):
+    def visitSnow(self, ctx: manacost_grammarParser.SnowContext):
         return self.visitChildren(ctx)
-
 
     # Visit a parse tree produced by manacost_grammarParser#Colorless.
-    def visitColorless(self, ctx:manacost_grammarParser.ColorlessContext):
+    def visitColorless(self, ctx: manacost_grammarParser.ColorlessContext):
         return self.visitChildren(ctx)
-
 
     # Visit a parse tree produced by manacost_grammarParser#Generic.
-    def visitGeneric(self, ctx:manacost_grammarParser.GenericContext):
+    def visitGeneric(self, ctx: manacost_grammarParser.GenericContext):
         return self.visitChildren(ctx)
-
 
     # Visit a parse tree produced by manacost_grammarParser#Variable.
-    def visitVariable(self, ctx:manacost_grammarParser.VariableContext):
+    def visitVariable(self, ctx: manacost_grammarParser.VariableContext):
         return self.visitChildren(ctx)
-
 
 
 del manacost_grammarParser

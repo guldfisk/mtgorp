@@ -3,20 +3,22 @@ from __future__ import annotations
 import typing as t
 from itertools import chain
 
-from orp.models import Model, PrimaryKey, Key
-from orp.relationships import Many, ListMany
+from orp.models import Key, Model, PrimaryKey
+from orp.relationships import ListMany, Many
 
+from mtgorp.models.interfaces import Card
+from mtgorp.models.interfaces import Cardboard as _Cardboard
+from mtgorp.models.interfaces import Printing
+from mtgorp.models.interfaces import Side as _Side
 from mtgorp.models.persistent.attributes.layout import Layout
-from mtgorp.models.interfaces import Card, Printing, Side as _Side, Cardboard as _Cardboard
 
 
 class Side(_Side):
-
     def __init__(self, owner: Cardboard):
         self._owner = owner
         self._cards = ListMany(
             self,
-            '_sides',
+            "_sides",
         )
 
     @property
@@ -31,17 +33,14 @@ class Side(_Side):
 class Cardboard(Model, _Cardboard):
     primary_key = PrimaryKey(
         Key(
-            'name',
-            calc_value = lambda k, o, m: o.__class__.calc_name(
+            "name",
+            calc_value=lambda k, o, m: o.__class__.calc_name(
                 c.name
-                for c in
-                (
-                    chain(m['front_cards'], m['back_cards'])
-                    if m['back_cards'] is not None else
-                    m['front_cards']
+                for c in (
+                    chain(m["front_cards"], m["back_cards"]) if m["back_cards"] is not None else m["front_cards"]
                 )
             ),
-            input_values = ('front_cards', 'back_cards'),
+            input_values=("front_cards", "back_cards"),
         )
     )
 
@@ -66,7 +65,7 @@ class Cardboard(Model, _Cardboard):
 
         self._layout = layout
 
-        self._printings: Many[Printing] = Many(self, '_cardboard')
+        self._printings: Many[Printing] = Many(self, "_cardboard")
 
         self._cards = None
 

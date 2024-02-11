@@ -1,19 +1,19 @@
 from orp.models import Model, PrimaryKey
 from orp.relationships import Many
 
-from mtgorp.models.interfaces import Expansion
 from mtgorp.models.interfaces import Block as _Block
+from mtgorp.models.interfaces import Expansion
 
 
 class Block(Model, _Block):
-    primary_key = PrimaryKey('name')
+    primary_key = PrimaryKey("name")
     _name: str
 
     def __init__(
         self,
         name,
     ):
-        self._expansions: Many[Expansion] = Many(self, '_block')
+        self._expansions: Many[Expansion] = Many(self, "_block")
 
     @property
     def name(self) -> str:

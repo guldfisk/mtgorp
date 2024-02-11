@@ -6,7 +6,6 @@ import typing as t
 
 @functools.total_ordering
 class PTValue(object):
-
     def __init__(self, value: int = 0, variable: bool = False):
         self._value = value
         self._variable = variable
@@ -20,7 +19,7 @@ class PTValue(object):
         return self._variable
 
     def __repr__(self):
-        return '*' if self._variable else str(self._value)
+        return "*" if self._variable else str(self._value)
 
     def __eq__(self, other):
         if isinstance(other, int):
@@ -36,8 +35,10 @@ class PTValue(object):
 
     def __gt__(self, other):
         return (
-            isinstance(other, int) and self.value > other
-            or isinstance(other, self.__class__) and self.value > other.value
+            isinstance(other, int)
+            and self.value > other
+            or isinstance(other, self.__class__)
+            and self.value > other.value
         )
 
     def serialize(self) -> str:
@@ -45,11 +46,10 @@ class PTValue(object):
 
     @classmethod
     def deserialize(cls, s: str) -> PTValue:
-        return cls(0, variable = True) if s == '*' else cls(int(s))
+        return cls(0, variable=True) if s == "*" else cls(int(s))
 
 
 class PowerToughness(object):
-
     def __init__(self, power: t.Union[int, PTValue], toughness: t.Union[int, PTValue]):
         self._power = power if isinstance(power, PTValue) else PTValue(power)
         self._toughness = toughness if isinstance(toughness, PTValue) else PTValue(toughness)
@@ -63,17 +63,13 @@ class PowerToughness(object):
         return self._toughness
 
     def __eq__(self, other):
-        return (
-            isinstance(other, PowerToughness)
-            and self.power == other.power
-            and self.toughness == other.toughness
-        )
+        return isinstance(other, PowerToughness) and self.power == other.power and self.toughness == other.toughness
 
     def __hash__(self):
         return hash((self.power, self.toughness))
 
     def __repr__(self):
-        return '{}/{}'.format(self.power, self.toughness)
+        return "{}/{}".format(self.power, self.toughness)
 
     def __iter__(self):
         yield self.power
@@ -84,10 +80,4 @@ class PowerToughness(object):
 
     @classmethod
     def deserialize(cls, s: str) -> PowerToughness:
-        return cls(
-            *(
-                PTValue.deserialize(v)
-                for v in
-                s.split('/')
-            )
-        )
+        return cls(*(PTValue.deserialize(v) for v in s.split("/")))

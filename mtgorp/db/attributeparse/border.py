@@ -1,7 +1,6 @@
 import mtgorp.db.attributeparse.parser as parser
-
-from mtgorp.models.persistent.attributes.borders import Border
 from mtgorp.db.attributeparse.exceptions import AttributeParseException
+from mtgorp.models.persistent.attributes.borders import Border
 
 
 class BorderParseException(AttributeParseException):
@@ -10,9 +9,9 @@ class BorderParseException(AttributeParseException):
 
 class Parser(parser.Parser):
     _BORDER_MAP = {
-        'black': Border.BLACK,
-        'white': Border.WHITE,
-        'silver': Border.SILVER,
+        "black": Border.BLACK,
+        "white": Border.WHITE,
+        "silver": Border.SILVER,
     }
 
     @staticmethod

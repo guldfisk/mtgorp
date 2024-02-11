@@ -1,5 +1,4 @@
 from mtgorp.models.persistent.attributes.rarities import Rarity
-
 from mtgorp.tools.parsing.exceptions import ParseException
 
 
@@ -8,9 +7,7 @@ class RarityParseException(ParseException):
 
 
 class RarityParser(object):
-    rarity_map = {
-        t.name.lower(): t for t in Rarity
-    }
+    rarity_map = {t.name.lower(): t for t in Rarity}
 
     @classmethod
     def _unique_rarity(cls, s: str) -> Rarity:

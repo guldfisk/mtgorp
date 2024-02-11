@@ -1,7 +1,5 @@
 from mtgorp.db.database import CardDatabase
-
 from mtgorp.models.interfaces import Expansion
-
 from mtgorp.tools.parsing.exceptions import ParseException
 
 
@@ -10,7 +8,6 @@ class ExpansionParseException(ParseException):
 
 
 class ExpansionParser(object):
-
     def __init__(self, db: CardDatabase):
         self._db = db
 

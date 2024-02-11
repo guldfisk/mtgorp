@@ -11,7 +11,6 @@ from mtgorp.models.persistent.attributes.colors import Color
 
 
 class ManaCostAtom(ABC):
-
     def __init__(self, code: str, associations: t.Optional[t.AbstractSet[Color]] = None, cmc_value: int = 1):
         self._code = code
         self._associations = associations if isinstance(associations, frozenset) else frozenset()
@@ -30,7 +29,7 @@ class ManaCostAtom(ABC):
         return self._cmc_value
 
     def __repr__(self):
-        return '{{{}}}'.format(self.code)
+        return "{{{}}}".format(self.code)
 
     def __eq__(self, other):
         return isinstance(other, self.__class__) and self.code == other.code
@@ -58,14 +57,7 @@ class ManaCostAtom(ABC):
             try:
                 return [ONE_GENERIC for _ in range(int(v))]
             except ValueError:
-                return [
-                    HybridCostAtom(
-                        ManaCost(
-                            cls.deserialize(s)
-                        ) for s in
-                        v.split('/')
-                    )
-                ]
+                return [HybridCostAtom(ManaCost(cls.deserialize(s)) for s in v.split("/"))]
 
 
 class VariableCostAtom(ManaCostAtom):
@@ -77,12 +69,8 @@ class GenericCostAtom(ManaCostAtom):
 
 
 class ColorCostAtom(ManaCostAtom):
-
     def _lt_tiebreaker(self, other) -> bool:
-        return (
-            cols.color_set_sort_value(self.associations)
-            < cols.color_set_sort_value(other.associations)
-        )
+        return cols.color_set_sort_value(self.associations) < cols.color_set_sort_value(other.associations)
 
 
 class ColorlessCostAtom(ManaCostAtom):
@@ -98,23 +86,15 @@ class OtherCostAtom(ManaCostAtom):
 
 
 class HybridCostAtom(ManaCostAtom):
-
     def __init__(self, options: t.Iterable[t.Union[ManaCost, ManaCostAtom]]):
         self._options: t.AbstractSet[ManaCost] = frozenset(self._flatten_options(options))
 
         assert len(self._options) > 1
 
         super(HybridCostAtom, self).__init__(
-            code = '/'.join(
-                str(option)
-                for option in (
-                    sorted(
-                        self._options
-                    )
-                )
-            ),
-            associations = frozenset.union(*(option.colors for option in self._options)),
-            cmc_value = max(option.cmc for option in self._options),
+            code="/".join(str(option) for option in (sorted(self._options))),
+            associations=frozenset.union(*(option.colors for option in self._options)),
+            cmc_value=max(option.cmc for option in self._options),
         )
 
     @property
@@ -162,7 +142,6 @@ class HybridCostAtom(ManaCostAtom):
 
 @functools.total_ordering
 class ManaCost(object):
-
     def __init__(self, atoms: t.Iterable[ManaCostAtom] = None):
         self._atoms = atoms if isinstance(atoms, FrozenMultiset) else FrozenMultiset(atoms)
 
@@ -185,9 +164,9 @@ class ManaCost(object):
 
     def __str__(self):
         if not self._atoms:
-            return '{0}'
+            return "{0}"
 
-        accumulated = ''
+        accumulated = ""
         generics = 0
 
         for atom in sorted(self._atoms):
@@ -195,29 +174,29 @@ class ManaCost(object):
                 generics += 1
                 continue
             if generics > 0:
-                accumulated += '{{{}}}'.format(generics)
+                accumulated += "{{{}}}".format(generics)
                 generics = 0
             accumulated += str(atom)
 
         if generics > 0:
-            accumulated += '{{{}}}'.format(generics)
+            accumulated += "{{{}}}".format(generics)
 
         return accumulated
 
     @classmethod
     def deserialize(cls, s: str) -> ManaCost:
         o = 0
-        a = ''
+        a = ""
         atoms = []
         for c in s:
             a += c
-            if c == '{':
+            if c == "{":
                 o += 1
-            elif c == '}':
+            elif c == "}":
                 o -= 1
                 if o == 0:
                     atoms.extend(ManaCostAtom.deserialize(a))
-                    a = ''
+                    a = ""
         return ManaCost(atoms)
 
     def __repr__(self) -> str:
@@ -235,14 +214,10 @@ class ManaCost(object):
         return item in self._atoms
 
     def __add__(self, other):
-        return ManaCost(
-            self._atoms + other._atoms
-        )
+        return ManaCost(self._atoms + other._atoms)
 
     def __sub__(self, other):
-        return ManaCost(
-            self._atoms.difference(other._atoms)
-        )
+        return ManaCost(self._atoms.difference(other._atoms))
 
 
 _cost_type_order = (
@@ -254,9 +229,7 @@ _cost_type_order = (
     PhyrexianCostAtom,
 )
 
-_cost_type_order_map = {
-    t: _cost_type_order.index(t) for t in _cost_type_order
-}
+_cost_type_order_map = {t: _cost_type_order.index(t) for t in _cost_type_order}
 
 _MAX_TYPE_ORDER = len(_cost_type_order) + 1
 
@@ -265,15 +238,15 @@ def _atom_sort_value(atom):
     return _cost_type_order_map.get(type(atom), _MAX_TYPE_ORDER)
 
 
-ONE_WHITE = ColorCostAtom('W', frozenset({Color.WHITE}))
-ONE_BLUE = ColorCostAtom('U', frozenset({Color.BLUE}))
-ONE_BLACK = ColorCostAtom('B', frozenset({Color.BLACK}))
-ONE_RED = ColorCostAtom('R', frozenset({Color.RED}))
-ONE_GREEN = ColorCostAtom('G', frozenset({Color.GREEN}))
+ONE_WHITE = ColorCostAtom("W", frozenset({Color.WHITE}))
+ONE_BLUE = ColorCostAtom("U", frozenset({Color.BLUE}))
+ONE_BLACK = ColorCostAtom("B", frozenset({Color.BLACK}))
+ONE_RED = ColorCostAtom("R", frozenset({Color.RED}))
+ONE_GREEN = ColorCostAtom("G", frozenset({Color.GREEN}))
 
-ONE_GENERIC = GenericCostAtom('1')
+ONE_GENERIC = GenericCostAtom("1")
 
-ONE_PHYREXIAN = PhyrexianCostAtom('P')
+ONE_PHYREXIAN = PhyrexianCostAtom("P")
 
 ONE_PHYREXIAN_WHITE = HybridCostAtom({ONE_WHITE, ONE_PHYREXIAN})
 ONE_PHYREXIAN_BLUE = HybridCostAtom({ONE_BLUE, ONE_PHYREXIAN})
@@ -282,12 +255,13 @@ ONE_PHYREXIAN_RED = HybridCostAtom({ONE_RED, ONE_PHYREXIAN})
 ONE_PHYREXIAN_GREEN = HybridCostAtom({ONE_GREEN, ONE_PHYREXIAN})
 ONE_PHYREXIAN_GENERIC = HybridCostAtom({ONE_GENERIC, ONE_PHYREXIAN})
 
-ONE_COLORLESS = ColorlessCostAtom('C')
-VARIABLE_GENERIC = VariableCostAtom('X', cmc_value = 0)
-ONE_SNOW = OtherCostAtom('S')
+ONE_COLORLESS = ColorlessCostAtom("C")
+VARIABLE_GENERIC = VariableCostAtom("X", cmc_value=0)
+ONE_SNOW = OtherCostAtom("S")
 
 SINGULAR_ATOM_MAP: t.Mapping[str, ManaCostAtom] = {
-    singular.code: singular for singular in (
+    singular.code: singular
+    for singular in (
         ONE_WHITE,
         ONE_BLUE,
         ONE_BLACK,

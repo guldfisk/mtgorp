@@ -1,11 +1,8 @@
-import os
 import json
+import os
 
 
-DATA_PATH = os.path.join(
-    os.path.dirname(__file__),
-    'data.json'
-)
+DATA_PATH = os.path.join(os.path.dirname(__file__), "data.json")
 
 
 class BoosterInformation(object):
@@ -14,6 +11,6 @@ class BoosterInformation(object):
     @staticmethod
     def information():
         if not BoosterInformation._data:
-            with open(DATA_PATH, 'r') as f:
+            with open(DATA_PATH, "r") as f:
                 BoosterInformation._data = json.load(f)
         return BoosterInformation._data

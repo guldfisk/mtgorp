@@ -2,12 +2,11 @@ import typing as t
 
 from yeetlong.multiset import FrozenMultiset
 
-from mtgorp.models.interfaces import Printing, Expansion, T
 from mtgorp.models.interfaces import Booster as _Booster
+from mtgorp.models.interfaces import Expansion, Printing, T
 
 
 class Booster(_Booster[T]):
-
     def __init__(self, items: t.Iterable[T], expansion: Expansion = None):
         self._items = items if isinstance(items, FrozenMultiset) else FrozenMultiset(items)
         self._expansion = expansion
@@ -21,7 +20,7 @@ class Booster(_Booster[T]):
         return self._expansion
 
     def __str__(self) -> str:
-        return '{}({})'.format(
+        return "{}({})".format(
             self.__class__.__name__,
             self._items.dict_string(),
         )
@@ -37,13 +36,12 @@ class Booster(_Booster[T]):
 
 
 class PrintingsBooster(Booster[Printing]):
-
     @property
     def sorted_printings(self) -> t.List[Printing]:
-        return sorted(self._items, key = lambda p: p.rarity.value, reverse = True)
+        return sorted(self._items, key=lambda p: p.rarity.value, reverse=True)
 
     def __str__(self) -> str:
-        return '{}({})'.format(
+        return "{}({})".format(
             self.__class__.__name__,
-            ', '.join(a_printing.cardboard.name for a_printing in self.sorted_printings),
+            ", ".join(a_printing.cardboard.name for a_printing in self.sorted_printings),
         )

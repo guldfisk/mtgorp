@@ -1,7 +1,6 @@
 import typing as t
 
 from mtgorp.models.persistent.attributes.flags import Flag, Flags
-
 from mtgorp.tools.parsing.exceptions import ParseException
 
 
@@ -10,9 +9,7 @@ class FlagsParseException(ParseException):
 
 
 class FlagParser(object):
-    card_type_map = {
-        t.name.lower(): t for t in Flag
-    }
+    card_type_map = {t.name.lower(): t for t in Flag}
 
     @classmethod
     def _unique_flag(cls, s: str) -> Flag:

@@ -1,6 +1,6 @@
+import os
 import typing as t
 
-import os
 import requests as r
 
 import mtgorp.managejson.paths as paths
@@ -9,19 +9,19 @@ import mtgorp.managejson.paths as paths
 def _get_temp_path(path: str) -> str:
     components = os.path.split(path)
     name, ext = os.path.splitext(components[-1])
-    return os.path.join(*(components[:-1] + (name + '_' + ext,)))
+    return os.path.join(*(components[:-1] + (name + "_" + ext,)))
 
 
 def _download_file(url: str, location: str, chunk_size: int = 1024) -> None:
-    ro = r.get(url, stream = True)
-    with open(location, 'wb') as f:
-        for chunk in ro.iter_content(chunk_size = chunk_size):
+    ro = r.get(url, stream=True)
+    with open(location, "wb") as f:
+        for chunk in ro.iter_content(chunk_size=chunk_size):
             f.write(chunk)
 
 
 TO_RETRIEVE = {
-    paths.ALL_CARDS_PATH: 'https://mtgjson.com/api/v5/AtomicCards.json',
-    paths.ALL_SETS_PATH: 'https://mtgjson.com/api/v5/AllPrintings.json',
+    paths.ALL_CARDS_PATH: "https://mtgjson.com/api/v5/AtomicCards.json",
+    paths.ALL_SETS_PATH: "https://mtgjson.com/api/v5/AllPrintings.json",
 }
 
 
@@ -41,5 +41,5 @@ def re_download() -> None:
     _make_new(TO_RETRIEVE)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     re_download()

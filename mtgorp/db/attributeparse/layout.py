@@ -1,7 +1,6 @@
 import mtgorp.db.attributeparse.parser as parser
-
-from mtgorp.models.persistent.attributes.layout import Layout
 from mtgorp.db.attributeparse.exceptions import AttributeParseException
+from mtgorp.models.persistent.attributes.layout import Layout
 
 
 class LayoutParseException(AttributeParseException):
@@ -10,19 +9,19 @@ class LayoutParseException(AttributeParseException):
 
 class Parser(parser.Parser):
     _LAYOUT_MAP = {
-        'normal': Layout.STANDARD,
-        'leveler': Layout.STANDARD,
-        'prototype': Layout.STANDARD,
-        'mutate': Layout.STANDARD,
-        'transform': Layout.TRANSFORM,
-        'flip': Layout.FLIP,
-        'meld': Layout.MELD,
-        'split': Layout.SPLIT,
-        'aftermath': Layout.AFTERMATH,
-        'saga': Layout.SAGA,
-        'adventure': Layout.ADVENTURE,
-        'modal_dfc': Layout.MODAL,
-        'class': Layout.CLASS,
+        "normal": Layout.STANDARD,
+        "leveler": Layout.STANDARD,
+        "prototype": Layout.STANDARD,
+        "mutate": Layout.STANDARD,
+        "transform": Layout.TRANSFORM,
+        "flip": Layout.FLIP,
+        "meld": Layout.MELD,
+        "split": Layout.SPLIT,
+        "aftermath": Layout.AFTERMATH,
+        "saga": Layout.SAGA,
+        "adventure": Layout.ADVENTURE,
+        "modal_dfc": Layout.MODAL,
+        "class": Layout.CLASS,
     }
 
     @classmethod

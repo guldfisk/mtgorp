@@ -5,13 +5,14 @@ import typing as t
 from orp.models import Model, PrimaryKey
 from orp.relationships import One, OneDescriptor
 
-from mtgorp.models.persistent.attributes.rarities import Rarity
+from mtgorp.models.interfaces import Artist, Cardboard, Expansion
+from mtgorp.models.interfaces import Face as _Face
+from mtgorp.models.interfaces import Printing as _Printing
 from mtgorp.models.persistent.attributes.flags import Flags
-from mtgorp.models.interfaces import Artist, Cardboard, Expansion, Face as _Face, Printing as _Printing
+from mtgorp.models.persistent.attributes.rarities import Rarity
 
 
 class Face(_Face):
-
     def __init__(
         self,
         owner,
@@ -19,10 +20,10 @@ class Face(_Face):
         flavor: str = None,
     ):
         self._owner = owner
-        self._artist = One(self, '_faces', artist)
+        self._artist = One(self, "_faces", artist)
         self._flavor = flavor
 
-    artist: Artist = OneDescriptor('_artist')
+    artist: Artist = OneDescriptor("_artist")
 
     @property
     def owner(self) -> Printing:
@@ -36,7 +37,7 @@ class Face(_Face):
         return id(self)
 
     def __repr__(self) -> str:
-        return '{}({}, {})'.format(
+        return "{}({}, {})".format(
             self.__class__.__name__,
             self.artist,
             None if self.flavor is None else self.flavor[:8],
@@ -44,7 +45,7 @@ class Face(_Face):
 
 
 class Printing(_Printing, Model):
-    primary_key = PrimaryKey('id')
+    primary_key = PrimaryKey("id")
     _id: int
 
     def __init__(
@@ -62,8 +63,8 @@ class Printing(_Printing, Model):
         in_booster: bool = True,
         flags: t.Optional[Flags] = None,
     ):
-        self._expansion = One(self, 'printings', expansion)
-        self._cardboard = One(self, 'printings', cardboard)
+        self._expansion = One(self, "printings", expansion)
+        self._cardboard = One(self, "printings", cardboard)
 
         self._collector_number = collector_number
         self._collector_string = collector_string
@@ -81,8 +82,8 @@ class Printing(_Printing, Model):
         self._in_booster = in_booster
         self._flags = Flags() if flags is None else flags
 
-    cardboard: Cardboard = OneDescriptor('_cardboard')
-    expansion: Expansion = OneDescriptor('_expansion')
+    cardboard: Cardboard = OneDescriptor("_cardboard")
+    expansion: Expansion = OneDescriptor("_expansion")
 
     @property
     def id(self) -> int:
