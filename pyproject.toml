@@ -27,7 +27,7 @@ more-itertools = "~10.1"
 multiset = "~3.0"
 numpy = "~1.26"
 pickledb = "0.9"
-requests = "^2.31.0"
+requests = "^2.32.0"
 sqlalchemy = "~2.0"
 
 [tool.poetry.group.dev.dependencies]
