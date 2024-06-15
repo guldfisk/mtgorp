@@ -1,5 +1,5 @@
 [project]
-name = "orp"
+name = "mtgorp"
 
 [tool.isort]
 profile = "black"
@@ -10,11 +10,10 @@ honor_noqa = true
 line-length = 119
 
 [tool.poetry]
-name = "orp"
+name = "mtgorp"
 version = "0.1.0"
 description = ""
 authors = ["None"]
-readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "~3.9"
@@ -29,6 +28,8 @@ numpy = "~1.26"
 pickledb = "0.9"
 requests = "^2.31.0"
 sqlalchemy = "~2.0"
+orp = { git = "https://github.com/guldfisk/orp.git" }
+hardcandy = { git = "https://github.com/guldfisk/hardcandy.git" }
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^3.6.1"
