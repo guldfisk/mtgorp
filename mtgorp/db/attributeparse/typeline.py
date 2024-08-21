@@ -2,7 +2,7 @@ import re
 
 import mtgorp.db.attributeparse.parser as parser
 from mtgorp.db.attributeparse.exceptions import AttributeParseException
-from mtgorp.models.persistent.attributes.typeline import ALL_TYPES, TypeLine
+from mtgorp.models.persistent.attributes.typeline import ALL_TYPES, TRIBAL, TypeLine
 
 
 class CardTypeParseException(AttributeParseException):
@@ -10,7 +10,7 @@ class CardTypeParseException(AttributeParseException):
 
 
 class Parser(parser.Parser):
-    card_type_map = {t.name: t for t in ALL_TYPES}
+    card_type_map = {"Kindred": TRIBAL, **{t.name: t for t in ALL_TYPES}}
     type_matcher = re.compile("[\\w\\-’]+")
 
     @staticmethod
