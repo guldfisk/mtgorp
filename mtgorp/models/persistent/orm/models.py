@@ -86,6 +86,7 @@ class Card(Base, i.Card):
     oracle_text = Column(Text, nullable=False)
     power_toughness = Column(PowerToughnessField(15), nullable=True)
     loyalty = Column(PTValueField(7), nullable=True)
+    defense = Column(PTValueField(7), nullable=True)
     color_identity = Column(ColorField(63))
 
     front_cardboards = relationship(

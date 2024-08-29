@@ -91,9 +91,10 @@ class CardParser(ModelParser[C]):
             type_line=typeline.Parser.parse(raw_card.get("type", "")),
             mana_cost=mana_cost,
             color=self._parse_colors(raw_card.get("colors", ())),
-            oracle_text=re.sub(r"\(.*?\)", "", raw_card.get("text", ""), flags=re.IGNORECASE),
+            oracle_text=re.sub(r"\(.*?\)", "", raw_card.get("text", ""), flags=re.IGNORECASE).strip(),
             power_toughness=pt,
             loyalty=(loyalty.Parser.parse(str(raw_card["loyalty"])) if "loyalty" in raw_card else None),
+            defense=(loyalty.Parser.parse(str(raw_card["defense"])) if "defense" in raw_card else None),
             color_identity=self._parse_colors(raw_card.get("colorIdentity", ())),
         )
 

@@ -26,6 +26,7 @@ class Card(Model, _Card):
         oracle_text: str = None,
         power_toughness: powertoughness.PowerToughness = None,
         loyalty: powertoughness.PTValue = None,
+        defense: powertoughness.PTValue = None,
         color_identity: t.AbstractSet[colors.Color] = None,
     ):
         self._type_line = type_line
@@ -34,6 +35,7 @@ class Card(Model, _Card):
         self._oracle_text = oracle_text
         self._power_toughness = power_toughness
         self._loyalty = loyalty
+        self._defense = defense
         self._color_identity = color_identity
         self._sides = Many(self, "_cards")
 
@@ -64,6 +66,10 @@ class Card(Model, _Card):
     @property
     def loyalty(self) -> t.Optional[powertoughness.PTValue]:
         return self._loyalty
+
+    @property
+    def defense(self) -> t.Optional[powertoughness.PTValue]:
+        return self._defense
 
     @property
     def color_identity(self) -> t.Optional[t.AbstractSet[colors.Color]]:

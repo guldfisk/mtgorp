@@ -81,6 +81,11 @@ class Card(MtgModel):
 
     @property
     @abstractmethod
+    def defense(self) -> t.Optional[PTValue]:
+        pass
+
+    @property
+    @abstractmethod
     def color_identity(self) -> t.Optional[t.AbstractSet[Color]]:
         pass
 

@@ -56,7 +56,7 @@ class Parser(parser.Parser):
         "urza land": constants.KeySlot(
             (
                 constants.Option(
-                    CriteriaBuilder().type_line.contains(typeline.URZAS).all(),
+                    CriteriaBuilder().type_line.contains(typeline.URZA_S).all(),
                 ),
             )
         ),
