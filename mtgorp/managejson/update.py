@@ -13,6 +13,7 @@ from mtgorp.managejson import download, paths
 
 
 T = t.TypeVar("T")
+# TODO
 # P = t.ParamSpec('P')
 
 MTG_JSON_VERSION_URL = "https://mtgjson.com/api/v5/Meta.json"

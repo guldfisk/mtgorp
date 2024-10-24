@@ -124,7 +124,7 @@ def update_code(blocks: str):
 def main():
     update_code(
         get_blocks(
-            requests.get("https://media.wizards.com/2024/downloads/MagicCompRules%2020240802.txt")
+            requests.get("https://media.wizards.com/2024/downloads/MagicCompRules20240917.txt")
             .content.decode("utf8")
             .replace("\r\n", "\n")
         )
