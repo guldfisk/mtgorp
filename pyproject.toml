@@ -26,7 +26,7 @@ more-itertools = "~10.1"
 multiset = "~3.0"
 numpy = "~1.26"
 pickledb = "0.9"
-requests = "^2.31.0"
+requests = "^2.32.2"
 sqlalchemy = "~2.0"
 orp = { git = "https://github.com/guldfisk/orp.git" }
 hardcandy = { git = "https://github.com/guldfisk/hardcandy.git" }
