@@ -257,6 +257,7 @@ class PrintingParser(ModelParser[P]):
                     if expansion.release_date >= datetime.datetime(2025, 8, 1)
                     else int(raw_printing["identifiers"]["multiverseId"])
                 ),
+                scryfall_id=raw_printing["identifiers"]["scryfallId"],
                 expansion=expansion,
                 collector_number=(
                     int(collector_string)

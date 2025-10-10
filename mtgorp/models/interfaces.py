@@ -268,6 +268,11 @@ class Printing(MtgModel):
 
     @property
     @abstractmethod
+    def scryfall_id(self) -> str:
+        pass
+
+    @property
+    @abstractmethod
     def collector_number(self) -> int:
         pass
 

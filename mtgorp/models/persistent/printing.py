@@ -51,6 +51,7 @@ class Printing(_Printing, Model):
     def __init__(
         self,
         id: int,
+        scryfall_id: str,
         expansion: Expansion,
         cardboard: Cardboard,
         collector_number: int,
@@ -63,6 +64,8 @@ class Printing(_Printing, Model):
         in_booster: bool = True,
         flags: t.Optional[Flags] = None,
     ):
+        self._scryfall_id = scryfall_id
+
         self._expansion = One(self, "printings", expansion)
         self._cardboard = One(self, "printings", cardboard)
 
@@ -88,6 +91,10 @@ class Printing(_Printing, Model):
     @property
     def id(self) -> int:
         return self._id
+
+    @property
+    def scryfall_id(self) -> str:
+        return self._scryfall_id
 
     @property
     def collector_number(self) -> int:

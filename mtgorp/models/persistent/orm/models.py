@@ -159,6 +159,7 @@ class Printing(i.Printing, Base):
     def __init__(
         self,
         id: int,
+        scryfall_id: str,
         expansion: Expansion,
         cardboard: Cardboard,
         collector_number: int,
@@ -172,6 +173,7 @@ class Printing(i.Printing, Base):
         flags: t.Optional[Flags] = None,
     ):
         self.id = id
+        self.scryfall_id = scryfall_id
         self.expansion = expansion
         self.cardboard = cardboard
         self.collector_number = collector_number
@@ -183,6 +185,8 @@ class Printing(i.Printing, Base):
         self.back_face = Face(artist=back_artist, flavor=back_flavor)
 
     id = Column(BigInteger, primary_key=True)
+
+    scryfall_id = Column(Text())
 
     cardboard_name = Column("Cardboard", ForeignKey("cardboard.name"))
     cardboard = relationship("Cardboard", back_populates="printings")
