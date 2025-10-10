@@ -53,7 +53,9 @@ class CardToCardboardFront(Base):
     __tablename__ = "card_to_cardboard_front"
     id = Column(Integer, primary_key=True)
     card_name = Column(String(255), ForeignKey("card.name", ondelete="CASCADE"))
+    card = relationship("Card", back_populates="front_cardboard_connections")
     cardboard_name = Column(String(255), ForeignKey("cardboard.name", ondelete="CASCADE"))
+    cardboard = relationship("Cardboard", back_populates="front_card_connections")
     index = Column(Integer)
 
     @property
@@ -65,7 +67,9 @@ class CardToCardboardBack(Base):
     __tablename__ = "card_to_cardboard_back"
     id = Column(Integer, primary_key=True)
     card_name = Column(String(255), ForeignKey("card.name", ondelete="CASCADE"))
+    card = relationship("Card", back_populates="back_cardboard_connections")
     cardboard_name = Column(String(255), ForeignKey("cardboard.name", ondelete="CASCADE"))
+    cardboard = relationship("Cardboard", back_populates="back_card_connections")
     index = Column(Integer)
 
     @property
@@ -87,19 +91,16 @@ class Card(Base, i.Card):
     defense = Column(PTValueField(7), nullable=True)
     color_identity = Column(ColorField(63))
 
-    front_cardboards = relationship(
-        "Cardboard",
-        secondary=CardToCardboardFront.__table__,
-        back_populates="front_cards",
-        cascade="all,delete",
-    )
+    front_cardboard_connections = relationship(CardToCardboardFront, back_populates="card")
+    back_cardboard_connections = relationship(CardToCardboardBack, back_populates="card")
 
-    back_cardboards = relationship(
-        "Cardboard",
-        secondary=CardToCardboardBack.__table__,
-        back_populates="back_cards",
-        cascade="all,delete",
-    )
+    @property
+    def front_cardboard(self) -> t.FrozenSet[Cardboard]:
+        return {connection.cardboard for connection in self.front_cardboard_connections}
+
+    @property
+    def back_cardboards(self) -> t.FrozenSet[Cardboard]:
+        return {connection.cardboard for connection in self.back_cardboard_connections}
 
     @property
     def cardboards(self) -> t.FrozenSet[Cardboard]:
@@ -119,8 +120,10 @@ class Cardboard(Base, i.Cardboard):
         back_cards: t.Sequence[Card] = None,
         layout: Layout = Layout.STANDARD,
     ):
-        self.front_cards = front_cards
-        self.back_cards = back_cards
+        self.front_card_connections = [
+            CardToCardboardFront(card=card, index=idx) for idx, card in enumerate(front_cards)
+        ]
+        self.back_card_connections = [CardToCardboardBack(card=card, index=idx) for idx, card in enumerate(back_cards)]
         self.layout = layout
         self.name = self.calc_name(
             c.name for c in itertools.chain(front_cards, back_cards if back_cards is not None else ())
@@ -128,21 +131,24 @@ class Cardboard(Base, i.Cardboard):
 
     name = Column(String(255), primary_key=True)
 
-    front_cards = relationship(
-        "Card",
-        secondary=CardToCardboardFront.__table__,
+    front_card_connections = relationship(
+        CardToCardboardFront,
+        back_populates="cardboard",
         order_by=CardToCardboardFront.__table__.c.index,
-        back_populates="front_cardboards",
-        cascade="all,delete",
+    )
+    back_card_connections = relationship(
+        CardToCardboardBack,
+        back_populates="cardboard",
+        order_by=CardToCardboardBack.__table__.c.index,
     )
 
-    back_cards = relationship(
-        "Card",
-        secondary=CardToCardboardBack.__table__,
-        order_by=CardToCardboardBack.__table__.c.index,
-        back_populates="back_cardboards",
-        cascade="all,delete",
-    )
+    @property
+    def front_cards(self) -> t.Sequence[Card]:
+        return [connection.card for connection in self.front_card_connections]
+
+    @property
+    def back_cards(self) -> t.Sequence[Card]:
+        return [connection.card for connection in self.back_card_connections]
 
     printings = relationship("Printing", back_populates="cardboard", cascade="all, delete-orphan")
 
