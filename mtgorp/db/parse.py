@@ -249,10 +249,10 @@ class PrintingParser(ModelParser[P]):
                         "1"
                         + str(
                             int(
-                                raw_printing["identifiers"]["mtgjsonV4Id"].replace("-", "")[:14],
+                                raw_printing["identifiers"]["mtgjsonV4Id"].replace("-", "")[:12],
                                 16,
                             )
-                        ).rjust(17, "0")
+                        ).rjust(15, "0")
                     )
                     if expansion.release_date >= datetime.datetime(2025, 8, 1)
                     else int(raw_printing["identifiers"]["multiverseId"])
