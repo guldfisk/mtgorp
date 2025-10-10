@@ -58,7 +58,7 @@ class CardParser(ModelParser[C]):
         return {color.Parser.parse(s) for s in cols}
 
     def parse(self, raw_card) -> C:
-        parse_logger.info(f'parsing Card {raw_card.get("faceName") or raw_card.get("name")}')
+        parse_logger.info(f"parsing Card {raw_card.get('faceName') or raw_card.get('name')}")
 
         try:
             name = raw_card.get("faceName") or raw_card["name"]
@@ -145,7 +145,7 @@ class CardboardParser(ModelParser[D]):
             raise AttributeParseException(f'Invalid cardboard names "{e}"')
 
     def parse(self, raw_cardboard, cards: OrpTable[str, D]) -> D:
-        parse_logger.info(f'parsing Cardboard {raw_cardboard[0].get("name")}')
+        parse_logger.info(f"parsing Cardboard {raw_cardboard[0].get('name')}")
 
         try:
             front_names, back_names = self.get_cardboard_card_names(raw_cardboard)
@@ -201,7 +201,7 @@ class PrintingParser(ModelParser[P]):
         cardboards: OrpTable[str, D],
     ) -> P:
         parse_logger.info(
-            f'parsing Printing {raw_printing.get("name")} [{expansion.code}] '
+            f"parsing Printing {raw_printing.get('name')} [{expansion.code}] "
             + str(raw_printing.get("identifiers", {}).get("multiverseId", "no multiverseId"))
         )
 
@@ -244,19 +244,32 @@ class PrintingParser(ModelParser[P]):
             )
 
             return self._target(
-                id=int(raw_printing["identifiers"]["multiverseId"]),
+                id=(
+                    int(
+                        "1"
+                        + str(
+                            int(
+                                raw_printing["identifiers"]["mtgjsonV4Id"].replace("-", "")[:14],
+                                16,
+                            )
+                        ).rjust(17, "0")
+                    )
+                    if expansion.release_date >= datetime.datetime(2025, 8, 1)
+                    else int(raw_printing["identifiers"]["multiverseId"])
+                ),
                 expansion=expansion,
                 collector_number=(
-                    -1
-                    if collector_number is None
-                    else int(
-                        re.sub(
+                    int(collector_string)
+                    if collector_number
+                    and (
+                        collector_string := re.sub(
                             r"[^\d]",
                             "",
                             collector_number,
                             flags=re.IGNORECASE,
                         )
                     )
+                    else -1
                 ),
                 collector_string=collector_number or "",
                 cardboard=cardboard,
@@ -317,7 +330,7 @@ class ExpansionParser(ModelParser[E]):
         artists: OrpTable[str, A],
         blocks: OrpTable[str, B],
     ) -> E:
-        parse_logger.info(f'parsing Expansion {raw_expansion.get("name")} [{raw_expansion.get("code").upper()}]')
+        parse_logger.info(f"parsing Expansion {raw_expansion.get('name')} [{raw_expansion.get('code').upper()}]")
 
         name = raw_expansion["name"]
         code = raw_expansion["code"].upper()
@@ -367,7 +380,7 @@ class ExpansionParser(ModelParser[E]):
                     )
                 )
             except DbParseException as e:
-                parse_logger.info(f'failed to parse Printing {raw_printing.get("name")} [{code}] ({e})')
+                parse_logger.info(f"failed to parse Printing {raw_printing.get('name')} [{code}] ({e})")
 
         return expansion
 
@@ -431,7 +444,7 @@ class DatabaseCreator(t.Generic[DB]):
                 try:
                     cards.insert(card_parser.parse(card))
                 except DbParseException as e:
-                    parse_logger.info(f'failed to parse Card {card.get("name")} ({e})')
+                    parse_logger.info(f"failed to parse Card {card.get('name')} ({e})")
 
         return cards
 
@@ -445,7 +458,7 @@ class DatabaseCreator(t.Generic[DB]):
             try:
                 cardboards.insert(cardboard_parser.parse(raw_cardboard, cards))
             except DbParseException as e:
-                parse_logger.info(f'failed to parse Cardboard {raw_cardboard[0].get("name")} ({e})')
+                parse_logger.info(f"failed to parse Cardboard {raw_cardboard[0].get('name')} ({e})")
 
         return cardboards
 
@@ -497,9 +510,10 @@ class DatabaseCreator(t.Generic[DB]):
     def create_database(self) -> DB:
         self._pre_run()
 
-        with open(self._all_cards_path, "r", encoding="UTF-8") as all_cards_file, open(
-            self._all_sets_path, "r", encoding="UTF-8"
-        ) as all_sets_file:
+        with (
+            open(self._all_cards_path, "r", encoding="UTF-8") as all_cards_file,
+            open(self._all_sets_path, "r", encoding="UTF-8") as all_sets_file,
+        ):
             handler = logging.FileHandler(self._logging_path, mode="w")
             parse_logger.addHandler(handler)
 

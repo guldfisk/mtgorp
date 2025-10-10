@@ -4,6 +4,7 @@ import itertools
 import typing as t
 
 from sqlalchemy import (
+    BigInteger,
     Boolean,
     Column,
     DateTime,
@@ -70,9 +71,6 @@ class CardToCardboardBack(Base):
     @property
     def primary_key(self) -> int:
         return self.id
-
-
-# BIG = 1024 * 16
 
 
 class Card(Base, i.Card):
@@ -184,7 +182,7 @@ class Printing(i.Printing, Base):
         self.front_face = Face(artist=front_artist, flavor=front_flavor)
         self.back_face = Face(artist=back_artist, flavor=back_flavor)
 
-    id = Column(Integer, primary_key=True)
+    id = Column(BigInteger, primary_key=True)
 
     cardboard_name = Column("Cardboard", ForeignKey("cardboard.name"))
     cardboard = relationship("Cardboard", back_populates="printings")
@@ -193,7 +191,7 @@ class Printing(i.Printing, Base):
     expansion = relationship("Expansion", back_populates="printings")
 
     collector_number = Column(Integer)
-    collector_string = Column(String(7))
+    collector_string = Column(Text())
 
     front_face_id = Column(Integer, ForeignKey("face.id"))
     front_face = relationship("Face", back_populates="front_owner", foreign_keys=[front_face_id])
