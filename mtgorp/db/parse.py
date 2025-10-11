@@ -254,7 +254,7 @@ class PrintingParser(ModelParser[P]):
                             )
                         ).rjust(15, "0")
                     )
-                    if expansion.release_date >= datetime.datetime(2025, 8, 1)
+                    if expansion.release_date >= datetime.datetime(2025, 6, 13)
                     else int(raw_printing["identifiers"]["multiverseId"])
                 ),
                 scryfall_id=raw_printing["identifiers"]["scryfallId"],
